@@ -1,0 +1,29 @@
+# Konfigurasi lokal (dibuat dari .example saat instalasi, jangan commit)
+config/config.php
+config/.env
+
+# Data runtime (dibuat otomatis, spesifik per instalasi)
+storage/jamsholat.db
+storage/jamsholat.db-shm
+storage/jamsholat.db-wal
+storage/captures/*
+storage/backups/*
+storage/sessions/*
+public/uploads/publications/*
+
+!storage/captures/.gitkeep
+!storage/backups/.gitkeep
+!storage/sessions/.gitkeep
+!public/uploads/publications/.gitkeep
+
+# Audio (lisensi pihak lain, tidak disertakan repo — lihat public/assets/audio/README.md)
+public/assets/audio/*.mp3
+public/assets/audio/murottal/*.mp3
+
+# Python
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store
+*.swp

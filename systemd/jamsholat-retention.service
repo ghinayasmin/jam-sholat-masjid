@@ -1,0 +1,11 @@
+[Unit]
+Description=Jam Sholat Masjid - Image Retention Cleanup (one-shot)
+
+[Service]
+Type=oneshot
+User=jamsholat
+Group=jamsholat
+WorkingDirectory=/opt/jamsholat
+Environment=JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db
+Environment=JAMSHOLAT_CAPTURES_PATH=/opt/jamsholat/storage/captures
+ExecStart=/usr/bin/python3 /opt/jamsholat/camera_service/retention_cleanup.py

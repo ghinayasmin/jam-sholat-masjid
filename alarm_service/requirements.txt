@@ -1,0 +1,3 @@
+# alarm_service.py hanya memakai Python standard library
+# (datetime, logging, os, shutil, sqlite3, subprocess, time, glob) —
+# tidak ada dependency eksternal yang perlu diinstal.

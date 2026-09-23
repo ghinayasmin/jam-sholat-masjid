@@ -1,0 +1,23 @@
+[Unit]
+Description=Jam Sholat Masjid - Camera Motion Detection Service
+After=multi-user.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=jamsholat
+Group=jamsholat
+WorkingDirectory=/opt/jamsholat
+Environment=JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db
+Environment=JAMSHOLAT_CAPTURES_PATH=/opt/jamsholat/storage/captures
+Environment=JAMSHOLAT_CAMERA_INDEX=0
+ExecStart=/usr/bin/python3 /opt/jamsholat/camera_service/motion_detect.py
+Restart=on-failure
+RestartSec=10
+# REQ-NF-102: batasi resource agar tidak mengganggu tampilan utama.
+CPUQuota=40%
+MemoryMax=200M
+
+[Install]
+WantedBy=multi-user.target

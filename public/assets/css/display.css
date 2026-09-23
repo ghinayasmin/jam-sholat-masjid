@@ -1,0 +1,135 @@
+:root {
+    --bg: #05261c;
+    --bg-alt: #0a3a29;
+    --accent: #d9b45f;
+    --text: #f5f7f4;
+    --text-muted: #a9c4b6;
+    --card-bg: rgba(255,255,255,0.06);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    overflow: hidden;
+}
+
+.display-wrap {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 2vh 3vw;
+    gap: 2vh;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1vh;
+}
+.mosque-name {
+    font-size: 2.4vw;
+    font-weight: 700;
+    color: var(--accent);
+    max-width: 55%;
+}
+.clock-block { text-align: right; }
+.clock {
+    font-size: 5.5vw;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+.date-line { font-size: 1.4vw; color: var(--text-muted); margin-top: 0.5vh; }
+
+.prayer-times {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1vw;
+}
+.prayer-item {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 1vh;
+    padding: 1.5vh 0.5vw;
+    text-align: center;
+}
+.prayer-item.current { background: var(--accent); color: #1a1204; }
+.prayer-label {
+    display: block;
+    font-size: 1.3vw;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.5vh;
+}
+.prayer-item.current .prayer-label { color: #1a1204; }
+.prayer-value {
+    display: block;
+    font-size: 2.6vw;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.fasting-banner {
+    background: rgba(217,180,95,0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 1vh 1.5vw;
+    border-radius: 1vh;
+    font-size: 1.4vw;
+    text-align: center;
+}
+
+.main-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 2vw;
+    min-height: 0;
+}
+
+.slideshow {
+    position: relative;
+    background: var(--bg-alt);
+    border-radius: 1.5vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.slideshow img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+.slideshow img.active { opacity: 1; }
+.slideshow-empty { color: var(--text-muted); font-size: 1.5vw; }
+
+.financial-panel {
+    background: var(--card-bg);
+    border-radius: 1.5vh;
+    padding: 2vh 1.5vw;
+    overflow-y: auto;
+}
+.financial-panel h2 { font-size: 1.5vw; color: var(--accent); margin-top: 0; }
+.balance { font-size: 2.4vw; font-weight: 700; margin-bottom: 1.5vh; }
+.financial-list { list-style: none; padding: 0; margin: 0; font-size: 1.1vw; }
+.financial-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.8vh 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.financial-list .amount-masuk { color: #7fd99a; }
+.financial-list .amount-keluar { color: #e39a91; }

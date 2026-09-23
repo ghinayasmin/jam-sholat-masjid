@@ -1,0 +1,21 @@
+[Unit]
+Description=Jam Sholat Masjid - Kiosk Display (X + Openbox + Chromium)
+After=network-online.target apache2.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=jamsholat
+Group=jamsholat
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+# Trik standar untuk menjalankan X session dari systemd tanpa display manager:
+ExecStart=/usr/bin/startx /opt/jamsholat/scripts/kiosk_xsession.sh -- :0 vt1 -nolisten tcp
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical.target

@@ -1,0 +1,22 @@
+[Unit]
+Description=Jam Sholat Masjid - Alarm & Audio Service
+After=multi-user.target sound.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=jamsholat
+Group=jamsholat
+WorkingDirectory=/opt/jamsholat
+Environment=JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db
+Environment=JAMSHOLAT_AUDIO_PATH=/opt/jamsholat/public/assets/audio
+Environment=JAMSHOLAT_PHP_BIN=/usr/bin/php
+ExecStart=/usr/bin/python3 /opt/jamsholat/alarm_service/alarm_service.py
+Restart=on-failure
+RestartSec=10
+CPUQuota=20%
+MemoryMax=100M
+
+[Install]
+WantedBy=multi-user.target
