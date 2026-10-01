@@ -1,5 +1,5 @@
 [Unit]
-Description=Jam Sholat Masjid - Kiosk Display (X + Openbox + Chromium)
+Description=Jam Sholat Masjid - Kiosk Display (cage + Chromium)
 After=network-online.target apache2.service systemd-user-sessions.service
 Wants=network-online.target
 Conflicts=getty@tty1.service
@@ -8,16 +8,19 @@ Conflicts=getty@tty1.service
 Type=simple
 User=jamsholat
 Group=jamsholat
+# Sesi login di tty1 lewat PAM/logind supaya cage boleh memakai layar & input.
 PAMName=login
 TTYPath=/dev/tty1
 TTYReset=yes
 TTYVHangup=yes
+TTYVTDisallocate=yes
 StandardInput=tty
 StandardOutput=journal
 StandardError=journal
-# Trik standar untuk menjalankan X session dari systemd tanpa display manager:
-ExecStart=/usr/bin/startx /opt/jamsholat/scripts/kiosk_xsession.sh -- :0 vt1 -nolisten tcp
-Restart=on-failure
+UtmpIdentifier=tty1
+UtmpMode=user
+ExecStart=/usr/bin/cage -d -- /opt/jamsholat/scripts/kiosk_browser.sh
+Restart=always
 RestartSec=5
 
 [Install]

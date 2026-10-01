@@ -45,7 +45,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 | Req ID | Judul | Status | Catatan |
 |---|---|---|---|
-| REQ-NF-100 | Low-Resource Operation | ⚠️ | Desain sudah mengarah ke sini (Openbox bukan desktop penuh, CPUQuota/MemoryMax di systemd units, polling interval dijaga rendah) — pengukuran RAM aktual ≤700MB HANYA bisa diverifikasi di Raspberry Pi 2/3 sungguhan |
+| REQ-NF-100 | Low-Resource Operation | ⚠️ | Desain sudah mengarah ke sini (cage + Chromium, bukan desktop penuh, CPUQuota/MemoryMax di systemd units, polling interval dijaga rendah) — pengukuran RAM aktual ≤700MB HANYA bisa diverifikasi di Raspberry Pi 2/3 sungguhan |
 | REQ-NF-101 | Display Responsiveness | ✅ | Jam client-side `setInterval` 1 detik; transisi slide CSS `transition: opacity 1s` |
 | REQ-NF-102 | Lightweight Background Services | ✅ | `CPUQuota`/`MemoryMax` di semua unit systemd; `time.sleep()` di setiap loop Python |
 | REQ-NF-110 | Continuous Operation | ✅ | `Restart=on-failure` di semua `.service`; try/except pembungkus loop utama (Python) |

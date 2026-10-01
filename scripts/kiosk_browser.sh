@@ -1,24 +1,19 @@
 #!/bin/bash
-# Dipanggil oleh systemd/jamsholat-kiosk.service lewat `startx`.
+# Dijalankan oleh systemd/jamsholat-kiosk.service di dalam compositor `cage`.
 # REQ-F-010, REQ-NF-131: tampilan jamaah fullscreen tanpa elemen browser.
-
-# Matikan screen blanking/DPMS — layar TIDAK boleh mati (dipasang di masjid, tampil 24/7).
-xset s off
-xset s noblank
-xset -dpms
-
-# Window manager ringan — cukup untuk menghilangkan border/dekorasi window Chromium.
-openbox-session &
-sleep 2
+# cage tidak punya screen blanking, jadi layar tetap menyala 24/7.
 
 CHROMIUM_BIN=$(command -v chromium-browser || command -v chromium)
 
 exec "$CHROMIUM_BIN" \
     --kiosk \
+    --ozone-platform=wayland \
+    --disable-gpu \
     --noerrdialogs \
     --disable-infobars \
     --disable-session-crashed-bubble \
-    --disable-translate \
+    --disable-features=Translate \
+    --lang=id \
     --no-first-run \
     --autoplay-policy=no-user-gesture-required \
     --check-for-update-interval=31536000 \

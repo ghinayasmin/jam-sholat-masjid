@@ -56,7 +56,7 @@ terpisah) dan komentar docblock di `src/Schedule/ScheduleEngine.php`,
 | Database | SQLite 3 (WAL mode) |
 | Kamera | Python 3, OpenCV (`opencv-python-headless`) |
 | Alarm/audio | Python 3 (stdlib saja) + `mpg123`/`aplay`/`ffplay` |
-| Kiosk display | Xorg minimal + Openbox + Chromium |
+| Kiosk display | `cage` (Wayland kiosk compositor) + Chromium |
 | OS | Raspberry Pi OS Lite |
 | Service manager | systemd (service + timer) |
 
@@ -213,7 +213,7 @@ sudo systemctl restart jamsholat-camera jamsholat-alarm apache2
 | "Gagal mengubah jam sistem" di panel admin | Sudoers belum terpasang | Jalankan ulang bagian [8/10] `install.sh`, atau cek `/etc/sudoers.d/jamsholat-date` |
 | Kamera tidak mendeteksi gerakan | Webcam tidak terdeteksi/index salah | `ls /dev/video*`; set `JAMSHOLAT_CAMERA_INDEX` di systemd unit sesuai |
 | Suara adzan tidak bunyi | File audio belum disediakan, atau `mpg123` tidak terpasang | Cek `public/assets/audio/README.md`; `which mpg123` |
-| Chromium tidak fullscreen setelah reboot | X server gagal start | `sudo journalctl -u jamsholat-kiosk.service` untuk lihat error |
+| Chromium tidak fullscreen setelah reboot | cage/Chromium gagal start | `sudo journalctl -u jamsholat-kiosk.service` untuk lihat error |
 | Storage penuh oleh rekaman kamera | Retention belum jalan | Cek `systemctl status jamsholat-retention.timer`; jalankan manual: `python3 camera_service/retention_cleanup.py` |
 
 ## 14. Known Limitations

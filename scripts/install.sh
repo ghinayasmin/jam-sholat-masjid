@@ -32,8 +32,7 @@ apt-get install -y \
     php php-sqlite3 php-mbstring php-gd \
     sqlite3 \
     python3 python3-pip python3-opencv \
-    xserver-xorg xinit openbox \
-    "$CHROMIUM_PKG" \
+    cage "$CHROMIUM_PKG" fonts-noto-color-emoji \
     mpg123 alsa-utils \
     fake-hwclock \
     rsync sudo
@@ -142,14 +141,12 @@ a2enmod rewrite
 systemctl reload apache2
 
 echo "=== [10/10] Memasang & mengaktifkan systemd services ==="
-# Izinkan user layanan menjalankan X server dari systemd (bukan dari login
-# console biasa); getty dimatikan supaya tidak berebut tty1 dengan kiosk.
-printf 'allowed_users=anybody\nneeds_root_rights=yes\n' > /etc/X11/Xwrapper.config
 cp "$INSTALL_DIR"/systemd/*.service "$INSTALL_DIR"/systemd/*.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now jamsholat-camera.service
 systemctl enable --now jamsholat-alarm.service
 systemctl enable --now jamsholat-retention.timer
+# getty dimatikan supaya tidak berebut tty1 dengan kiosk.
 systemctl disable getty@tty1.service || true
 systemctl enable jamsholat-kiosk.service
 echo "Layanan kiosk (Chromium fullscreen) akan aktif setelah reboot berikutnya."

@@ -12,15 +12,24 @@ dokumentasikan keputusan tersebut").
 mensyaratkan tampilan **Chromium kiosk fullscreen** di monitor.
 
 **Keputusan (dikonfirmasi user, opsi "a"):** Tetap pakai Raspberry Pi OS Lite,
-tambahkan komponen GUI minimal: `xserver-xorg` + `xinit` + `openbox` (window
-manager sangat ringan) + `chromium-browser`. Dijalankan lewat systemd
-(`jamsholat-kiosk.service`) yang memanggil `startx` dengan trik
-`PAMName=login` + `TTYPath=/dev/tty1` — pola standar untuk kiosk Raspberry Pi
-tanpa perlu display manager penuh (lightdm dkk) yang lebih berat.
+tambahkan komponen GUI minimal: `cage` (compositor Wayland khusus kiosk, satu
+aplikasi fullscreen) + Chromium. Dijalankan lewat systemd
+(`jamsholat-kiosk.service`) dengan `PAMName=login` + `TTYPath=/dev/tty1`
+sehingga cage mendapat sesi logind di tty1, tanpa display manager penuh
+(lightdm dkk) yang lebih berat.
 
-**Alasan:** Openbox + Chromium jauh lebih hemat RAM dibanding beralih ke
+**Alasan:** cage + Chromium jauh lebih hemat RAM dibanding beralih ke
 Raspberry Pi OS Desktop penuh, sehingga tetap sejalan dengan REQ-NF-100
 (RAM total ≤700MB pada perangkat 1GB).
+
+**Revisi setelah uji hardware (2026-10-01):** desain awal memakai
+`xserver-xorg` + `xinit` + `openbox` lewat `startx`. Di Raspberry Pi 3 Model B
+dengan Raspberry Pi OS 13 (Trixie) 32-bit, X berjalan dan Chromium merender
+halaman dengan benar (terbukti dari screenshot `scrot`), tetapi monitor HDMI
+tetap hitam — juga pada X polos (`X -retro`) dan setelah mematikan glamor /
+page flip. Raspberry Pi OS sendiri sudah beralih ke Wayland, jadi kiosk
+dipindah ke cage. Chromium dijalankan dengan `--ozone-platform=wayland` dan
+`--disable-gpu` (render lewat CPU, cukup untuk halaman statis ini).
 
 ## 2. Provider online schedule sync — REQ-F-004 (DIKONFIRMASI)
 
