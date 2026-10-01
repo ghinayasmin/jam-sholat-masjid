@@ -9,6 +9,8 @@ Sholat Berbasis Web untuk Masjid" (Prodi Ilmu Komputer UGM).
 Status implementasi lengkap per-requirement: lihat `docs/SRS_COMPLIANCE.md`.
 Alasan di balik tiap keputusan desain yang tidak literal tertulis di SRS:
 lihat `docs/DECISIONS.md`.
+Panduan tampilan (warna, huruf, komponen layar jamaah & panel takmir):
+lihat `docs/DESIGN.md`.
 
 ## 1. Project Overview
 
