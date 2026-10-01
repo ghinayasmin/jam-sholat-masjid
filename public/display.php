@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" translate="no">
 <head>
 <meta charset="UTF-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>Jam Sholat Masjid</title>
 <link rel="stylesheet" href="/assets/css/display.css">
