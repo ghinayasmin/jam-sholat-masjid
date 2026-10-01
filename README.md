@@ -171,7 +171,13 @@ php tests/integration/test_core_integration.php
 
 # Unit test Python (motion detection, alarm scheduling, retention)
 python3 -m unittest discover -s tests/unit -p "test_*.py" -v
+
+# Unit test JavaScript (logika layar jamaah: berikutnya, pengingat, adzan, Jumat)
+TZ=Asia/Jakarta node tests/unit/test_display_logic.js
 ```
+
+Untuk melihat layar pengingat atau adzan tanpa menunggu waktu sholat, buka
+`display.php?jam=17:28` (jam disimulasikan; tanggal tetap hari ini).
 
 Semua test di atas **tidak butuh hardware fisik** (webcam/speaker/Raspberry
 Pi) — memakai frame sintetis dan mock audio player. Total 58 assertion,
@@ -195,13 +201,15 @@ SRS): checklist ada di `docs/SRS_COMPLIANCE.md`.
 ## 12. Deployment
 
 Sudah tercakup di `scripts/install.sh` (bagian 5 di atas). Untuk
-memperbarui instalasi yang sudah ada (mis. setelah `git pull`):
+memperbarui instalasi yang sudah ada (mis. setelah `git pull`), jalankan dari
+folder project versi terbaru:
 
 ```bash
-sudo rsync -a --exclude 'storage/jamsholat.db*' --exclude 'config/config.php' --exclude 'config/.env' \
-    . /opt/jamsholat/
-sudo systemctl restart jamsholat-camera jamsholat-alarm apache2
+sudo bash scripts/update.sh
 ```
+
+Skrip ini menyalin kode ke `/opt/jamsholat` tanpa menyentuh database, rekaman
+kamera, backup, upload, dan konfigurasi lokal, lalu memulai ulang layanan.
 
 ## 13. Troubleshooting
 

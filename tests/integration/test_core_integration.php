@@ -115,5 +115,31 @@ check('Restore: saldo pulih ke 70000', $finRepo->currentBalance() === 70000);
 check('Restore: mosque_name pulih (bukan "BERUBAH")', $settingsRepo->get()['mosque_name'] !== 'BERUBAH');
 check('Restore: file publikasi tetap ada', is_file($tmpDir . '/publications/p1.jpg'));
 
+// --- Pengaturan layar jamaah (pengingat adzan, visibilitas kas) ---
+$s = $settingsRepo->get();
+check('Settings: pengingat bawaan nyala 10 menit, Jumat 30', (int) $s['reminder_enabled'] === 1
+    && (int) $s['reminder_minutes'] === 10 && (int) $s['reminder_friday_minutes'] === 30);
+check('Settings: kas bawaan TIDAK tampil di layar jamaah', (int) $s['show_finance_on_display'] === 0);
+$settingsRepo->update(['reminder_minutes' => 15, 'show_finance_on_display' => 1]);
+$s = $settingsRepo->get();
+check('Settings: pengingat & kas bisa diubah', (int) $s['reminder_minutes'] === 15 && (int) $s['show_finance_on_display'] === 1);
+
+// --- Migrasi: database lama (sebelum kolom baru) dilengkapi otomatis ---
+$legacyDb = $tmpDir . '/legacy.db';
+$legacy = new PDO('sqlite:' . $legacyDb);
+$legacy->exec("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY CHECK (id = 1),
+    mosque_name TEXT NOT NULL DEFAULT 'Masjid', updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)");
+$legacy->exec("INSERT INTO mosque_settings (id, mosque_name) VALUES (1, 'Masjid Lama')");
+$legacy = null;
+App\Db\Database::reset();
+App\Config::override(['db_path' => $legacyDb]);
+$s = (new SettingsRepository())->get();
+check('Migrasi: kolom pengingat ditambahkan dengan nilai bawaan', (int) $s['reminder_minutes'] === 10
+    && $s['reminder_message'] === 'Mari bersiap dan mengambil air wudhu');
+check('Migrasi: kas bawaan tersembunyi', (int) $s['show_finance_on_display'] === 0);
+check('Migrasi: data lama tetap utuh', $s['mosque_name'] === 'Masjid Lama');
+App\Db\Database::reset();
+check('Migrasi: aman dijalankan ulang', (int) (new SettingsRepository())->get()['reminder_friday_minutes'] === 30);
+
 echo "\n=== $total assertion, " . ($failures === 0 ? 'SEMUA LULUS' : "$failures GAGAL") . " ===\n";
 exit($failures === 0 ? 0 : 1);

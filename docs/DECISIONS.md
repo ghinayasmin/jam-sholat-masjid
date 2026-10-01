@@ -149,3 +149,37 @@ JSON yang sama, supaya satu file = satu unit backup yang mandiri (tidak
 butuh ekstensi PHP `ZipArchive` yang belum tentu terpasang). Motion events
 (rekaman kamera) sengaja TIDAK termasuk — lihat SRS §5.6 yang hanya
 menyebut "pengaturan, laporan keuangan, dan publikasi".
+
+## 14. Kas masjid tidak tampil di layar jamaah secara bawaan — REQ-F-012 (DEVIASI, DIKONFIRMASI)
+
+**Isu:** REQ-F-012 meminta laporan keuangan tampil di layar jamaah. Saat
+meninjau desain, pengguna (tim capstone) menilai saldo dan rincian kas sebagai
+informasi internal pengurus yang tidak pantas dipajang ke publik.
+
+**Keputusan:** fitur tetap ada, tetapi dikendalikan sakelar
+`mosque_settings.show_finance_on_display` yang **bawaannya 0 (mati)**. Saat
+mati, `api/financial.php` (endpoint publik) hanya menjawab
+`{"enabled": false}` tanpa angka apa pun, jadi data kas juga tidak bisa
+dibaca dari jaringan lewat API. Takmir bisa menyalakannya bila masjid memang
+ingin transparan ke jamaah; saat menyala, layar hanya menampilkan saldo.
+
+## 15. Desain ulang layar jamaah & pengingat sebelum adzan (DIKONFIRMASI)
+
+**Keputusan:** arah desain "Malam teduh" (latar gelap, tekstur batik kawung
+7%, satu warna aksen kuningan, font Plus Jakarta Sans + Reem Kufi yang
+disimpan lokal di `public/assets/fonts/` beserta lisensi OFL-nya). Mockup dan
+referensi yang disetujui: lihat riwayat diskusi desain 2026-10-01.
+
+Perilaku otomatis yang dipilih pengguna:
+- **Pengingat** layar penuh dengan hitung mundur, bawaan 10 menit sebelum
+  setiap adzan; Dzuhur hari Jumat 30 menit dengan pesan "Persiapan sholat
+  Jumat". Bisa dimatikan/diubah (`reminder_*` di `mosque_settings`).
+- **Layar adzan** selama 3 menit sejak waktu adzan.
+- **Tidak ada** hitung mundur iqomah dan layar redup saat sholat di tampilan,
+  karena lama sholat tidak bisa diketahui pasti. Suara iqomah dari layanan
+  alarm (REQ-F-031) tetap berjalan seperti sebelumnya.
+
+Perbaikan yang ikut masuk: `api/schedule.php` kini memakai tanggal lokal
+masjid (sebelumnya tanggal UTC, sehingga jam 00:00–07:00 WIB tanggal,
+Hijriah, dan info puasa masih milik hari kemarin).
+

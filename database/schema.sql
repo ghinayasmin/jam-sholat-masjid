@@ -17,6 +17,13 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     image_retention_days            INTEGER NOT NULL DEFAULT 30,
     image_retention_storage_pct     INTEGER NOT NULL DEFAULT 80,
     online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),
+    -- Layar jamaah: pengingat sebelum adzan & visibilitas kas (lihat DECISIONS.md #14, #15).
+    -- Kolom yang sama ditambahkan ke database lama lewat Database::migrate().
+    reminder_enabled                INTEGER NOT NULL DEFAULT 1 CHECK (reminder_enabled IN (0,1)),
+    reminder_minutes                INTEGER NOT NULL DEFAULT 10,
+    reminder_friday_minutes         INTEGER NOT NULL DEFAULT 30,
+    reminder_message                TEXT NOT NULL DEFAULT 'Mari bersiap dan mengambil air wudhu',
+    show_finance_on_display         INTEGER NOT NULL DEFAULT 0 CHECK (show_finance_on_display IN (0,1)),
     last_sync_at                    DATETIME,
     last_sync_status                TEXT,
     updated_at                      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

@@ -15,7 +15,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-006 | Prayer Calculation Method | ✅ | Sudut Kemenag (Fajr 20°/Isha 18°), 100% lokal | ✅ |
 | REQ-F-010 | Fullscreen Display | 🔍 | `display.php` + kiosk service | Kode teruji (HTTP 200, JS jam berjalan); mode kiosk fullscreen fisik hanya bisa diuji di Pi sungguhan |
 | REQ-F-011 | Publication Slideshow | ✅ | `display.js`, `api/publications.php` | ✅ upload→tampil di API teruji end-to-end |
-| REQ-F-012 | Financial Report Display | ✅ | `display.js`, `api/financial.php` | ✅ teruji end-to-end |
+| REQ-F-012 | Financial Report Display | ⚠️ | `display.js`, `api/financial.php`, sakelar `show_finance_on_display` | Fitur ada, tapi **bawaan mati** atas permintaan pengguna (data kas internal). Lihat DECISIONS.md #14 |
 | REQ-F-013 | Sunnah Fasting Info | ✅ | `ScheduleEngine::getFastingInfo()` | ✅ Ayyamul Bidh (13/14/15) & Senin-Kamis teruji |
 | REQ-F-020 | System Time & Date Setting | ⚠️ | `settings_time.php` (via `sudo date`) | Syntax & flow teruji; eksekusi `sudo date` sungguhan butuh sudoers ter-install (hanya di Pi) |
 | REQ-F-021 | Location & Madzhab Setting | ✅ | `settings_location.php` | ✅ teruji end-to-end via HTTP |

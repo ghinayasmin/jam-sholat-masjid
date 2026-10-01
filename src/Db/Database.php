@@ -40,10 +40,41 @@ final class Database
             $pdo->exec('PRAGMA foreign_keys = ON');
             $pdo->exec('PRAGMA busy_timeout = 5000');
 
+            self::migrate($pdo);
+
             self::$instance = $pdo;
         }
 
         return self::$instance;
+    }
+
+    /**
+     * Kolom yang ditambahkan setelah rilis awal. Database yang sudah terpasang
+     * (misalnya di Pi) dibuat dari schema.sql versi lama, jadi kolom ini
+     * ditambahkan di sini bila belum ada. Definisinya harus sama dengan schema.sql.
+     */
+    private const ADDED_SETTINGS_COLUMNS = [
+        'reminder_enabled' => 'INTEGER NOT NULL DEFAULT 1 CHECK (reminder_enabled IN (0,1))',
+        'reminder_minutes' => 'INTEGER NOT NULL DEFAULT 10',
+        'reminder_friday_minutes' => 'INTEGER NOT NULL DEFAULT 30',
+        'reminder_message' => "TEXT NOT NULL DEFAULT 'Mari bersiap dan mengambil air wudhu'",
+        'show_finance_on_display' => 'INTEGER NOT NULL DEFAULT 0 CHECK (show_finance_on_display IN (0,1))',
+    ];
+
+    private static function migrate(PDO $pdo): void
+    {
+        $existing = array_column(
+            $pdo->query('PRAGMA table_info(mosque_settings)')->fetchAll(),
+            'name'
+        );
+        if ($existing === []) {
+            return; // tabel belum dibuat (schema.sql belum dijalankan)
+        }
+        foreach (self::ADDED_SETTINGS_COLUMNS as $column => $definition) {
+            if (!in_array($column, $existing, true)) {
+                $pdo->exec("ALTER TABLE mosque_settings ADD COLUMN $column $definition");
+            }
+        }
     }
 
     /** Untuk testing: paksa reset koneksi supaya bisa connect ke DB lain. */

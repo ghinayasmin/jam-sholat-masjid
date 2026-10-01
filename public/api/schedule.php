@@ -10,7 +10,12 @@ use App\Schedule\ScheduleEngine;
 header('Content-Type: application/json; charset=utf-8');
 
 // REQ-F-010, REQ-F-013: hanya baca, tanpa auth (dipakai layar jamaah di LAN).
-$date = $_GET['date'] ?? gmdate('Y-m-d');
+$settings = (new SettingsRepository())->get();
+
+// Tanggal bawaan = tanggal lokal masjid, bukan UTC. Basis internal PHP adalah UTC
+// (bootstrap.php), jadi tanpa offset ini jam 00:00–07:00 WIB masih dianggap kemarin.
+$localNow = time() + (int) round((float) $settings['timezone_offset_hours'] * 3600);
+$date = $_GET['date'] ?? gmdate('Y-m-d', $localNow);
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Format tanggal tidak valid, gunakan YYYY-MM-DD.']);
@@ -21,7 +26,6 @@ try {
     $engine = new ScheduleEngine();
     $schedule = $engine->getScheduleForDate($date);
     $fastingInfo = $engine->getFastingInfo($date);
-    $settings = (new SettingsRepository())->get();
 
     echo json_encode([
         'success' => true,
@@ -39,6 +43,13 @@ try {
         'is_ayyamul_bidh' => $fastingInfo['is_ayyamul_bidh'],
         'mosque_name' => $settings['mosque_name'],
         'mosque_address' => $settings['mosque_address'],
+        'reminder' => [
+            'enabled' => (int) $settings['reminder_enabled'] === 1,
+            'minutes' => (int) $settings['reminder_minutes'],
+            'friday_minutes' => (int) $settings['reminder_friday_minutes'],
+            'message' => $settings['reminder_message'],
+        ],
+        'show_finance' => (int) $settings['show_finance_on_display'] === 1,
     ], JSON_UNESCAPED_UNICODE);
 } catch (\Throwable $e) {
     error_log('[api/schedule] ' . $e->getMessage());

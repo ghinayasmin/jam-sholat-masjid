@@ -41,6 +41,8 @@ final class SettingsRepository
             'azan_iqomah_interval_minutes', 'image_retention_days',
             'image_retention_storage_pct', 'online_sync_enabled',
             'last_sync_at', 'last_sync_status',
+            'reminder_enabled', 'reminder_minutes', 'reminder_friday_minutes',
+            'reminder_message', 'show_finance_on_display',
         ];
         $set = [];
         $params = [];
