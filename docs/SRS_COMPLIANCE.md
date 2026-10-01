@@ -19,10 +19,10 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-013 | Sunnah Fasting Info | ✅ | `ScheduleEngine::getFastingInfo()` | ✅ Ayyamul Bidh (13/14/15) & Senin-Kamis teruji |
 | REQ-F-020 | System Time & Date Setting | ⚠️ | `settings_time.php` (via `sudo date`) | Syntax & flow teruji; eksekusi `sudo date` sungguhan butuh sudoers ter-install (hanya di Pi) |
 | REQ-F-021 | Location & Madzhab Setting | ✅ | `settings_location.php` | ✅ teruji end-to-end via HTTP |
-| REQ-F-022 | Publication Upload | ✅ | `publications.php` | ✅ teruji: JPEG valid diterima, file non-image ditolak |
+| REQ-F-022 | Publication Upload | ✅ | `publications.php`, `publications_add.php` (poster atau teks, tanggal mulai/selesai) | ✅ teruji: JPEG valid diterima, file non-image ditolak; pengumuman teks & terjadwal teruji via HTTP |
 | REQ-F-023 | Camera Footage Access | ✅ | `camera.php`, `capture.php`, `api/motion_events.php` | Kode teruji sintaks & auth-gate; perlu data motion_events sungguhan dari kamera fisik untuk uji visual penuh |
-| REQ-F-024 | Financial Report Update | ✅ | `financial.php` | ✅ teruji end-to-end |
-| REQ-F-025 | Adzan-Iqomah Interval Setting | ✅ | `settings_location.php`, `mosque_settings.azan_iqomah_interval_minutes` | ✅ dipakai `AlarmScheduler`, teruji |
+| REQ-F-024 | Financial Report Update | ✅ | `financial.php`, `financial_add.php` | ✅ teruji end-to-end via HTTP (simpan, validasi, hapus) |
+| REQ-F-025 | Adzan-Iqomah Interval Setting | ✅ | `iqomah.php`, `mosque_settings.azan_iqomah_interval_minutes` | ✅ dipakai `AlarmScheduler`, teruji |
 | REQ-F-026 | Mosque Profile Setting | ✅ | `mosque_profile.php` | Syntax teruji |
 | REQ-F-030 | Adzan Alarm | ✅ | `alarm_service.py` (`AlarmScheduler`) | ✅ 12 assertion Python teruji (trigger tepat waktu, tidak dobel) |
 | REQ-F-031 | Iqomah Alarm | ✅ | `alarm_service.py` | ✅ jarak iqomah teruji |
@@ -57,7 +57,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-NF-130 | Cross-Device OS Support | ✅ | Tidak ada kode spesifik model Pi; semua path relatif/config-driven |
 | REQ-NF-131 | Browser-Based Access | ✅ | Aplikasi 100% web (HTML/JS/PHP), tanpa aplikasi native |
 | REQ-NF-140 | Readable Public Display | ✅ | `display.css` pakai unit `vw`/`vh`, font besar, kontras tinggi |
-| REQ-NF-141 | Non-Technical Admin Usability | ✅ | `admin.css` sederhana, label Bahasa Indonesia jelas, konfirmasi sebelum aksi destruktif |
+| REQ-NF-141 | Non-Technical Admin Usability | ✅ | Panel untuk HP dengan 5 tab, bahasa pengurus, pilihan siap ketuk, istilah teknis dipisah ke halaman Lokasi, konfirmasi sebelum hapus/pulihkan (DECISIONS.md #16) |
 
 ## Ringkasan
 

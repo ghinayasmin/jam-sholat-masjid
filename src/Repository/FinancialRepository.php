@@ -39,6 +39,20 @@ final class FinancialRepository
         return (int) $row['masuk'] - (int) $row['keluar'];
     }
 
+    /** Total masuk & keluar untuk satu bulan ('YYYY-MM'). */
+    public function monthTotals(string $yearMonth): array
+    {
+        $stmt = Database::connection()->prepare(
+            "SELECT
+                COALESCE(SUM(CASE WHEN type = 'masuk' THEN amount ELSE 0 END), 0) AS masuk,
+                COALESCE(SUM(CASE WHEN type = 'keluar' THEN amount ELSE 0 END), 0) AS keluar
+             FROM financial_entries WHERE substr(entry_date, 1, 7) = :ym"
+        );
+        $stmt->execute(['ym' => $yearMonth]);
+        $row = $stmt->fetch();
+        return ['masuk' => (int) $row['masuk'], 'keluar' => (int) $row['keluar']];
+    }
+
     public function create(string $entryDate, string $description, string $type, int $amount, ?int $createdBy): int
     {
         $stmt = Database::connection()->prepare(

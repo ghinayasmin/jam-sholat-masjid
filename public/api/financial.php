@@ -18,23 +18,11 @@ try {
         exit;
     }
 
-    $repo = new FinancialRepository();
-    $entries = $repo->recent(10);
-
-    $out = array_map(static function (array $e): array {
-        return [
-            'date' => $e['entry_date'],
-            'description' => $e['description'],
-            'type' => $e['type'],
-            'amount' => (int) $e['amount'],
-        ];
-    }, $entries);
-
+    // Layar jamaah hanya menampilkan saldo; rincian transaksi tetap internal.
     echo json_encode([
         'success' => true,
         'enabled' => true,
-        'saldo_berjalan' => $repo->currentBalance(),
-        'entries' => $out,
+        'saldo_berjalan' => (new FinancialRepository())->currentBalance(),
     ], JSON_UNESCAPED_UNICODE);
 } catch (\Throwable $e) {
     error_log('[api/financial] ' . $e->getMessage());

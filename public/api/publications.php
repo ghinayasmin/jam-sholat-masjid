@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../bootstrap.php';
 
+use App\LocalTime;
 use App\Repository\PublicationRepository;
 
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $items = (new PublicationRepository())->allActive();
+    $items = (new PublicationRepository())->showingOn(LocalTime::today());
     $out = array_map(static function (array $p): array {
         return [
             'id' => (int) $p['id'],
-            'url' => '/uploads/publications/' . rawurlencode(basename($p['file_path'])),
+            // null untuk pengumuman teks saja (tanpa poster)
+            'url' => $p['file_path'] !== '' ? '/uploads/publications/' . rawurlencode(basename($p['file_path'])) : null,
             'caption' => $p['caption'],
             'order' => (int) $p['display_order'],
         ];

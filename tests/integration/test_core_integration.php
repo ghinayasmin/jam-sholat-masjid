@@ -33,11 +33,11 @@ use App\Repository\SettingsRepository;
 use App\Schedule\ScheduleEngine;
 
 $tmpDir = __DIR__ . '/tmp';
+// Bersihkan sisa run sebelumnya (termasuk subfolder) supaya test selalu mulai dari kosong.
 if (is_dir($tmpDir)) {
-    array_map('unlink', glob($tmpDir . '/*'));
-} else {
-    mkdir($tmpDir, 0775, true);
+    exec('rm -rf ' . escapeshellarg($tmpDir));
 }
+mkdir($tmpDir, 0775, true);
 mkdir($tmpDir . '/publications', 0775, true);
 mkdir($tmpDir . '/backups', 0775, true);
 mkdir($tmpDir . '/sessions', 0775, true);

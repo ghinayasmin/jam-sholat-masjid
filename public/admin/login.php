@@ -24,37 +24,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = (string) ($_POST['password'] ?? '');
 
     if ($username === '' || $password === '') {
-        $error = 'Username dan password wajib diisi.';
+        $error = 'Nama pengguna dan kata sandi wajib diisi.';
     } elseif ($auth->attempt($username, $password)) {
         header('Location: /admin/dashboard.php');
         exit;
     } else {
-        $error = 'Username atau password salah.';
+        $error = 'Nama pengguna atau kata sandi salah.';
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" translate="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Login Admin — Panel Masjid</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#F2F3EF">
+<title>Masuk · Panel Takmir</title>
 <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
-<body class="login-body">
-<form method="post" class="login-card">
-    <h1>🕌 Login Takmir</h1>
-    <?php if ($error !== null): ?>
-        <div class="flash flash-error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-    <?= Csrf::field() ?>
-    <label>Username
-        <input type="text" name="username" autofocus required autocomplete="username">
-    </label>
-    <label>Password
-        <input type="password" name="password" required autocomplete="current-password">
-    </label>
-    <button type="submit">Masuk</button>
-</form>
+<body>
+<main class="login">
+    <form method="post">
+        <div class="brand">
+            <h1>Panel Takmir</h1>
+            <p>Masuk untuk mengatur layar jamaah masjid.</p>
+        </div>
+        <?php if ($error !== null): ?>
+            <div class="flash flash-error" role="alert"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+        <?= Csrf::field() ?>
+        <label class="field" for="username"><span class="field-label">Nama pengguna</span>
+            <input type="text" id="username" name="username" required autocomplete="username" autocapitalize="none" autocorrect="off">
+        </label>
+        <label class="field" for="password"><span class="field-label">Kata sandi</span>
+            <input type="password" id="password" name="password" required autocomplete="current-password">
+        </label>
+        <button type="submit" class="btn">Masuk</button>
+        <p class="muted" style="margin:0;font-size:14px">Lupa kata sandi? Minta teknisi menjalankan <code>reset_admin_password.sh</code> di perangkat.</p>
+    </form>
+</main>
 </body>
 </html>

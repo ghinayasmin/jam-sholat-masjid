@@ -26,26 +26,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settingsRepo->update(['mosque_name' => $name, 'mosque_address' => $address]);
         $_SESSION['flash_success'] = 'Profil masjid berhasil disimpan.';
     }
-    header('Location: /admin/mosque_profile.php');
+    header('Location: ' . ($name === '' ? '/admin/mosque_profile.php' : '/admin/settings.php'));
     exit;
 }
 
 $settings = $settingsRepo->get();
 
-$pageTitle = 'Profil Masjid';
-$activeMenu = 'profile';
+$pageTitle = 'Profil masjid';
+$backHref = '/admin/settings.php';
+$backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';
 ?>
 
-<form method="post" class="card form-card">
+<form method="post" class="stack">
     <?= Csrf::field() ?>
-    <label>Nama Masjid
-        <input type="text" name="mosque_name" value="<?= htmlspecialchars($settings['mosque_name']) ?>" required>
-    </label>
-    <label>Alamat Masjid
-        <textarea name="mosque_address" rows="3"><?= htmlspecialchars($settings['mosque_address']) ?></textarea>
-    </label>
-    <button type="submit">Simpan</button>
+    <div class="field">
+        <label class="field-label" for="mosque_name">Nama masjid</label>
+        <input type="text" id="mosque_name" name="mosque_name" maxlength="80" value="<?= htmlspecialchars($settings['mosque_name']) ?>" required>
+        <p class="hint">Tampil besar di pojok kiri atas layar jamaah.</p>
+    </div>
+    <div class="field">
+        <label class="field-label" for="mosque_address">Alamat <span class="opt">(boleh kosong)</span></label>
+        <textarea id="mosque_address" name="mosque_address" rows="3" maxlength="160"><?= htmlspecialchars($settings['mosque_address']) ?></textarea>
+        <p class="hint">Tampil kecil di bawah nama masjid.</p>
+    </div>
+    <div class="foot"><button type="submit" class="btn">Simpan</button></div>
 </form>
 
 <?php require __DIR__ . '/_footer.php'; ?>

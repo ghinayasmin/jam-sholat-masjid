@@ -6,66 +6,106 @@ require __DIR__ . '/../../bootstrap.php';
 
 use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
-use App\Repository\SettingsRepository;
+use App\LocalTime;
 use App\Repository\FinancialRepository;
 use App\Repository\MotionEventRepository;
+use App\Repository\PublicationRepository;
+use App\Repository\SettingsRepository;
 use App\Schedule\ScheduleEngine;
+use App\View\Format;
+use App\View\Icon;
 
 $auth = new AuthManager();
 AuthMiddleware::requireLogin($auth);
 
 $settings = (new SettingsRepository())->get();
-$schedule = (new ScheduleEngine())->getScheduleForToday();
+$today = LocalTime::today();
+$engine = new ScheduleEngine();
+$schedule = $engine->getScheduleForDate($today);
 $balance = (new FinancialRepository())->currentBalance();
-$recentMotion = (new MotionEventRepository())->list(null, 5);
+$showingCount = count((new PublicationRepository())->showingOn($today));
+$motionToday = count((new MotionEventRepository())->list($today, 500));
 
-$pageTitle = 'Dashboard';
-$activeMenu = 'dashboard';
+// Waktu sholat berikutnya (hanya waktu adzan; Terbit bukan waktu sholat).
+$nowMinutes = (int) gmdate('G', LocalTime::now()) * 60 + (int) gmdate('i', LocalTime::now());
+$toMinutes = static fn (string $hhmm): int => (int) substr($hhmm, 0, 2) * 60 + (int) substr($hhmm, 3, 2);
+$isFriday = gmdate('w', LocalTime::now()) === '5';
+$names = ['fajr' => 'Subuh', 'dhuhr' => $isFriday ? 'Jumat' : 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+$next = null;
+foreach ($names as $key => $name) {
+    if ($toMinutes($schedule[$key]) > $nowMinutes) {
+        $next = ['name' => $name, 'time' => $schedule[$key], 'in' => $toMinutes($schedule[$key]) - $nowMinutes, 'tomorrow' => false];
+        break;
+    }
+}
+if ($next === null) {
+    $tomorrow = $engine->getScheduleForDate(gmdate('Y-m-d', LocalTime::now() + 86400));
+    $next = ['name' => 'Subuh', 'time' => $tomorrow['fajr'], 'in' => 1440 - $nowMinutes + $toMinutes($tomorrow['fajr']), 'tomorrow' => true];
+}
+$inText = $next['in'] >= 60
+    ? intdiv($next['in'], 60) . ' jam' . ($next['in'] % 60 ? ' ' . $next['in'] % 60 . ' menit' : '') . ' lagi'
+    : $next['in'] . ' menit lagi';
+$reminderAt = null;
+if ((int) $settings['reminder_enabled'] === 1) {
+    $lead = ($next['name'] === 'Jumat') ? (int) $settings['reminder_friday_minutes'] : (int) $settings['reminder_minutes'];
+    $at = $toMinutes($next['time']) - $lead;
+    $reminderAt = sprintf('%02d:%02d', intdiv(($at + 1440) % 1440, 60), ($at + 1440) % 60);
+}
+
+$rows = [
+    ['fajr', 'Subuh'], ['sunrise', 'Terbit'], ['dhuhr', $isFriday ? 'Jumat' : 'Dzuhur'],
+    ['asr', 'Ashar'], ['maghrib', 'Maghrib'], ['isha', 'Isya'],
+];
+
+$syncOk = $settings['last_sync_status'] === null || stripos((string) $settings['last_sync_status'], 'gagal') === false;
+
+$pageTitle = "Assalamu'alaikum";
+$pageSubtitle = $settings['mosque_name'] . ' · ' . Format::longDate($today);
+$activeTab = 'home';
 require __DIR__ . '/_header.php';
 ?>
 
-<div class="grid grid-3">
-    <div class="card">
-        <h2>Jadwal Hari Ini</h2>
-        <p class="hijri"><?= htmlspecialchars($schedule['hijri_date']) ?></p>
-        <table class="schedule-table">
-            <tr><td>Subuh</td><td><?= htmlspecialchars($schedule['fajr']) ?></td></tr>
-            <tr><td>Terbit</td><td><?= htmlspecialchars($schedule['sunrise']) ?></td></tr>
-            <tr><td>Dzuhur</td><td><?= htmlspecialchars($schedule['dhuhr']) ?></td></tr>
-            <tr><td>Ashar</td><td><?= htmlspecialchars($schedule['asr']) ?></td></tr>
-            <tr><td>Maghrib</td><td><?= htmlspecialchars($schedule['maghrib']) ?></td></tr>
-            <tr><td>Isya</td><td><?= htmlspecialchars($schedule['isha']) ?></td></tr>
-        </table>
-        <p class="muted">Sumber: <?= $schedule['source'] === 'online' ? 'Online (AlAdhan)' : 'Lokal (offline)' ?></p>
-    </div>
-
-    <div class="card">
-        <h2>Status Sistem</h2>
-        <p><strong>Masjid:</strong> <?= htmlspecialchars($settings['mosque_name'] ?: '(belum diisi)') ?></p>
-        <p><strong>Madzhab:</strong> <?= htmlspecialchars(ucfirst($settings['madzhab'])) ?></p>
-        <p><strong>Jarak Adzan-Iqomah:</strong> <?= (int) $settings['azan_iqomah_interval_minutes'] ?> menit</p>
-        <p><strong>Sinkronisasi waktu (NTP):</strong> dikelola otomatis oleh sistem operasi (systemd-timesyncd)</p>
-        <p><strong>Sync jadwal online terakhir:</strong>
-            <?= $settings['last_sync_at'] ? htmlspecialchars($settings['last_sync_at']) . ' UTC' : 'belum pernah' ?>
-        </p>
-        <?php if ($settings['last_sync_status']): ?>
-            <p class="muted"><?= htmlspecialchars($settings['last_sync_status']) ?></p>
-        <?php endif; ?>
-    </div>
-
-    <div class="card">
-        <h2>Ringkasan</h2>
-        <p><strong>Saldo kas masjid:</strong> Rp <?= number_format($balance, 0, ',', '.') ?></p>
-        <p><strong>Deteksi gerakan terbaru:</strong> <?= count($recentMotion) ?> kejadian (5 terakhir)</p>
-        <ul class="motion-mini-list">
-            <?php foreach ($recentMotion as $m): ?>
-                <li><?= htmlspecialchars($m['detected_at']) ?></li>
-            <?php endforeach; ?>
-            <?php if ($recentMotion === []): ?>
-                <li class="muted">Belum ada deteksi gerakan.</li>
-            <?php endif; ?>
-        </ul>
-    </div>
+<div class="next-card">
+    <div><div class="s">Berikutnya<?= $next['tomorrow'] ? ' (besok)' : '' ?></div><div class="w"><?= Format::e($next['name'] . ' ' . $next['time']) ?></div></div>
+    <div class="c"><?= Format::e($inText) ?></div>
+    <?php if ($reminderAt !== null): ?>
+        <div class="r">Pengingat tampil di layar jamaah pukul <?= $reminderAt ?></div>
+    <?php else: ?>
+        <div class="r">Pengingat sebelum adzan sedang dimatikan</div>
+    <?php endif; ?>
 </div>
+
+<section class="group" aria-labelledby="sched-label">
+    <div class="label" id="sched-label">Jadwal hari ini</div>
+    <div class="sched">
+        <?php foreach ($rows as [$key, $label]):
+            $cls = '';
+            if (!$next['tomorrow'] && $label === $next['name']) {
+                $cls = 'nx';
+            } elseif ($next['tomorrow'] || $toMinutes($schedule[$key]) <= $nowMinutes) {
+                $cls = 'past';
+            } ?>
+            <div class="<?= $cls ?>"><span><?= $label ?></span><b><?= Format::e($schedule[$key]) ?></b></div>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<section class="group" aria-labelledby="tasks-label">
+    <div class="label" id="tasks-label">Yang sering dilakukan</div>
+    <div class="tiles">
+        <a class="tile" href="/admin/publications_add.php"><?= Icon::svg('announce') ?><div><b>Pasang pengumuman</b><small><?= $showingCount ?> sedang tampil</small></div></a>
+        <a class="tile" href="/admin/financial_add.php?type=masuk"><?= Icon::svg('cash') ?><div><b>Catat kas</b><small>Saldo <?= Format::e(Format::rupiahShort($balance)) ?></small></div></a>
+        <a class="tile" href="/admin/reminder.php"><?= Icon::svg('bell') ?><div><b>Pengingat adzan</b><small><?= (int) $settings['reminder_enabled'] === 1 ? (int) $settings['reminder_minutes'] . ' menit sebelum' : 'Dimatikan' ?></small></div></a>
+        <a class="tile" href="/admin/camera.php?date=<?= $today ?>"><?= Icon::svg('camera') ?><div><b>Rekaman kamera</b><small><?= $motionToday ?> gerakan hari ini</small></div></a>
+    </div>
+</section>
+
+<section class="group" aria-labelledby="sys-label">
+    <div class="label" id="sys-label">Kondisi sistem</div>
+    <div class="card">
+        <a class="row" href="/display.php" target="_blank" rel="noopener"><span class="dot"></span><span class="k">Layar jamaah<small>Ketuk untuk melihat tampilannya</small></span><span class="v ok">Buka</span></a>
+        <div class="row"><span class="dot<?= $syncOk ? '' : ' warn' ?>"></span><span class="k">Jadwal sholat<small><?= $schedule['source'] === 'online' ? 'Dicocokkan dengan jadwal online' : 'Dihitung di perangkat (offline)' ?></small></span><span class="v<?= $syncOk ? ' ok' : '' ?>"><?= $syncOk ? 'Normal' : 'Cek' ?></span></div>
+    </div>
+</section>
 
 <?php require __DIR__ . '/_footer.php'; ?>

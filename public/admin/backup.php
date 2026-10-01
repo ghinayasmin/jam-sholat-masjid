@@ -23,21 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'create') {
         try {
             $backup = $backupMgr->createBackup('manual');
-            $_SESSION['flash_success'] = 'Backup berhasil dibuat: ' . $backup['file_name'];
+            $_SESSION['flash_success'] = 'Cadangan berhasil dibuat. Unduh dan simpan di tempat lain agar aman.';
         } catch (\Throwable $e) {
             error_log('[backup create] ' . $e->getMessage());
-            $_SESSION['flash_error'] = 'Gagal membuat backup.';
+            $_SESSION['flash_error'] = 'Cadangan gagal dibuat. Coba lagi.';
         }
     } elseif ($action === 'restore') {
         $file = $_FILES['backup_file'] ?? null;
         if ($file === null || $file['error'] !== UPLOAD_ERR_OK) {
-            $_SESSION['flash_error'] = 'Pilih file backup (.json) yang valid.';
+            $_SESSION['flash_error'] = 'Pilih file cadangan (.json) terlebih dulu.';
         } else {
             try {
                 $backupMgr->restoreFromFile($file['tmp_name']);
-                $_SESSION['flash_success'] = 'Restore berhasil. Data telah dipulihkan.';
+                $_SESSION['flash_success'] = 'Data berhasil dipulihkan dari cadangan.';
             } catch (\Throwable $e) {
-                $_SESSION['flash_error'] = 'Restore gagal: ' . $e->getMessage();
+                $_SESSION['flash_error'] = 'Pemulihan gagal, data tidak diubah. ' . $e->getMessage();
             }
         }
     }
@@ -68,55 +68,48 @@ if (isset($_GET['download'])) {
 
 $backups = $backupRepo->list();
 
-$pageTitle = 'Backup & Restore';
-$activeMenu = 'backup';
+$pageTitle = 'Cadangan data';
+$backHref = '/admin/settings.php';
+$backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';
 ?>
 
-<div class="card">
-    <h2>Buat Backup Baru</h2>
-    <p class="muted">Backup mencakup: pengaturan masjid, laporan keuangan, dan publikasi. Rekaman kamera
-        TIDAK termasuk (volumenya besar dan bisa dilihat langsung di menu Rekaman Kamera).</p>
-    <form method="post">
-        <?= Csrf::field() ?>
-        <input type="hidden" name="action" value="create">
-        <button type="submit">Buat Backup Sekarang</button>
-    </form>
-</div>
+<div class="note">Cadangan berisi pengaturan masjid, catatan kas, dan pengumuman. Rekaman kamera tidak ikut.</div>
 
-<div class="card form-card">
-    <h2>Restore dari Backup</h2>
-    <p class="muted"><strong>Perhatian:</strong> restore akan menimpa pengaturan, laporan keuangan, dan publikasi
-        yang ada saat ini dengan isi file backup.</p>
-    <form method="post" enctype="multipart/form-data" onsubmit="return confirm('Yakin? Data saat ini akan ditimpa oleh isi backup.');">
-        <?= Csrf::field() ?>
-        <input type="hidden" name="action" value="restore">
-        <label>File Backup (.json)
-            <input type="file" name="backup_file" accept="application/json,.json" required>
-        </label>
-        <button type="submit" class="btn-danger">Restore</button>
-    </form>
-</div>
+<form method="post">
+    <?= Csrf::field() ?>
+    <input type="hidden" name="action" value="create">
+    <button type="submit" class="btn">Buat cadangan sekarang</button>
+</form>
 
-<div class="card">
-    <h2>Riwayat Backup</h2>
-    <table class="data-table">
-        <thead><tr><th>Nama File</th><th>Ukuran</th><th>Tipe</th><th>Dibuat</th><th>Aksi</th></tr></thead>
-        <tbody>
+<section class="group" aria-labelledby="hist-label">
+    <div class="label" id="hist-label">Riwayat cadangan</div>
+    <div class="card">
         <?php foreach ($backups as $b): ?>
-            <tr>
-                <td><?= htmlspecialchars($b['file_name']) ?></td>
-                <td><?= round((int) $b['size_bytes'] / 1024, 1) ?> KB</td>
-                <td><?= htmlspecialchars($b['type']) ?></td>
-                <td><?= htmlspecialchars($b['created_at']) ?></td>
-                <td><a href="?download=<?= (int) $b['id'] ?>" class="btn-small">Unduh</a></td>
-            </tr>
+            <a class="row" href="?download=<?= (int) $b['id'] ?>" style="grid-template-columns:minmax(0,1fr) auto">
+                <span class="k"><?= htmlspecialchars(\App\View\Format::shortDate(substr($b['created_at'], 0, 10))) ?>, <?= htmlspecialchars(substr($b['created_at'], 11, 5)) ?> UTC
+                    <small><?= $b['type'] === 'manual' ? 'Dibuat manual' : 'Otomatis' ?> · <?= round((int) $b['size_bytes'] / 1024, 1) ?> KB</small></span>
+                <span class="v ok">Unduh</span>
+            </a>
         <?php endforeach; ?>
         <?php if ($backups === []): ?>
-            <tr><td colspan="5" class="muted">Belum ada backup.</td></tr>
+            <div class="empty">Belum ada cadangan.</div>
         <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+    </div>
+</section>
+
+<section class="group" aria-labelledby="restore-label">
+    <div class="label" id="restore-label">Pulihkan dari cadangan</div>
+    <form method="post" enctype="multipart/form-data" class="stack" data-confirm="Data saat ini akan ditimpa isi file cadangan. Lanjutkan?">
+        <?= Csrf::field() ?>
+        <input type="hidden" name="action" value="restore">
+        <div class="note warn">Memulihkan akan <b>menimpa</b> pengaturan, catatan kas, dan pengumuman yang ada sekarang.</div>
+        <div class="field">
+            <label class="field-label" for="backup_file">File cadangan (.json)</label>
+            <input type="file" id="backup_file" name="backup_file" accept="application/json,.json" required class="input">
+        </div>
+        <button type="submit" class="btn danger">Pulihkan data</button>
+    </form>
+</section>
 
 <?php require __DIR__ . '/_footer.php'; ?>

@@ -28,8 +28,11 @@ final class AuthManager
             session_save_path($path);
         }
         session_name('jamsholat_admin');
+        // Pengurus membuka panel dari HP: sesi bertahan selama admin_session_days
+        // (bawaan 30 hari) agar tidak perlu login setiap kali. Lihat DECISIONS.md #16.
+        ini_set('session.gc_maxlifetime', (string) self::sessionLifetime());
         session_set_cookie_params([
-            'lifetime' => 0,
+            'lifetime' => self::sessionLifetime(),
             'path' => '/',
             'httponly' => true,
             'samesite' => 'Strict',
@@ -65,7 +68,7 @@ final class AuthManager
         if (!isset($_SESSION['admin_id'])) {
             return false;
         }
-        $timeout = (int) Config::get('session_idle_timeout', 1800);
+        $timeout = self::sessionLifetime();
         if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {
             $this->logout();
             return false;
@@ -85,6 +88,11 @@ final class AuthManager
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_destroy();
         }
+    }
+
+    private static function sessionLifetime(): int
+    {
+        return (int) Config::get('admin_session_days', 30) * 86400;
     }
 
     private function regenerateSession(): void

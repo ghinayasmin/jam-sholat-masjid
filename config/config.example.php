@@ -29,8 +29,9 @@ return [
     // Format gambar publikasi yang diterima.
     'publication_allowed_mime' => ['image/jpeg', 'image/png'],
 
-    // Idle session timeout untuk admin, dalam detik.
-    'session_idle_timeout' => 1800,
+    // Lama sesi login panel takmir (hari). Panel hanya bisa dibuka dari jaringan
+    // lokal masjid, jadi pengurus tidak perlu login ulang setiap membuka HP.
+    'admin_session_days' => 30,
 
     // Endpoint online sync (REQ-F-004) — AlAdhan API, method=20 (KEMENAG),
     // tidak butuh API key. Lihat docs/DECISIONS.md untuk alasan pemilihan.

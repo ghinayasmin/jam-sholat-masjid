@@ -41,7 +41,7 @@ final class BackupManager
         $publicationsPath = (string) Config::get('publications_path');
         foreach ($publications as &$pub) {
             $fullPath = $publicationsPath . '/' . basename($pub['file_path']);
-            $pub['file_base64'] = is_file($fullPath) ? base64_encode((string) file_get_contents($fullPath)) : null;
+            $pub['file_base64'] = $pub['file_path'] !== '' && is_file($fullPath) ? base64_encode((string) file_get_contents($fullPath)) : null;
         }
         unset($pub);
 
@@ -97,7 +97,11 @@ final class BackupManager
                     azan_iqomah_interval_minutes=:azan_iqomah_interval_minutes,
                     image_retention_days=:image_retention_days,
                     image_retention_storage_pct=:image_retention_storage_pct,
-                    online_sync_enabled=:online_sync_enabled, updated_at=CURRENT_TIMESTAMP
+                    online_sync_enabled=:online_sync_enabled,
+                    reminder_enabled=:reminder_enabled, reminder_minutes=:reminder_minutes,
+                    reminder_friday_minutes=:reminder_friday_minutes, reminder_message=:reminder_message,
+                    show_finance_on_display=:show_finance_on_display, location_name=:location_name,
+                    updated_at=CURRENT_TIMESTAMP
                  WHERE id = 1'
             );
             $stmt->execute([
@@ -109,6 +113,13 @@ final class BackupManager
                 'image_retention_days' => $s['image_retention_days'],
                 'image_retention_storage_pct' => $s['image_retention_storage_pct'],
                 'online_sync_enabled' => $s['online_sync_enabled'],
+                // Backup lama (sebelum kolom ini ada) memakai nilai bawaan.
+                'reminder_enabled' => $s['reminder_enabled'] ?? 1,
+                'reminder_minutes' => $s['reminder_minutes'] ?? 10,
+                'reminder_friday_minutes' => $s['reminder_friday_minutes'] ?? 30,
+                'reminder_message' => $s['reminder_message'] ?? 'Mari bersiap dan mengambil air wudhu',
+                'show_finance_on_display' => $s['show_finance_on_display'] ?? 0,
+                'location_name' => $s['location_name'] ?? '',
             ]);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten
@@ -129,16 +140,19 @@ final class BackupManager
             $pdo->exec('DELETE FROM publications');
             $publicationsPath = (string) Config::get('publications_path');
             $stmtP = $pdo->prepare(
-                'INSERT INTO publications (id, file_name, file_path, caption, display_order, is_active, uploaded_at)
-                 VALUES (:id, :file_name, :file_path, :caption, :display_order, :is_active, :uploaded_at)'
+                'INSERT INTO publications
+                    (id, file_name, file_path, caption, display_order, is_active, uploaded_at, starts_on, ends_on)
+                 VALUES (:id, :file_name, :file_path, :caption, :display_order, :is_active, :uploaded_at,
+                    :starts_on, :ends_on)'
             );
             foreach ($data['publications'] ?? [] as $p) {
                 $stmtP->execute([
                     'id' => $p['id'], 'file_name' => $p['file_name'], 'file_path' => $p['file_path'],
                     'caption' => $p['caption'], 'display_order' => $p['display_order'],
                     'is_active' => $p['is_active'], 'uploaded_at' => $p['uploaded_at'],
+                    'starts_on' => $p['starts_on'] ?? null, 'ends_on' => $p['ends_on'] ?? null,
                 ]);
-                if (!empty($p['file_base64'])) {
+                if (!empty($p['file_base64']) && $p['file_path'] !== '') {
                     $target = $publicationsPath . '/' . basename($p['file_path']);
                     file_put_contents($target, base64_decode($p['file_base64']));
                 }

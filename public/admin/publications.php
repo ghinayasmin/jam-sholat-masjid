@@ -8,130 +8,114 @@ use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
 use App\Auth\Csrf;
 use App\Config;
+use App\LocalTime;
 use App\Repository\PublicationRepository;
+use App\View\Format;
+use App\View\Icon;
 
 $auth = new AuthManager();
 AuthMiddleware::requireLogin($auth);
 
 $repo = new PublicationRepository();
-$publicationsPath = (string) Config::get('publications_path');
-$maxBytes = (int) Config::get('publication_max_bytes', 5 * 1024 * 1024);
-$allowedMime = (array) Config::get('publication_allowed_mime', ['image/jpeg', 'image/png']);
+$today = LocalTime::today();
 
+// REQ-F-022: hentikan, pasang ulang, atau hapus. Pengumuman baru lewat publications_add.php.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Csrf::requireValid($_POST['csrf_token'] ?? null);
     $action = $_POST['action'] ?? '';
+    $id = (int) ($_POST['id'] ?? 0);
 
-    if ($action === 'upload') {
-        $file = $_FILES['poster'] ?? null;
-        $caption = trim((string) ($_POST['caption'] ?? ''));
-
-        if ($file === null || $file['error'] !== UPLOAD_ERR_OK) {
-            $_SESSION['flash_error'] = 'Upload gagal. Pastikan file dipilih dan tidak melebihi batas ukuran.';
-        } elseif ($file['size'] > $maxBytes) {
-            $_SESSION['flash_error'] = 'Ukuran file melebihi batas ' . round($maxBytes / 1024 / 1024, 1) . ' MB.';
-        } else {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
-
-            if (!in_array($mime, $allowedMime, true)) {
-                $_SESSION['flash_error'] = 'Format file tidak didukung. Gunakan JPG atau PNG.';
-            } else {
-                $ext = $mime === 'image/png' ? 'png' : 'jpg';
-                $safeName = 'pub_' . bin2hex(random_bytes(8)) . '.' . $ext;
-                $destination = $publicationsPath . '/' . $safeName;
-
-                if (move_uploaded_file($file['tmp_name'], $destination)) {
-                    $repo->create($safeName, $safeName, $caption !== '' ? $caption : null);
-                    $_SESSION['flash_success'] = 'Poster berhasil diunggah.';
-                } else {
-                    $_SESSION['flash_error'] = 'Gagal menyimpan file ke server.';
-                }
-            }
-        }
-    } elseif ($action === 'toggle') {
-        $id = (int) ($_POST['id'] ?? 0);
-        $active = ($_POST['active'] ?? '0') === '1';
-        $repo->setActive($id, $active);
-        $_SESSION['flash_success'] = 'Status publikasi diperbarui.';
+    if ($action === 'stop') {
+        $repo->setActive($id, false);
+        $_SESSION['flash_success'] = 'Pengumuman dihentikan dan tidak tampil lagi di layar jamaah.';
+    } elseif ($action === 'republish') {
+        $repo->republish($id, $today);
+        $_SESSION['flash_success'] = 'Pengumuman dipasang lagi mulai hari ini.';
     } elseif ($action === 'delete') {
-        $id = (int) ($_POST['id'] ?? 0);
         $pub = $repo->find($id);
         if ($pub !== null) {
-            $filePath = $publicationsPath . '/' . basename($pub['file_path']);
-            if (is_file($filePath)) {
-                @unlink($filePath);
+            if ($pub['file_path'] !== '') {
+                $filePath = Config::get('publications_path') . '/' . basename($pub['file_path']);
+                if (is_file($filePath)) {
+                    @unlink($filePath);
+                }
             }
             $repo->delete($id);
-            $_SESSION['flash_success'] = 'Poster dihapus.';
-        }
-    } elseif ($action === 'reorder') {
-        $ids = array_map('intval', explode(',', (string) ($_POST['order'] ?? '')));
-        $ids = array_filter($ids, static fn ($v) => $v > 0);
-        if ($ids !== []) {
-            $repo->reorder($ids);
+            $_SESSION['flash_success'] = 'Pengumuman dihapus.';
         }
     }
-
     header('Location: /admin/publications.php');
     exit;
 }
 
-$items = $repo->all();
+$groups = $repo->groupedFor($today);
 
-$pageTitle = 'Publikasi';
-$activeMenu = 'publications';
+/** Satu baris pengumuman beserta tombol aksinya. */
+$renderItem = static function (array $p, string $group) use ($today): void {
+    $title = $p['caption'] !== null && $p['caption'] !== '' ? $p['caption'] : 'Poster tanpa keterangan';
+    if ($group === 'showing') {
+        $when = $p['ends_on'] !== null ? 'Sampai ' . Format::shortDate($p['ends_on']) : 'Tanpa batas waktu';
+    } elseif ($group === 'scheduled') {
+        $when = 'Mulai ' . Format::shortDate($p['starts_on']);
+    } else {
+        $when = (int) $p['is_active'] !== 1 ? 'Dihentikan' : 'Selesai ' . Format::shortDate($p['ends_on']);
+    }
+    ?>
+    <div class="row" style="grid-template-columns:52px minmax(0,1fr) auto">
+        <?php if ($p['file_path'] !== ''): ?>
+            <img class="thumb" src="/uploads/publications/<?= rawurlencode(basename($p['file_path'])) ?>" alt="" loading="lazy">
+        <?php else: ?>
+            <span class="thumb"><?= Icon::svg('text') ?></span>
+        <?php endif; ?>
+        <span class="k"><?= Format::e($title) ?><small><?= Format::e($when) ?></small></span>
+        <?php if ($group === 'scheduled'): ?><span class="tag">Menunggu</span><?php else: ?><span></span><?php endif; ?>
+    </div>
+    <div style="display:flex;gap:16px;padding:0 16px 10px 80px;margin-top:-8px">
+        <?php if ($group === 'finished'): ?>
+            <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="republish"><input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
+                <button type="submit" class="link-btn" style="color:var(--primary);min-height:32px;font-size:14px">Pasang lagi</button></form>
+        <?php else: ?>
+            <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="stop"><input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
+                <button type="submit" class="link-btn" style="color:var(--ink-2);min-height:32px;font-size:14px">Hentikan</button></form>
+        <?php endif; ?>
+        <form method="post" data-confirm="Hapus pengumuman ini? Tidak bisa dibatalkan."><?= Csrf::field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
+            <button type="submit" class="link-btn" style="min-height:32px;font-size:14px">Hapus</button></form>
+    </div>
+    <?php
+};
+
+$pageTitle = 'Pengumuman';
+$pageSubtitle = 'Tampil bergantian di layar jamaah';
+$activeTab = 'announce';
 require __DIR__ . '/_header.php';
 ?>
 
-<div class="card form-card">
-    <h2>Unggah Poster Baru</h2>
-    <form method="post" enctype="multipart/form-data">
-        <?= Csrf::field() ?>
-        <input type="hidden" name="action" value="upload">
-        <label>File Poster (JPG/PNG, maks <?= round($maxBytes / 1024 / 1024, 1) ?> MB)
-            <input type="file" name="poster" accept="image/jpeg,image/png" required>
-        </label>
-        <label>Keterangan (opsional)
-            <input type="text" name="caption" maxlength="200">
-        </label>
-        <button type="submit">Unggah</button>
-    </form>
-</div>
+<a class="btn" href="/admin/publications_add.php">+ Pasang pengumuman</a>
 
-<div class="card">
-    <h2>Daftar Publikasi (urutan tampil di layar jamaah)</h2>
-    <table class="data-table">
-        <thead><tr><th>Preview</th><th>Keterangan</th><th>Status</th><th>Aksi</th></tr></thead>
-        <tbody>
-        <?php foreach ($items as $pub): ?>
-            <tr>
-                <td><img class="thumb" src="/uploads/publications/<?= rawurlencode(basename($pub['file_path'])) ?>" alt=""></td>
-                <td><?= htmlspecialchars($pub['caption'] ?? '') ?></td>
-                <td><?= ((int) $pub['is_active'] === 1) ? 'Aktif' : 'Nonaktif' ?></td>
-                <td class="actions">
-                    <form method="post" class="inline-form">
-                        <?= Csrf::field() ?>
-                        <input type="hidden" name="action" value="toggle">
-                        <input type="hidden" name="id" value="<?= (int) $pub['id'] ?>">
-                        <input type="hidden" name="active" value="<?= (int) $pub['is_active'] === 1 ? '0' : '1' ?>">
-                        <button type="submit" class="btn-small"><?= (int) $pub['is_active'] === 1 ? 'Nonaktifkan' : 'Aktifkan' ?></button>
-                    </form>
-                    <form method="post" class="inline-form" onsubmit="return confirm('Hapus poster ini?');">
-                        <?= Csrf::field() ?>
-                        <input type="hidden" name="action" value="delete">
-                        <input type="hidden" name="id" value="<?= (int) $pub['id'] ?>">
-                        <button type="submit" class="btn-small btn-danger">Hapus</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-        <?php if ($items === []): ?>
-            <tr><td colspan="4" class="muted">Belum ada publikasi diunggah.</td></tr>
+<section class="group" aria-labelledby="showing-label">
+    <div class="label" id="showing-label">Sedang tampil · <?= count($groups['showing']) ?></div>
+    <div class="card">
+        <?php foreach ($groups['showing'] as $p) { $renderItem($p, 'showing'); } ?>
+        <?php if ($groups['showing'] === []): ?>
+            <div class="empty">Belum ada pengumuman yang tampil di layar jamaah.</div>
         <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+    </div>
+</section>
+
+<?php if ($groups['scheduled'] !== []): ?>
+<section class="group" aria-labelledby="scheduled-label">
+    <div class="label" id="scheduled-label">Terjadwal · <?= count($groups['scheduled']) ?></div>
+    <div class="card"><?php foreach ($groups['scheduled'] as $p) { $renderItem($p, 'scheduled'); } ?></div>
+</section>
+<?php endif; ?>
+
+<?php if ($groups['finished'] !== []): ?>
+<section class="group" aria-labelledby="finished-label">
+    <div class="label" id="finished-label">Sudah selesai · <?= count($groups['finished']) ?></div>
+    <div class="card"><?php foreach ($groups['finished'] as $p) { $renderItem($p, 'finished'); } ?></div>
+</section>
+<?php endif; ?>
+
+<div class="note">Poster paling bagus berbentuk mendatar (16:9). Foto dari kamera HP langsung bisa dipakai.</div>
 
 <?php require __DIR__ . '/_footer.php'; ?>

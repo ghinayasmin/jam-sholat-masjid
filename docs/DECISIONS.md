@@ -161,7 +161,8 @@ informasi internal pengurus yang tidak pantas dipajang ke publik.
 mati, `api/financial.php` (endpoint publik) hanya menjawab
 `{"enabled": false}` tanpa angka apa pun, jadi data kas juga tidak bisa
 dibaca dari jaringan lewat API. Takmir bisa menyalakannya bila masjid memang
-ingin transparan ke jamaah; saat menyala, layar hanya menampilkan saldo.
+ingin transparan ke jamaah; saat menyala, layar dan API hanya memuat saldo,
+tanpa rincian transaksi.
 
 ## 15. Desain ulang layar jamaah & pengingat sebelum adzan (DIKONFIRMASI)
 
@@ -188,4 +189,34 @@ jatuh hari Senin tetap tertulis "puasa Senin".
 Perbaikan yang ikut masuk: `api/schedule.php` kini memakai tanggal lokal
 masjid (sebelumnya tanggal UTC, sehingga jam 00:00–07:00 WIB tanggal,
 Hijriah, dan info puasa masih milik hari kemarin).
+
+## 16. Panel takmir dirancang untuk HP (DIKONFIRMASI)
+
+**Isu:** pengurus masjid umumnya membuka panel dari HP lewat WiFi masjid dan
+tidak semuanya paham istilah teknis. Panel lama dirancang untuk layar lebar,
+memakai 8 menu sejajar, dan menampilkan istilah seperti latitude, NTP, dan UTC.
+
+**Keputusan (mockup disetujui pengguna 2026-10-01):**
+- Lima tab di bawah layar: Beranda, Pengumuman, Kas, Kamera, Pengaturan.
+  Halaman lain (profil, lokasi, jeda iqomah, pengingat, jam, cadangan, akun)
+  dikelompokkan di bawah Pengaturan.
+- Bahasa pengurus: "Uang masuk/keluar", "Pasang pengumuman", "Cadangan data".
+  Koordinat dan madzhab ada di halaman Lokasi dengan peringatan "untuk teknisi";
+  pengurus melihat nama lokasi (`mosque_settings.location_name`).
+- Pengumuman bisa berupa poster atau teks saja, dengan tanggal mulai dan
+  selesai (`publications.starts_on/ends_on`). Pengumuman yang sudah lewat
+  hilang sendiri dari layar dan bisa dipasang lagi.
+- Pencatatan kas memakai pilihan siap ketuk (Kotak Jumat, Infaq, ...) dan
+  tombol nominal cepat. Keterangan tersimpan sebagai teks biasa di
+  `financial_entries.description`, jadi struktur ledger (#3) tidak berubah.
+- `/admin` langsung membuka Beranda (alamat pendek untuk stiker QR).
+- **Sesi login 30 hari** (`admin_session_days`), sebelumnya habis setelah
+  30 menit tidak aktif. Pertimbangannya: panel hanya bisa diakses dari jaringan
+  lokal masjid (REQ-NF-122), cookie tetap `HttpOnly` + `SameSite=Strict`, dan
+  pengurus bisa keluar manual dari Pengaturan. Masjid yang ingin lebih ketat
+  cukup menurunkan nilai `admin_session_days` di `config/config.php`.
+
+Yang tidak ikut dibuat: memilih kota dari daftar (lokasi tetap diisi lewat
+koordinat oleh teknisi) dan mengatur ulang urutan pengumuman (urutan mengikuti
+waktu dibuat).
 

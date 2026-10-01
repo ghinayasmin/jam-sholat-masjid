@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../bootstrap.php';
 
+use App\LocalTime;
 use App\Repository\SettingsRepository;
 use App\Schedule\ScheduleEngine;
 
@@ -12,10 +13,9 @@ header('Content-Type: application/json; charset=utf-8');
 // REQ-F-010, REQ-F-013: hanya baca, tanpa auth (dipakai layar jamaah di LAN).
 $settings = (new SettingsRepository())->get();
 
-// Tanggal bawaan = tanggal lokal masjid, bukan UTC. Basis internal PHP adalah UTC
-// (bootstrap.php), jadi tanpa offset ini jam 00:00–07:00 WIB masih dianggap kemarin.
-$localNow = time() + (int) round((float) $settings['timezone_offset_hours'] * 3600);
-$date = $_GET['date'] ?? gmdate('Y-m-d', $localNow);
+// Tanggal bawaan = tanggal lokal masjid, bukan UTC (tanpa ini jam 00:00–07:00 WIB
+// masih dianggap kemarin).
+$date = $_GET['date'] ?? LocalTime::today();
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Format tanggal tidak valid, gunakan YYYY-MM-DD.']);

@@ -43,48 +43,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exec($cmd, $output, $exitCode);
 
             if ($exitCode === 0) {
-                $success = 'Jam sistem berhasil diperbarui ke ' . $formatted . '.';
+                $success = 'Jam perangkat diatur ke ' . $dt->format('H:i') . ', ' . \App\View\Format::longDate($dt->format('Y-m-d')) . '.';
             } else {
-                $errors[] = 'Gagal mengubah jam sistem. Detail: ' . implode(' ', $output)
-                    . ' (Pastikan scripts/install.sh sudah dijalankan agar sudoers dikonfigurasi.)';
+                error_log('[settings_time] ' . implode(' ', $output));
+                $errors[] = 'Jam perangkat gagal diubah. Minta teknisi memeriksa pengaturan sudoers (scripts/install.sh langkah 8).';
             }
         }
     }
 }
 
-$now = new \DateTime('now', new \DateTimeZone('UTC'));
-// Catatan: nilai default form ini UTC murni (bootstrap.php set timezone UTC secara sengaja,
-// lihat komentar di bootstrap.php). Takmir memasukkan jam LOKAL yang diinginkan;
-// sinkronisasi zona ditangani lewat timezone_offset_hours di pengaturan lokasi.
+$localNow = \App\LocalTime::now();
 
-$pageTitle = 'Jam & Tanggal Sistem';
-$activeMenu = 'time';
+$pageTitle = 'Jam & tanggal';
+$backHref = '/admin/settings.php';
+$backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';
 ?>
 
 <?php if ($success !== null): ?>
-    <div class="flash flash-success"><?= htmlspecialchars($success) ?></div>
+    <div class="flash flash-success" role="status"><?= htmlspecialchars($success) ?></div>
 <?php endif; ?>
 <?php if ($errors !== []): ?>
-    <div class="flash flash-error"><?= htmlspecialchars(implode(' ', $errors)) ?></div>
+    <div class="flash flash-error" role="alert"><?= htmlspecialchars(implode(' ', $errors)) ?></div>
 <?php endif; ?>
 
-<div class="card">
-    <h2>Waktu Server Saat Ini (UTC)</h2>
-    <p class="mono-large"><?= htmlspecialchars($now->format('Y-m-d H:i:s')) ?></p>
-    <p class="muted">Sistem menyimpan waktu internal dalam UTC. Sinkronisasi otomatis (NTP) berjalan lewat
-        systemd-timesyncd bawaan OS ketika perangkat online — halaman ini hanya untuk koreksi manual saat offline.</p>
+<div class="balance">
+    <div><div class="s">Jam perangkat sekarang</div><div class="n"><?= gmdate('H:i', $localNow) ?></div></div>
+    <div class="s" style="padding-top:12px;box-shadow:inset 0 1px 0 var(--line)"><?= htmlspecialchars(\App\View\Format::longDate(gmdate('Y-m-d', $localNow))) ?></div>
 </div>
 
-<form method="post" class="card form-card">
+<div class="note">Saat ada internet, jam diperbaiki otomatis. Halaman ini hanya untuk koreksi bila perangkat lama offline dan jamnya meleset.</div>
+
+<form method="post" class="stack">
     <?= Csrf::field() ?>
-    <label>Tanggal
-        <input type="date" name="date" required>
-    </label>
-    <label>Jam (format 24 jam)
-        <input type="time" name="time" required>
-    </label>
-    <button type="submit">Perbarui Jam Sistem</button>
+    <div class="pair">
+        <div class="field">
+            <label class="field-label" for="date">Tanggal</label>
+            <input type="date" id="date" name="date" value="<?= gmdate('Y-m-d', $localNow) ?>" required>
+        </div>
+        <div class="field">
+            <label class="field-label" for="time">Jam</label>
+            <input type="time" id="time" name="time" value="<?= gmdate('H:i', $localNow) ?>" required>
+        </div>
+    </div>
+    <div class="foot"><button type="submit" class="btn">Atur jam perangkat</button></div>
 </form>
 
 <?php require __DIR__ . '/_footer.php'; ?>

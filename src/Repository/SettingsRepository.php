@@ -42,7 +42,7 @@ final class SettingsRepository
             'image_retention_storage_pct', 'online_sync_enabled',
             'last_sync_at', 'last_sync_status',
             'reminder_enabled', 'reminder_minutes', 'reminder_friday_minutes',
-            'reminder_message', 'show_finance_on_display',
+            'reminder_message', 'show_finance_on_display', 'location_name',
         ];
         $set = [];
         $params = [];

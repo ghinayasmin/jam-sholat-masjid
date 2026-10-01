@@ -1,51 +1,56 @@
 <?php
 /**
- * Include di baris pertama SETIAP halaman admin (setelah bootstrap + auth check).
- * Variabel yang boleh diset sebelum include: $pageTitle, $activeMenu, $flash (opsional).
+ * Include di setiap halaman admin (setelah bootstrap + auth check).
+ * Variabel yang boleh diset sebelum include:
+ *   $pageTitle     judul halaman
+ *   $pageSubtitle  teks kecil di bawah judul (halaman tab)
+ *   $activeTab     'home' | 'announce' | 'cash' | 'camera' | 'settings' (tab bawah yang menyala)
+ *   $backHref      bila diisi, halaman tampil sebagai sub-halaman dengan tombol kembali (tanpa tab bawah)
+ *   $backLabel     teks tombol kembali
  */
-use App\Auth\AuthManager;
-use App\Auth\Csrf;
+use App\View\Format;
+use App\View\Icon;
 
-$pageTitle = $pageTitle ?? 'Admin';
-$activeMenu = $activeMenu ?? '';
+$pageTitle = $pageTitle ?? 'Panel Takmir';
+$pageSubtitle = $pageSubtitle ?? null;
+$activeTab = $activeTab ?? null;
+$backHref = $backHref ?? null;
+$backLabel = $backLabel ?? 'Kembali';
+$showTabs = $backHref === null;
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" translate="no">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= htmlspecialchars($pageTitle) ?> — Panel Admin Masjid</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#F2F3EF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Panel Takmir">
+<meta name="mobile-web-app-capable" content="yes">
+<title><?= Format::e($pageTitle) ?> · Panel Takmir</title>
 <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
-<div class="layout">
-    <nav class="sidebar">
-        <div class="sidebar-brand">🕌 Panel Takmir</div>
-        <ul class="sidebar-menu">
-            <li><a href="/admin/dashboard.php" class="<?= $activeMenu === 'dashboard' ? 'active' : '' ?>">Dashboard</a></li>
-            <li><a href="/admin/settings_location.php" class="<?= $activeMenu === 'location' ? 'active' : '' ?>">Lokasi &amp; Jadwal</a></li>
-            <li><a href="/admin/settings_time.php" class="<?= $activeMenu === 'time' ? 'active' : '' ?>">Jam &amp; Tanggal</a></li>
-            <li><a href="/admin/mosque_profile.php" class="<?= $activeMenu === 'profile' ? 'active' : '' ?>">Profil Masjid</a></li>
-            <li><a href="/admin/publications.php" class="<?= $activeMenu === 'publications' ? 'active' : '' ?>">Publikasi</a></li>
-            <li><a href="/admin/financial.php" class="<?= $activeMenu === 'financial' ? 'active' : '' ?>">Laporan Keuangan</a></li>
-            <li><a href="/admin/camera.php" class="<?= $activeMenu === 'camera' ? 'active' : '' ?>">Rekaman Kamera</a></li>
-            <li><a href="/admin/backup.php" class="<?= $activeMenu === 'backup' ? 'active' : '' ?>">Backup &amp; Restore</a></li>
-        </ul>
-        <form method="post" action="/admin/logout.php" class="sidebar-logout">
-            <?= Csrf::field() ?>
-            <button type="submit">Keluar</button>
-        </form>
-    </nav>
+<div class="shell<?= $showTabs ? ' has-tabs' : '' ?>">
+<?php if ($backHref !== null): ?>
+    <header class="topbar">
+        <a class="back" href="<?= Format::e($backHref) ?>" aria-label="Kembali ke <?= Format::e($backLabel) ?>"><?= Icon::svg('back') ?></a>
+        <h1><?= Format::e($pageTitle) ?></h1>
+        <span></span>
+    </header>
+<?php else: ?>
+    <header class="page-head">
+        <h1><?= Format::e($pageTitle) ?></h1>
+        <?php if ($pageSubtitle !== null): ?><p><?= Format::e($pageSubtitle) ?></p><?php endif; ?>
+    </header>
+<?php endif; ?>
     <main class="content">
-        <header class="content-header">
-            <h1><?= htmlspecialchars($pageTitle) ?></h1>
-            <a href="/display.php" target="_blank" class="btn-secondary">Lihat Tampilan Jamaah ↗</a>
-        </header>
-        <?php if (!empty($_SESSION['flash_success'])): ?>
-            <div class="flash flash-success"><?= htmlspecialchars($_SESSION['flash_success']) ?></div>
-            <?php unset($_SESSION['flash_success']); ?>
-        <?php endif; ?>
-        <?php if (!empty($_SESSION['flash_error'])): ?>
-            <div class="flash flash-error"><?= htmlspecialchars($_SESSION['flash_error']) ?></div>
-            <?php unset($_SESSION['flash_error']); ?>
-        <?php endif; ?>
+<?php if (!empty($_SESSION['flash_success'])): ?>
+        <div class="flash flash-success" role="status"><?= Format::e($_SESSION['flash_success']) ?></div>
+        <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+<?php if (!empty($_SESSION['flash_error'])): ?>
+        <div class="flash flash-error" role="alert"><?= Format::e($_SESSION['flash_error']) ?></div>
+        <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>

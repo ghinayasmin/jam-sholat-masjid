@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     reminder_friday_minutes         INTEGER NOT NULL DEFAULT 30,
     reminder_message                TEXT NOT NULL DEFAULT 'Mari bersiap dan mengambil air wudhu',
     show_finance_on_display         INTEGER NOT NULL DEFAULT 0 CHECK (show_finance_on_display IN (0,1)),
+    location_name                   TEXT NOT NULL DEFAULT '',   -- label lokasi untuk pengurus, mis. "Sleman, DIY"
     last_sync_at                    DATETIME,
     last_sync_status                TEXT,
     updated_at                      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -63,7 +64,11 @@ CREATE TABLE IF NOT EXISTS publications (
     caption       TEXT,
     display_order INTEGER NOT NULL DEFAULT 0,
     is_active     INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0,1)),
-    uploaded_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    uploaded_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- Pengumuman berjadwal (YYYY-MM-DD, NULL = tanpa batas). Pengumuman teks saja
+    -- disimpan dengan file_name/file_path kosong.
+    starts_on     TEXT,
+    ends_on       TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_publications_active_order ON publications(is_active, display_order);
 
