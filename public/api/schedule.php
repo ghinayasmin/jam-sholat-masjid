@@ -41,6 +41,7 @@ try {
         'azan_iqomah_interval_minutes' => (int) $settings['azan_iqomah_interval_minutes'],
         'is_senin_kamis' => $fastingInfo['is_senin_kamis'],
         'is_ayyamul_bidh' => $fastingInfo['is_ayyamul_bidh'],
+        'upcoming_fasting' => $engine->getUpcomingFasting($date),
         'mosque_name' => $settings['mosque_name'],
         'mosque_address' => $settings['mosque_address'],
         'reminder' => [

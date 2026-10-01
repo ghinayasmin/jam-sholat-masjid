@@ -106,10 +106,39 @@ final class ScheduleEngine
         $hijri = $this->hijri->fromGregorian($y, $m, $d);
         $dow = (int) gmdate('N', gmmktime(0, 0, 0, $m, $d, $y)); // 1=Senin ... 7=Minggu
 
+        // Hari terlarang berpuasa (1 Syawal, 10 Dzulhijjah, hari Tasyrik 11–13 Dzulhijjah)
+        // dan bulan Ramadhan (puasa wajib) tidak ditandai sebagai puasa sunnah.
+        $forbidden = ($hijri['month'] === 10 && $hijri['day'] === 1)
+            || ($hijri['month'] === 12 && $hijri['day'] >= 10 && $hijri['day'] <= 13);
+        $sunnahApplies = !$forbidden && $hijri['month'] !== 9;
+
         return [
-            'is_senin_kamis' => $dow === 1 || $dow === 4,
-            'is_ayyamul_bidh' => $this->hijri->isAyyamulBidh($hijri['day']),
+            'is_senin_kamis' => $sunnahApplies && ($dow === 1 || $dow === 4),
+            'is_ayyamul_bidh' => $sunnahApplies && $this->hijri->isAyyamulBidh($hijri['day']),
             'hijri_label' => $hijri['label'],
         ];
+    }
+
+    /**
+     * Hari-hari puasa sunnah dalam $days hari mulai $startYmd (termasuk hari itu),
+     * untuk baris "puasa sunnah terdekat" di layar jamaah.
+     */
+    public function getUpcomingFasting(string $startYmd, int $days = 8): array
+    {
+        [$y, $m, $d] = array_map('intval', explode('-', $startYmd));
+        $start = gmmktime(0, 0, 0, $m, $d, $y);
+        $out = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = gmdate('Y-m-d', $start + $i * 86400);
+            $info = $this->getFastingInfo($date);
+            if ($info['is_senin_kamis'] || $info['is_ayyamul_bidh']) {
+                $out[] = [
+                    'date' => $date,
+                    'is_senin_kamis' => $info['is_senin_kamis'],
+                    'is_ayyamul_bidh' => $info['is_ayyamul_bidh'],
+                ];
+            }
+        }
+        return $out;
     }
 }

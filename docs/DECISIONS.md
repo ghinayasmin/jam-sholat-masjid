@@ -179,6 +179,12 @@ Perilaku otomatis yang dipilih pengguna:
   karena lama sholat tidak bisa diketahui pasti. Suara iqomah dari layanan
   alarm (REQ-F-031) tetap berjalan seperti sebelumnya.
 
+Baris puasa sunnah selalu menampilkan puasa terdekat (hari ini, besok, atau
+tanggalnya), bukan hanya hari ini, supaya bagian bawah layar tidak kosong.
+Hari terlarang berpuasa (1 Syawal, 10–13 Dzulhijjah) dan bulan Ramadhan tidak
+ditandai sebagai puasa sunnah (REQ-F-013); sebelumnya, misalnya Idul Adha yang
+jatuh hari Senin tetap tertulis "puasa Senin".
+
 Perbaikan yang ikut masuk: `api/schedule.php` kini memakai tanggal lokal
 masjid (sebelumnya tanggal UTC, sehingga jam 00:00–07:00 WIB tanggal,
 Hijriah, dan info puasa masih milik hari kemarin).

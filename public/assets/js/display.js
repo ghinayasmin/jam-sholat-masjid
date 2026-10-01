@@ -84,17 +84,33 @@
         return pad(Math.floor(s / 60)) + ':' + pad(s % 60);
     }
 
-    /** Info puasa sunnah untuk satu tanggal, atau null. */
-    function fastingLabel(schedule) {
-        if (!schedule) return null;
-        const labels = [];
-        if (schedule.is_senin_kamis) labels.push('puasa ' + DAY_NAMES[dayOf(schedule.date)]);
-        if (schedule.is_ayyamul_bidh) labels.push('Ayyamul Bidh');
-        return labels.length ? labels.join(' & ') : null;
+    const MONTH_NAMES = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
+        'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    /**
+     * Baris "puasa sunnah" di layar: hari ini, besok, atau yang terdekat.
+     * upcoming: daftar dari API (mulai hari ini). Setelah Maghrib, hari ini tidak dihitung lagi.
+     * Mengembalikan { title, value } atau null bila tidak ada dalam daftar.
+     */
+    function fastingRow(upcoming, todayStr, tomorrowStr, afterMaghrib) {
+        const entry = (upcoming || []).find((f) => f.date > todayStr || (f.date === todayStr && !afterMaghrib));
+        if (!entry) return null;
+        const day = DAY_NAMES[dayOf(entry.date)];
+        const kinds = [];
+        if (entry.is_senin_kamis) kinds.push('Puasa ' + day);
+        if (entry.is_ayyamul_bidh) kinds.push('Ayyamul Bidh');
+        if (entry.date === todayStr) return { title: 'Puasa sunnah hari ini', value: kinds.join(' & ') };
+        if (entry.date === tomorrowStr) return { title: 'Puasa sunnah besok', value: kinds.join(' & ') };
+        const [, m, d] = entry.date.split('-').map(Number);
+        const when = day + ', ' + d + ' ' + MONTH_NAMES[m - 1];
+        return {
+            title: 'Puasa sunnah terdekat',
+            value: when + (entry.is_ayyamul_bidh ? ' · Ayyamul Bidh' : ''),
+        };
     }
 
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { computeView, formatDuration, formatCountdown, fastingLabel };
+        module.exports = { computeView, formatDuration, formatCountdown, fastingRow };
         return;
     }
 
@@ -226,13 +242,14 @@
                 '<br>pukul ' + view.next.time;
         }
 
-        // Puasa: sebelum Maghrib tampilkan hari ini, sesudahnya tampilkan besok.
+        // Puasa sunnah terdekat. Setelah Maghrib, puasa hari ini sudah selesai.
         const afterMaghrib = now.getHours() * 3600 + now.getMinutes() * 60 >= toSeconds(state.today.maghrib);
-        const fasting = fastingLabel(afterMaghrib ? state.tomorrow : state.today);
+        const fasting = fastingRow(state.today.upcoming_fasting, state.today.date,
+            state.tomorrow ? state.tomorrow.date : localDate(addDays(now, 1)), afterMaghrib);
         $('infoFasting').hidden = !fasting;
         if (fasting) {
-            $('fastingWhen').textContent = afterMaghrib ? 'Puasa sunnah besok' : 'Puasa sunnah hari ini';
-            $('fastingLabel').textContent = fasting.charAt(0).toUpperCase() + fasting.slice(1);
+            $('fastingWhen').textContent = fasting.title;
+            $('fastingLabel').textContent = fasting.value;
         }
 
         $('reminder').hidden = view.mode !== 'reminder';

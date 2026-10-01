@@ -3,7 +3,7 @@
 'use strict';
 
 const path = require('path');
-const { computeView, formatDuration, formatCountdown, fastingLabel } =
+const { computeView, formatDuration, formatCountdown, fastingRow } =
     require(path.join(__dirname, '../../public/assets/js/display.js'));
 
 let total = 0;
@@ -74,10 +74,23 @@ check('1 jam 5 menit', formatDuration(3900) === '1 jam 5 menit');
 check('2 jam pas', formatDuration(7200) === '2 jam');
 check('di bawah 1 menit', formatDuration(30) === 'kurang dari 1 menit');
 
-console.log('fastingLabel');
-check('Kamis', fastingLabel({ date: '2026-10-01', is_senin_kamis: true, is_ayyamul_bidh: false }) === 'puasa Kamis');
-check('tidak ada puasa', fastingLabel({ date: '2026-10-02', is_senin_kamis: false, is_ayyamul_bidh: false }) === null);
-check('gabungan', fastingLabel({ date: '2026-10-05', is_senin_kamis: true, is_ayyamul_bidh: true }) === 'puasa Senin & Ayyamul Bidh');
+console.log('fastingRow');
+const upcoming = [
+    { date: '2026-10-01', is_senin_kamis: true, is_ayyamul_bidh: false },
+    { date: '2026-10-05', is_senin_kamis: true, is_ayyamul_bidh: false },
+    { date: '2026-10-08', is_senin_kamis: true, is_ayyamul_bidh: false },
+];
+let r = fastingRow(upcoming, '2026-10-01', '2026-10-02', false);
+check('sebelum Maghrib Kamis: hari ini puasa Kamis', r.title === 'Puasa sunnah hari ini' && r.value === 'Puasa Kamis');
+r = fastingRow(upcoming, '2026-10-01', '2026-10-02', true);
+check('setelah Maghrib Kamis: terdekat Senin, 5 Oktober', r.title === 'Puasa sunnah terdekat' && r.value === 'Senin, 5 Oktober');
+r = fastingRow([{ date: '2026-10-05', is_senin_kamis: true, is_ayyamul_bidh: false }], '2026-10-04', '2026-10-05', true);
+check('Ahad malam: besok puasa Senin', r.title === 'Puasa sunnah besok' && r.value === 'Puasa Senin');
+r = fastingRow([{ date: '2026-11-04', is_senin_kamis: false, is_ayyamul_bidh: true }], '2026-11-01', '2026-11-02', false);
+check('Ayyamul Bidh terdekat ditandai', r.value === 'Rabu, 4 November · Ayyamul Bidh');
+r = fastingRow([{ date: '2026-10-05', is_senin_kamis: true, is_ayyamul_bidh: true }], '2026-10-05', '2026-10-06', false);
+check('gabungan Senin & Ayyamul Bidh', r.value === 'Puasa Senin & Ayyamul Bidh');
+check('daftar kosong (mis. Ramadhan) = baris disembunyikan', fastingRow([], '2027-02-10', '2027-02-11', false) === null);
 
 console.log('\n' + (total - failures) + '/' + total + ' assertion lolos');
 process.exit(failures === 0 ? 0 : 1);

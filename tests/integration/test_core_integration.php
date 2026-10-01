@@ -124,6 +124,28 @@ $settingsRepo->update(['reminder_minutes' => 15, 'show_finance_on_display' => 1]
 $s = $settingsRepo->get();
 check('Settings: pengingat & kas bisa diubah', (int) $s['reminder_minutes'] === 15 && (int) $s['show_finance_on_display'] === 1);
 
+// --- Puasa sunnah: hari terlarang & Ramadhan tidak ditandai ---
+$hijriConv = new App\Schedule\HijriConverter();
+$fastEngine = new ScheduleEngine();
+$forbiddenFlagged = 0; $ramadanFlagged = 0; $forbiddenSeen = 0; $ramadanSeen = 0;
+for ($t = gmmktime(0, 0, 0, 1, 1, 2027); $t < gmmktime(0, 0, 0, 1, 1, 2028); $t += 86400) {
+    $h = $hijriConv->fromGregorian((int) gmdate('Y', $t), (int) gmdate('n', $t), (int) gmdate('j', $t));
+    $info = $fastEngine->getFastingInfo(gmdate('Y-m-d', $t));
+    $flagged = $info['is_senin_kamis'] || $info['is_ayyamul_bidh'];
+    if (($h['month'] === 10 && $h['day'] === 1) || ($h['month'] === 12 && $h['day'] >= 10 && $h['day'] <= 13)) {
+        $forbiddenSeen++;
+        $forbiddenFlagged += $flagged ? 1 : 0;
+    }
+    if ($h['month'] === 9) {
+        $ramadanSeen++;
+        $ramadanFlagged += $flagged ? 1 : 0;
+    }
+}
+check('Puasa: Idul Fitri, Idul Adha & Tasyrik 2027 tidak ditandai sunnah', $forbiddenSeen === 5 && $forbiddenFlagged === 0);
+check('Puasa: Ramadhan 2027 tidak ditandai sunnah', $ramadanSeen >= 29 && $ramadanFlagged === 0);
+$up = $fastEngine->getUpcomingFasting('2026-10-02');
+check('Puasa: terdekat setelah Jumat 2 Okt 2026 adalah Senin 5 Okt', ($up[0]['date'] ?? null) === '2026-10-05');
+
 // --- Migrasi: database lama (sebelum kolom baru) dilengkapi otomatis ---
 $legacyDb = $tmpDir . '/legacy.db';
 $legacy = new PDO('sqlite:' . $legacyDb);
