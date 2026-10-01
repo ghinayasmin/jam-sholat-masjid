@@ -141,6 +141,10 @@ a2enmod rewrite
 systemctl reload apache2
 
 echo "=== [10/10] Memasang & mengaktifkan systemd services ==="
+# Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
+rm -rf /usr/share/icons/jamsholat-blank   # lokasi lama, tidak dipakai lagi
+mkdir -p /usr/share/jamsholat/cursors/default
+cp -r "$INSTALL_DIR"/systemd/blank-cursor/. /usr/share/jamsholat/cursors/default/
 cp "$INSTALL_DIR"/systemd/*.service "$INSTALL_DIR"/systemd/*.timer /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable --now jamsholat-camera.service

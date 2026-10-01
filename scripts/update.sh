@@ -35,6 +35,10 @@ rsync -a --chown="$SERVICE_USER":"$SERVICE_USER" \
     "$SCRIPT_DIR"/ "$INSTALL_DIR"/
 
 echo "=== [2/3] Memperbarui unit systemd ==="
+# Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
+rm -rf /usr/share/icons/jamsholat-blank   # lokasi lama, tidak dipakai lagi
+mkdir -p /usr/share/jamsholat/cursors/default
+cp -r "$INSTALL_DIR"/systemd/blank-cursor/. /usr/share/jamsholat/cursors/default/
 cp "$INSTALL_DIR"/systemd/*.service "$INSTALL_DIR"/systemd/*.timer /etc/systemd/system/
 systemctl daemon-reload
 

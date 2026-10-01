@@ -19,6 +19,12 @@ StandardOutput=journal
 StandardError=journal
 UtmpIdentifier=tty1
 UtmpMode=user
+# Kursor transparan (dipasang install.sh/update.sh): cage selalu menggambar kursor
+# di tengah layar walau tidak ada mouse, dan selalu memuat tema bernama "default"
+# (XCURSOR_THEME diabaikan). Jadi folder pencarian kursor diarahkan ke tema
+# "default" milik kita sendiri yang isinya transparan.
+Environment=XCURSOR_PATH=/usr/share/jamsholat/cursors
+Environment=XCURSOR_SIZE=24
 ExecStart=/usr/bin/cage -d -- /opt/jamsholat/scripts/kiosk_browser.sh
 Restart=always
 RestartSec=5
