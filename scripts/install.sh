@@ -36,6 +36,9 @@ apt-get install -y \
     mpg123 alsa-utils \
     fake-hwclock \
     rsync sudo
+# Raspberry Pi Camera Module (CSI) dibaca lewat libcamera/Picamera2, bukan OpenCV.
+# --no-install-recommends: tanpa Qt/OpenGL untuk pratinjau, tidak dipakai di sini.
+apt-get install -y --no-install-recommends python3-picamera2
 
 # fake-hwclock: solusi standar Debian/Raspbian utk device tanpa RTC (REQ-F-061).
 # Sudah aktif otomatis begitu paket terpasang (systemd service bawaan paket).

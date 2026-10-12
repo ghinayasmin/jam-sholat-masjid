@@ -32,6 +32,9 @@ DEFAULT_CAPTURES_PATH = os.environ.get(
     "JAMSHOLAT_CAPTURES_PATH", os.path.join(PROJECT_ROOT, "storage", "captures")
 )
 CAMERA_INDEX = int(os.environ.get("JAMSHOLAT_CAMERA_INDEX", "0"))
+# "auto": Raspberry Pi Camera Module (CSI, lewat Picamera2) bila terpasang,
+# selain itu webcam USB. Bisa dipaksa "picamera" atau "usb".
+CAMERA_TYPE = os.environ.get("JAMSHOLAT_CAMERA_TYPE", "auto")
 
 # REQ-NF-102: layanan latar belakang tidak boleh membebani resource berlebihan —
 # nilai-nilai ini sengaja konservatif untuk Raspberry Pi 2/3 (RAM 1GB).
@@ -108,7 +111,51 @@ class EventStore:
         return filename
 
 
-def run_loop(camera_index: int, db_path: str, captures_path: str) -> None:
+class PiCamera:
+    """Raspberry Pi Camera Module (CSI). Node /dev/video0 miliknya (unicam)
+    hanya memberi data sensor mentah, jadi cv2.VideoCapture tidak bisa
+    membacanya — harus lewat libcamera/Picamera2."""
+
+    def __init__(self) -> None:
+        from picamera2 import Picamera2
+
+        self.cam = Picamera2()
+        # RGB888 di Picamera2 = urutan byte BGR, langsung cocok untuk OpenCV.
+        self.cam.configure(self.cam.create_video_configuration(
+            main={"size": (FRAME_WIDTH, FRAME_HEIGHT), "format": "RGB888"}
+        ))
+        self.cam.start()
+
+    def isOpened(self) -> bool:  # noqa: N802 — samakan dengan cv2.VideoCapture
+        return True
+
+    def read(self):
+        return True, self.cam.capture_array()
+
+    def release(self) -> None:
+        self.cam.close()
+
+
+def picamera_available() -> bool:
+    try:
+        from picamera2 import Picamera2
+    except ImportError:
+        return False
+    return len(Picamera2.global_camera_info()) > 0
+
+
+def open_camera(camera_type: str, camera_index: int):
+    if camera_type == "picamera" or (camera_type == "auto" and picamera_available()):
+        logger.info("Membuka Raspberry Pi Camera Module (Picamera2)...")
+        return PiCamera()
+    logger.info("Membuka webcam USB index %d...", camera_index)
+    cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
+    return cap
+
+
+def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: str = CAMERA_TYPE) -> None:
     """Loop utama — REQ-F-040 (continuous), dengan graceful error handling (REQ-NF-112):
     kegagalan membuka webcam TIDAK menghentikan proses, hanya retry berkala."""
     detector = MotionDetector()
@@ -119,18 +166,15 @@ def run_loop(camera_index: int, db_path: str, captures_path: str) -> None:
     while True:
         try:
             if cap is None or not cap.isOpened():
-                logger.info("Membuka webcam index %d...", camera_index)
-                cap = cv2.VideoCapture(camera_index)
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
+                cap = open_camera(camera_type, camera_index)
                 if not cap.isOpened():
-                    logger.warning("Webcam tidak tersedia, coba lagi dalam 10 detik.")
+                    logger.warning("Kamera tidak tersedia, coba lagi dalam 10 detik.")
                     time.sleep(10)
                     continue
 
             ok, frame = cap.read()
             if not ok or frame is None:
-                logger.warning("Gagal membaca frame dari webcam, coba lagi.")
+                logger.warning("Gagal membaca frame dari kamera, coba lagi.")
                 cap.release()
                 cap = None
                 time.sleep(5)
@@ -158,12 +202,13 @@ def run_loop(camera_index: int, db_path: str, captures_path: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Layanan deteksi gerakan kamera masjid.")
     parser.add_argument("--camera-index", type=int, default=CAMERA_INDEX)
+    parser.add_argument("--camera-type", choices=["auto", "picamera", "usb"], default=CAMERA_TYPE)
     parser.add_argument("--db-path", default=DEFAULT_DB_PATH)
     parser.add_argument("--captures-path", default=DEFAULT_CAPTURES_PATH)
     args = parser.parse_args()
 
     logger.info("Memulai layanan deteksi gerakan. DB=%s, Captures=%s", args.db_path, args.captures_path)
-    run_loop(args.camera_index, args.db_path, args.captures_path)
+    run_loop(args.camera_index, args.db_path, args.captures_path, args.camera_type)
 
 
 if __name__ == "__main__":

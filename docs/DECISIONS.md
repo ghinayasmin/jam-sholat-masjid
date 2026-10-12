@@ -220,3 +220,14 @@ Yang tidak ikut dibuat: memilih kota dari daftar (lokasi tetap diisi lewat
 koordinat oleh teknisi) dan mengatur ulang urutan pengumuman (urutan mengikuti
 waktu dibuat).
 
+## 17. Kamera: Raspberry Pi Camera Module lewat Picamera2 (KEPUTUSAN TEKNIS)
+
+- Perangkat uji memakai **Raspberry Pi Camera V2** (CSI), bukan webcam USB.
+  Node `/dev/video0`-nya (`unicam-image`) hanya memberi data sensor mentah,
+  sehingga `cv2.VideoCapture` terbuka tapi tidak pernah mendapat frame.
+- `motion_detect.py` kini memilih kamera otomatis (`JAMSHOLAT_CAMERA_TYPE=auto`):
+  Picamera2 bila ada Camera Module, selain itu webcam USB lewat V4L2. Bisa
+  dipaksa `picamera` atau `usb`.
+- `python3-picamera2` dipasang dengan `--no-install-recommends` agar Qt/OpenGL
+  (untuk jendela pratinjau) tidak ikut memakan RAM dan disk Pi 3.
+
