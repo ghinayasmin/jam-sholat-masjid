@@ -11,6 +11,7 @@ Letakkan file berikut:
 public/assets/audio/
 ├── adzan.mp3              # diputar saat masuk waktu sholat (REQ-F-030)
 ├── iqomah.mp3              # diputar saat masuk waktu iqomah (REQ-F-031)
+│                            # (adzan/iqomah boleh .wav bila tidak ada .mp3)
 └── murottal/
     ├── 001.mp3              # diputar bergantian di luar waktu adzan/iqomah (REQ-F-032)
     ├── 002.mp3
@@ -22,3 +23,11 @@ Format: MP3 (didukung lewat `mpg123`, yang di-install otomatis oleh
 (REQ-NF-112 graceful error handling) — hanya akan mencatat peringatan di log
 ("File audio tidak ditemukan") dan melewati pemutaran suara, tanpa membuat
 layanan berhenti.
+
+## Sumber bebas lisensi yang dipakai saat uji coba
+
+Adzan, iqomah, dan murottal Juz 'Amma (Al-Fatihah + An-Naba s.d. An-Nas,
+bacaan Aaqib Azeez) diambil dari Wikimedia Commons dengan lisensi CC BY-SA 4.0
+dan CC0. Daftar file, lisensi, dan tautan sumbernya ada di `CREDITS.txt`
+(ikut disalin bersama file audio). CC BY-SA mewajibkan atribusi: cantumkan
+nama pembaca dan tautan sumber bila rekaman ini disebarkan ulang.

@@ -18,6 +18,7 @@ public/uploads/publications/*
 
 # Audio (lisensi pihak lain, tidak disertakan repo — lihat public/assets/audio/README.md)
 public/assets/audio/*.mp3
+public/assets/audio/*.wav
 public/assets/audio/murottal/*.mp3
 
 # Python
