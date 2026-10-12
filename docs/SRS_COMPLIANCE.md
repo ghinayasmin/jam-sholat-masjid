@@ -13,31 +13,31 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-004 | Online Schedule Sync | ✅ | `ScheduleSync.php` (AlAdhan API) | Manual (butuh internet sungguhan saat runtime; fallback offline teruji) |
 | REQ-F-005 | Hijri Calendar Display | ✅ | `HijriConverter.php` | ✅ exact match vs referensi AlAdhan |
 | REQ-F-006 | Prayer Calculation Method | ✅ | Sudut Kemenag (Fajr 20°/Isha 18°), 100% lokal | ✅ |
-| REQ-F-010 | Fullscreen Display | 🔍 | `display.php` + kiosk service | Kode teruji (HTTP 200, JS jam berjalan); mode kiosk fullscreen fisik hanya bisa diuji di Pi sungguhan |
+| REQ-F-010 | Fullscreen Display | ✅ | `display.php` + kiosk service (cage) | ✅ **Diuji di Pi 3 (12 Okt 2026):** tampil fullscreen di TV lewat HDMI, tanpa bingkai browser, ter-update otomatis setelah `update.sh` |
 | REQ-F-011 | Publication Slideshow | ✅ | `display.js`, `api/publications.php` | ✅ upload→tampil di API teruji end-to-end |
 | REQ-F-012 | Financial Report Display | ⚠️ | `display.js`, `api/financial.php`, sakelar `show_finance_on_display` | Fitur ada, tapi **bawaan mati** atas permintaan pengguna (data kas internal). Lihat DECISIONS.md #14 |
 | REQ-F-013 | Sunnah Fasting Info | ✅ | `ScheduleEngine::getFastingInfo()` | ✅ Ayyamul Bidh (13/14/15) & Senin-Kamis teruji |
-| REQ-F-020 | System Time & Date Setting | ⚠️ | `settings_time.php` (via `sudo date`) | Syntax & flow teruji; eksekusi `sudo date` sungguhan butuh sudoers ter-install (hanya di Pi) |
+| REQ-F-020 | System Time & Date Setting | ✅ | `settings_time.php` (via `sudo date`) | ✅ **Diuji di Pi 3:** jam diubah dari panel di HP, jam perangkat dan layar TV ikut berubah, sudoers dari `install.sh` berfungsi |
 | REQ-F-021 | Location & Madzhab Setting | ✅ | `settings_location.php` | ✅ teruji end-to-end via HTTP |
 | REQ-F-022 | Publication Upload | ✅ | `publications.php`, `publications_add.php` (poster atau teks, tanggal mulai/selesai) | ✅ teruji: JPEG valid diterima, file non-image ditolak; pengumuman teks & terjadwal teruji via HTTP |
-| REQ-F-023 | Camera Footage Access | ✅ | `camera.php`, `capture.php`, `api/motion_events.php` | Kode teruji sintaks & auth-gate; perlu data motion_events sungguhan dari kamera fisik untuk uji visual penuh |
+| REQ-F-023 | Camera Footage Access | ✅ | `camera.php`, `capture.php`, `api/motion_events.php` | ✅ **Diuji di Pi 3:** foto gerakan tampil di tab Kamera (HP), bisa dihapus per foto atau per tanggal |
 | REQ-F-024 | Financial Report Update | ✅ | `financial.php`, `financial_add.php` | ✅ teruji end-to-end via HTTP (simpan, validasi, hapus) |
 | REQ-F-025 | Adzan-Iqomah Interval Setting | ✅ | `iqomah.php`, `mosque_settings.azan_iqomah_interval_minutes` | ✅ dipakai `AlarmScheduler`, teruji |
 | REQ-F-026 | Mosque Profile Setting | ✅ | `mosque_profile.php` | Syntax teruji |
-| REQ-F-030 | Adzan Alarm | ✅ | `alarm_service.py` (`AlarmScheduler`) | ✅ 12 assertion Python teruji (trigger tepat waktu, tidak dobel) |
+| REQ-F-030 | Adzan Alarm | ✅ | `alarm_service.py` (`AlarmScheduler`), `adzan_subuh.*` khusus Subuh | ✅ unit test; **di Pi 3:** adzan Isya terpicu tepat 18:43 (log journal); speaker HDMI lewat `set_audio_output.sh` |
 | REQ-F-031 | Iqomah Alarm | ✅ | `alarm_service.py`, sakelar `iqomah_sound_enabled` | ✅ jarak iqomah teruji; bawaan mati, bisa dinyalakan di panel (DECISIONS #18) |
-| REQ-F-032 | Murottal Playback | ✅ | `alarm_service.py` (`AudioPlayer`, quiet window) | ✅ quiet window & start/stop teruji dgn mock |
+| REQ-F-032 | Murottal Playback | ✅ | `alarm_service.py` (`AudioPlayer`, quiet window), Putar/Jeda & Pilih surat di panel | ✅ unit test + simulasi loop; **di Pi 3:** murottal bunyi lewat TV, pindah surat dari HP, nama surat tampil di layar (DECISIONS #18) |
 | REQ-F-033 | Background Alarm Service | ⚠️ | `jamsholat-alarm.service` (bukan `.timer`, lihat `docs/DECISIONS.md` #7) | Deviasi terdokumentasi & beralasan |
-| REQ-F-040 | Continuous Monitoring | 🔍 | `motion_detect.py` loop | Logika teruji frame sintetis; kamera fisik hanya bisa diuji di Pi sungguhan |
+| REQ-F-040 | Continuous Monitoring | ✅ | `motion_detect.py` loop, Picamera2 (Camera V2 NoIR, CSI) | ✅ **Diuji di Pi 3:** layanan kamera membaca frame terus-menerus, gerakan tangan terdeteksi (DECISIONS #17) |
 | REQ-F-041 | Motion Detection | ✅ | `motion_detect.py` (`MotionDetector`, MOG2) | ✅ 3 skenario frame sintetis teruji |
 | REQ-F-042 | Auto Image Capture | ✅ | `motion_detect.py` (`EventStore`) | ✅ file + DB row tersimpan, teruji |
-| REQ-F-043 | Background Camera Service | ✅ | `jamsholat-camera.service` | Unit file valid; aktivasi sungguhan hanya di Pi |
+| REQ-F-043 | Background Camera Service | ✅ | `jamsholat-camera.service` | ✅ **Diuji di Pi 3:** berjalan sebagai layanan systemd, menyimpan foto 1280×960 saat ada gerakan |
 | REQ-F-044 | Image Retention Policy | ✅ | `retention_cleanup.py` | ✅ cleanup by age teruji; cleanup by storage% teruji logikanya (perlu disk sungguhan utk validasi penuh) |
 | REQ-F-050 | Data Backup | ✅ | `BackupManager.php` | ✅ teruji end-to-end |
 | REQ-F-051 | Data Restore | ✅ | `BackupManager.php` | ✅ round-trip backup→ubah data→restore→data pulih, teruji |
 | REQ-F-060 | Automatic Time Sync | ✅ | OS-level `systemd-timesyncd` (lihat DECISIONS.md #10) | Standar OS, tidak perlu kode custom |
 | REQ-F-061 | Offline Time Accuracy | ✅ | OS-level `fake-hwclock` (lihat DECISIONS.md #9) | Standar OS; limitasi didokumentasikan |
-| REQ-F-070 | Admin Authentication | ✅ | `AuthManager.php` | ✅ login benar/salah teruji end-to-end |
+| REQ-F-070 | Admin Authentication | ✅ | `AuthManager.php` | ✅ unit test; **di Pi 3:** login salah ditolak, login benar masuk ke Beranda (HP) |
 | REQ-F-071 | Restricted Settings Access | ✅ | `AuthMiddleware.php` | ✅ redirect ke login saat belum auth, teruji |
 | REQ-F-072 | Offline Admin Password Recovery | ✅ | `scripts/reset_admin_password.sh` | Syntax teruji; CLI-only by design (tidak butuh internet) |
 
@@ -45,7 +45,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 | Req ID | Judul | Status | Catatan |
 |---|---|---|---|
-| REQ-NF-100 | Low-Resource Operation | ⚠️ | Desain sudah mengarah ke sini (cage + Chromium, bukan desktop penuh, CPUQuota/MemoryMax di systemd units, polling interval dijaga rendah) — pengukuran RAM aktual ≤700MB HANYA bisa diverifikasi di Raspberry Pi 2/3 sungguhan |
+| REQ-NF-100 | Low-Resource Operation | ✅ | **Diukur di Pi 3 Model B (RAM 920 MB terbaca), 12 Okt 2026 19:32**, semua layanan aktif + murottal diputar + kamera jalan: RAM terpakai **469 MB** (`free -m`, kolom used), tersedia 450 MB, swap 29 MB; load average 2,09 / 1,48 / 1,29 (4 inti). Batas SRS ≤700 MB terpenuhi. Pemakai terbesar: Chromium (beberapa proses, berbagi memori), layanan kamera Python ±134 MB RSS, cage ±75 MB |
 | REQ-NF-101 | Display Responsiveness | ✅ | Jam client-side `setInterval` 1 detik; transisi slide CSS `transition: opacity 1s` |
 | REQ-NF-102 | Lightweight Background Services | ✅ | `CPUQuota`/`MemoryMax` di semua unit systemd; `time.sleep()` di setiap loop Python |
 | REQ-NF-110 | Continuous Operation | ✅ | `Restart=on-failure` di semua `.service`; try/except pembungkus loop utama (Python) |
@@ -61,7 +61,8 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 ## Ringkasan
 
-- **46/46 Functional Requirements**: diimplementasikan (2 dengan catatan ⚠️ minor: REQ-F-020 butuh sudoers ter-install untuk eksekusi penuh, REQ-F-033 deviasi arsitektur terdokumentasi).
-- **13/13 Non-Functional Requirements**: diimplementasikan (1 dengan catatan ⚠️: REQ-NF-100 perlu verifikasi RAM di hardware fisik).
+- **46/46 Functional Requirements**: diimplementasikan (catatan ⚠️: REQ-F-012 kas bawaan tidak tampil atas permintaan pengguna, REQ-F-033 deviasi arsitektur terdokumentasi).
+- **13/13 Non-Functional Requirements**: diimplementasikan. REQ-NF-100 terverifikasi di Raspberry Pi 3: 469 MB dari batas 700 MB.
 - **Tidak ada placeholder/dummy implementation** — setiap fitur yang diberi status ✅ punya kode kerja nyata dan sudah lolos test otomatis (58 assertion PHP+Python total, lihat `tests/`).
-- Item berstatus 🔍 murni karena keterbatasan lingkungan pengembangan (tidak ada Raspberry Pi/webcam/speaker fisik) — logikanya tetap diuji semaksimal mungkin dengan simulasi (frame sintetis, mock audio player, dsb).
+- **Uji di perangkat asli (12 Okt 2026)**: Raspberry Pi 3 Model B v1.2, Raspberry Pi OS Lite 13 (Trixie) 32-bit, TV lewat HDMI (layar + speaker), Raspberry Pi Camera V2 NoIR (CSI). Login admin & 5 tab, ubah jam, speaker HDMI, adzan/murottal, kamera, dan RAM sudah diuji langsung. Belum diuji di perangkat: kotak masjid tanpa internet (sinkron jadwal offline) dan pemakaian berhari-hari.
+- Temuan yang hanya muncul di perangkat asli dan sudah diperbaiki: kamera CSI tidak terbaca lewat OpenCV (→ Picamera2), suara bawaan ke jack bukan HDMI (→ `set_audio_output.sh`), `mpg123` crash karena mencoba JACK (→ `-o alsa`), foto kamera tercatat UTC, cache CSS di kiosk, dan pemutar murottal yang meloncat surat saat HDMI masih dipakai proses lama.
