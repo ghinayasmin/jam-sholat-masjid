@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     murottal_request                TEXT NOT NULL DEFAULT '',   -- "file|cap waktu": surat yang dipilih takmir
     -- Suara iqomah otomatis (REQ-F-031); bawaan mati karena iqomah biasanya dikumandangkan langsung.
     iqomah_sound_enabled            INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1)),
+    -- Koreksi tanggal Hijriah agar sama dengan keputusan isbat (−1, 0, +1 hari).
+    hijri_offset_days               INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2),
     last_sync_at                    DATETIME,
     last_sync_status                TEXT,
     updated_at                      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

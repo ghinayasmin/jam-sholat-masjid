@@ -71,12 +71,11 @@ final class ScheduleSync
         }
 
         $timings = $data['data']['timings'];
-        $hijriLabelSrc = $data['data']['date']['hijri'] ?? null;
 
         try {
-            $hijriConverter = new HijriConverter();
-            [$yy, $mm, $dd] = array_map('intval', [$y, $m, $d]);
-            $hijriLocal = $hijriConverter->fromGregorian($yy, $mm, $dd);
+            // Label Hijriah lokal (dengan koreksi isbat takmir), bukan dari AlAdhan,
+            // supaya sama dengan jadwal hasil kalkulasi lokal.
+            $hijriLocal = (new ScheduleEngine())->hijriFor($dateYmd);
 
             $stmt = Database::connection()->prepare(
                 'INSERT INTO prayer_schedules
@@ -96,9 +95,7 @@ final class ScheduleSync
                 'asr' => $this->normalizeTime($timings['Asr']),
                 'maghrib' => $this->normalizeTime($timings['Maghrib']),
                 'isha' => $this->normalizeTime($timings['Isha']),
-                'hijri' => $hijriLabelSrc !== null
-                    ? sprintf('%s %s %s H', $hijriLabelSrc['day'], $hijriLabelSrc['month']['en'], $hijriLabelSrc['year'])
-                    : $hijriLocal['label'],
+                'hijri' => $hijriLocal['label'],
                 'madzhab' => $settings['madzhab'],
             ]);
         } catch (\Throwable $e) {

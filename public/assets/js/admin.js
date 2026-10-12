@@ -85,7 +85,7 @@
 
     // Sakelar yang langsung tersimpan saat diubah.
     document.querySelectorAll('[data-autosubmit]').forEach((input) => {
-        input.addEventListener('change', () => input.form.submit());
+        input.addEventListener('change', () => input.form.requestSubmit()); // lewat handler fetch di bawah
     });
 
     // Kolom cari yang menyaring daftar (mis. Pilih surat). Tanda baca diabaikan

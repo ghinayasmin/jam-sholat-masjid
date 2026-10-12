@@ -270,6 +270,8 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 .murottal-card .k { display: flex; flex-direction: column; font-weight: 600; }
 .murottal-card .k small { font-weight: 400; color: var(--muted); font-size: 13px; margin-top: 2px; }
 .murottal-card .btn { min-width: 88px; }
+label.row { cursor: pointer; }
+.row input[type=radio] { width: 20px; height: 20px; margin: 0; accent-color: var(--primary); }
 button.row { width: 100%; background: none; border: 0; font: inherit; text-align: left; cursor: pointer; }
 .track .n { width: 24px; color: var(--muted); font-size: 13px; text-align: right; font-variant-numeric: tabular-nums; }
 .track.playing .k { color: var(--primary); }

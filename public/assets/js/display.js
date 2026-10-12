@@ -166,7 +166,6 @@
 
             $('mosqueName').textContent = today.mosque_name || 'Masjid';
             $('mosqueAddress').textContent = today.mosque_address || '';
-            $('hijriDate').textContent = today.hijri_date;
             render();
         } catch (e) {
             console.error('Gagal memuat jadwal:', e);
@@ -233,6 +232,9 @@
         if (!state.today) return;
 
         const view = computeView(now, state.today, state.tomorrow, state.reminder);
+        // Hari dalam kalender Hijriah dimulai saat Maghrib.
+        const hijriAfterMaghrib = state.tomorrow && now.getHours() * 3600 + now.getMinutes() * 60 >= toSeconds(state.today.maghrib);
+        $('hijriDate').textContent = hijriAfterMaghrib ? state.tomorrow.hijri_date : state.today.hijri_date;
         const list = view.listDay === 'tomorrow' ? state.tomorrow : state.today;
         const listFriday = view.listDay === 'tomorrow' ? dayOf(state.tomorrow.date) === 5 : view.isFriday;
 

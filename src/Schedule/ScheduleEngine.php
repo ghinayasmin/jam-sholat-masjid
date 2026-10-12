@@ -75,7 +75,7 @@ final class ScheduleEngine
             (int) $settings['location_offset_minutes']
         );
 
-        $hijri = $this->hijri->fromGregorian($y, $m, $d);
+        $hijri = $this->hijriFor($dateYmd);
 
         $row = array_merge($times, [
             'schedule_date' => $dateYmd,
@@ -99,11 +99,25 @@ final class ScheduleEngine
         return $this->findCached($dateYmd) ?? $row;
     }
 
+    /**
+     * Tanggal Hijriah untuk tanggal Masehi ini, setelah koreksi takmir
+     * (hijri_offset_days) agar sama dengan keputusan isbat Kemenag. Dipakai
+     * untuk label di layar dan penentuan puasa sunnah.
+     *
+     * @return array{year:int,month:int,day:int,label:string}
+     */
+    public function hijriFor(string $dateYmd): array
+    {
+        $offset = (int) ($this->settingsRepo->get()['hijri_offset_days'] ?? 0);
+        [$y, $m, $d] = array_map('intval', explode('-', gmdate('Y-m-d', strtotime($dateYmd . ' UTC') + $offset * 86400)));
+        return $this->hijri->fromGregorian($y, $m, $d);
+    }
+
     /** REQ-F-013: info puasa sunnah dari tanggal Hijriyah berjalan. */
     public function getFastingInfo(string $dateYmd): array
     {
         [$y, $m, $d] = array_map('intval', explode('-', $dateYmd));
-        $hijri = $this->hijri->fromGregorian($y, $m, $d);
+        $hijri = $this->hijriFor($dateYmd);
         $dow = (int) gmdate('N', gmmktime(0, 0, 0, $m, $d, $y)); // 1=Senin ... 7=Minggu
 
         // Hari terlarang berpuasa (1 Syawal, 10 Dzulhijjah, hari Tasyrik 11–13 Dzulhijjah)

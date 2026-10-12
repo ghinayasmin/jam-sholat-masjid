@@ -285,3 +285,12 @@ waktu dibuat).
 - Ketepatan di lapangan tetap bergantung pada **koordinat masjid** yang diisi
   di Pengaturan → Lokasi.
 
+## 20. Tanggal Hijriah berganti saat Maghrib, dengan koreksi isbat (DIKONFIRMASI)
+
+- Layar jamaah menampilkan tanggal Hijriah besok mulai waktu Maghrib, sesuai
+  awal hari dalam kalender Islam (mis. malam tarawih pertama sudah "1 Ramadhan").
+- `mosque_settings.hijri_offset_days` (−1, 0, +1) di Pengaturan → Tanggal Hijriah
+  menggeser hasil hitungan agar sama dengan keputusan sidang isbat. Koreksi ini
+  juga dipakai untuk puasa sunnah (Ayyamul Bidh, hari terlarang) lewat
+  `ScheduleEngine::hijriFor()`, dan cache jadwal dihapus saat disimpan.
+
