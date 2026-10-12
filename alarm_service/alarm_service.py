@@ -120,7 +120,8 @@ class AudioPlayer:
 
     @staticmethod
     def _default_runner(cmd: list[str]) -> "subprocess.Popen":
-        return subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # stderr diteruskan ke journal agar kegagalan pemutar (mis. perangkat sibuk) terlihat.
+        return subprocess.Popen(cmd, stdout=subprocess.DEVNULL)
 
     def _player_for(self, path: str) -> list[str] | None:
         ext = os.path.splitext(path)[1].lower()
@@ -151,8 +152,16 @@ class AudioPlayer:
         self._current_process = self._runner(cmd)
 
     def stop_background(self) -> None:
-        if self._current_process is not None and self._current_process.poll() is None:
-            self._current_process.terminate()
+        proc = self._current_process
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            # Tunggu sampai benar-benar berhenti: keluaran HDMI hanya bisa dipakai satu
+            # proses, jadi pemutar berikutnya gagal "device busy" bila yang lama masih hidup.
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
         self._current_process = None
 
     def is_playing(self) -> bool:
@@ -289,7 +298,13 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
     murottal_playing = False  # True selama proses murottal yang kita mulai masih dipantau
     state = MurottalState(db_path)
     state.set_now_playing("")
-    last_request = state.request()  # permintaan lama sebelum layanan menyala tidak diulang
+    # Setelah restart (mis. update.sh), lanjut dari surat terakhir yang dipilih takmir.
+    last_request = state.request()
+    chosen = last_request.split("|", 1)[0]
+    names = [os.path.basename(f) for f in murottal_queue]
+    if chosen in names:
+        murottal_index = names.index(chosen)
+    murottal_started = 0.0
 
     def stop_murottal() -> None:
         nonlocal murottal_playing
@@ -327,6 +342,8 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 murottal_playing = False
                 murottal_index += 1
                 state.set_now_playing("")
+                if time.monotonic() - murottal_started < 5:
+                    logger.warning("Pemutar murottal berhenti seketika (file rusak atau speaker sibuk), lanjut ke surat berikutnya.")
 
             # Takmir memilih surat di panel: mulai dari surat itu, lalu lanjut berurutan.
             request = state.request()
@@ -346,6 +363,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 player.start_background(track)
                 murottal_playing = player.is_playing()
                 if murottal_playing:
+                    murottal_started = time.monotonic()
                     state.set_now_playing(murottal_title(track))
                     logger.info("Murottal: %s", murottal_title(track))
             elif not wanted and murottal_playing:

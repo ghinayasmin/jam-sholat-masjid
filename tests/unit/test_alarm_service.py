@@ -74,9 +74,11 @@ class TestAudioPlayer(unittest.TestCase):
     class FakeProcess:
         def __init__(self):
             self._terminated = False
+            self.waited_after_terminate = False
 
-        def wait(self):
-            pass
+        def wait(self, timeout=None):
+            if self._terminated:
+                self.waited_after_terminate = True
 
         def poll(self):
             return None if not self._terminated else 0
@@ -104,6 +106,13 @@ class TestAudioPlayer(unittest.TestCase):
         self.assertTrue(self.player.is_playing())
         self.player.stop_background()
         self.assertFalse(self.player.is_playing())
+
+    def test_stop_waits_for_player_to_exit(self):
+        # Pemutar baru gagal "device busy" bila yang lama belum benar-benar keluar.
+        self.player.start_background("/tmp/murottal1.mp3")
+        proc = self.player._current_process
+        self.player.stop_background()
+        self.assertTrue(proc.waited_after_terminate)
 
     def test_start_background_stops_previous_track(self):
         self.player.start_background("/tmp/murottal1.mp3")
