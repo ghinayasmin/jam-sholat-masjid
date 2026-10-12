@@ -12,8 +12,8 @@ WorkingDirectory=/opt/jamsholat
 Environment=JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db
 Environment=JAMSHOLAT_CAPTURES_PATH=/opt/jamsholat/storage/captures
 Environment=JAMSHOLAT_CAMERA_INDEX=0
-# Camera Module di perangkat uji terpasang terbalik; ganti 0 bila tidak.
-Environment=JAMSHOLAT_CAMERA_ROTATION=180
+# Putaran foto searah jarum jam (0/90/180/270) sesuai posisi pasang kamera.
+Environment=JAMSHOLAT_CAMERA_ROTATION=90
 # Camera V2 NoIR (papan hitam) di perangkat uji; hapus baris ini untuk Camera V2 biasa.
 Environment=JAMSHOLAT_CAMERA_TUNING=imx219_noir.json
 ExecStart=/usr/bin/python3 /opt/jamsholat/camera_service/motion_detect.py

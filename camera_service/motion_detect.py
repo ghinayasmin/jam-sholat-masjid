@@ -35,8 +35,14 @@ CAMERA_INDEX = int(os.environ.get("JAMSHOLAT_CAMERA_INDEX", "0"))
 # "auto": Raspberry Pi Camera Module (CSI, lewat Picamera2) bila terpasang,
 # selain itu webcam USB. Bisa dipaksa "picamera" atau "usb".
 CAMERA_TYPE = os.environ.get("JAMSHOLAT_CAMERA_TYPE", "auto")
-# Putar gambar Camera Module bila kamera dipasang terbalik (0 atau 180).
+# Putar foto Camera Module searah jarum jam (0, 90, 180, 270) sesuai posisi
+# pasang kamera. Hanya foto yang disimpan yang diputar; deteksi tidak terpengaruh.
 CAMERA_ROTATION = int(os.environ.get("JAMSHOLAT_CAMERA_ROTATION", "0"))
+ROTATE_CODES = {
+    90: cv2.ROTATE_90_CLOCKWISE,
+    180: cv2.ROTATE_180,
+    270: cv2.ROTATE_90_COUNTERCLOCKWISE,
+}
 # File tuning libcamera, mis. "imx219_noir.json" untuk Camera V2 NoIR (papan hitam,
 # tanpa filter inframerah) agar warna tidak terlalu merah muda. Kosong = bawaan.
 CAMERA_TUNING = os.environ.get("JAMSHOLAT_CAMERA_TUNING", "")
@@ -139,18 +145,17 @@ class PiCamera:
     SENSOR_SIZE = (1640, 1232)
 
     def __init__(self, rotation: int = 0, tuning: str = "") -> None:
-        from libcamera import Transform
         from picamera2 import Picamera2
 
         self.cam = Picamera2(tuning=Picamera2.load_tuning_file(tuning) if tuning else None)
-        flip = 1 if rotation == 180 else 0
+        # ISP vc4 di Pi 3 tidak bisa memutar 90°, jadi rotasi dikerjakan OpenCV.
+        self.rotate_code = ROTATE_CODES.get(rotation)
         self.cam.configure(self.cam.create_video_configuration(
             # RGB888 di Picamera2 = urutan byte BGR, langsung cocok untuk OpenCV.
             main={"size": self.STILL_SIZE, "format": "RGB888"},
             # Pi 3 (ISP vc4) hanya mendukung YUV420 untuk lores.
             lores={"size": self.LORES_SIZE, "format": "YUV420"},
             sensor={"output_size": self.SENSOR_SIZE},
-            transform=Transform(hflip=flip, vflip=flip),
             buffer_count=3,
         ))
         self.cam.start()
@@ -163,7 +168,8 @@ class PiCamera:
         return True, self.cam.capture_array("lores")[: self.LORES_SIZE[1], :]
 
     def capture_still(self) -> "np.ndarray":
-        return self.cam.capture_array("main")
+        still = self.cam.capture_array("main")
+        return still if self.rotate_code is None else cv2.rotate(still, self.rotate_code)
 
     def release(self) -> None:
         self.cam.close()

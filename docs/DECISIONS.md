@@ -230,4 +230,10 @@ waktu dibuat).
   dipaksa `picamera` atau `usb`.
 - `python3-picamera2` dipasang dengan `--no-install-recommends` agar Qt/OpenGL
   (untuk jendela pratinjau) tidak ikut memakan RAM dan disk Pi 3.
+- Foto disimpan dari aliran 1280x960 pada mode sensor penuh, deteksi memakai
+  aliran 320x240. Putaran foto (`JAMSHOLAT_CAMERA_ROTATION`, 0/90/180/270 searah
+  jarum jam) dikerjakan OpenCV karena ISP Pi 3 tidak bisa memutar 90°. Diatur
+  sekali di unit systemd, tidak lewat panel (dikonfirmasi pengguna).
+- Perangkat uji memakai Camera V2 **NoIR** (papan hitam); profil
+  `imx219_noir.json` dipakai lewat `JAMSHOLAT_CAMERA_TUNING`.
 
