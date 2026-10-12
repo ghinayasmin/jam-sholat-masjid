@@ -195,9 +195,13 @@ SRS): checklist ada di `docs/SRS_COMPLIANCE.md`.
 3. Setelah `install.sh` + reboot, tampilan jamaah otomatis fullscreen.
 4. Uji webcam: `python3 camera_service/motion_detect.py` lalu lambaikan
    tangan di depan kamera — cek `storage/captures/` ada file baru.
-5. Uji speaker: `mpg123 public/assets/audio/adzan.mp3` (setelah file audio
+5. Pilih keluaran suara: `sudo bash scripts/set_audio_output.sh hdmi` (speaker
+   TV/monitor) atau `... jack` (speaker aktif 3,5 mm). Bawaan Pi OS adalah jack,
+   jadi speaker HDMI diam sampai langkah ini dijalankan.
+6. Uji speaker: `speaker-test -c 2 -t wav -l 1`, lalu
+   `mpg123 public/assets/audio/adzan.mp3` (setelah file audio
    Anda sediakan sendiri — lihat `public/assets/audio/README.md`).
-6. **Rekomendasi opsional** (di luar scope SRS): modul RTC (mis. DS3231)
+7. **Rekomendasi opsional** (di luar scope SRS): modul RTC (mis. DS3231)
    untuk akurasi waktu offline jangka panjang — lihat `docs/DECISIONS.md` #9.
 
 ## 12. Deployment
@@ -222,7 +226,7 @@ kamera, backup, upload, dan konfigurasi lokal, lalu memulai ulang layanan.
 | Gagal login admin | Lupa password | `sudo bash scripts/reset_admin_password.sh <username>` (REQ-F-072, offline) |
 | "Gagal mengubah jam sistem" di panel admin | Sudoers belum terpasang | Jalankan ulang bagian [8/10] `install.sh`, atau cek `/etc/sudoers.d/jamsholat-date` |
 | Kamera tidak mendeteksi gerakan | Webcam tidak terdeteksi/index salah | `ls /dev/video*`; set `JAMSHOLAT_CAMERA_INDEX` di systemd unit sesuai |
-| Suara adzan tidak bunyi | File audio belum disediakan, atau `mpg123` tidak terpasang | Cek `public/assets/audio/README.md`; `which mpg123` |
+| Suara adzan tidak bunyi | File audio belum disediakan, `mpg123` tidak terpasang, atau keluaran suara salah (HDMI vs jack) | Cek `public/assets/audio/README.md`; `which mpg123`; `sudo bash scripts/set_audio_output.sh hdmi` |
 | Chromium tidak fullscreen setelah reboot | cage/Chromium gagal start | `sudo journalctl -u jamsholat-kiosk.service` untuk lihat error |
 | Storage penuh oleh rekaman kamera | Retention belum jalan | Cek `systemctl status jamsholat-retention.timer`; jalankan manual: `python3 camera_service/retention_cleanup.py` |
 
