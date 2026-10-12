@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     reminder_message                TEXT NOT NULL DEFAULT 'Mari bersiap dan mengambil air wudhu',
     show_finance_on_display         INTEGER NOT NULL DEFAULT 0 CHECK (show_finance_on_display IN (0,1)),
     location_name                   TEXT NOT NULL DEFAULT '',   -- label lokasi untuk pengurus, mis. "Sleman, DIY"
+    -- Murottal: diputar/dijeda takmir dari panel; layanan alarm menulis surat yang sedang diputar.
+    murottal_enabled                INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1)),
+    murottal_now_playing            TEXT NOT NULL DEFAULT '',
     last_sync_at                    DATETIME,
     last_sync_status                TEXT,
     updated_at                      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

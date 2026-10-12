@@ -24,6 +24,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import re
 import time
 from glob import glob
 
@@ -211,6 +212,47 @@ def alarm_audio_file(kind: str, prayer: str = "", audio_dir: str | None = None) 
     return os.path.join(audio_dir, kind + ".mp3")
 
 
+def murottal_title(path: str) -> str:
+    """Nama surat dari nama file: "002_An-Naba.mp3" -> "An-Naba"."""
+    name = os.path.splitext(os.path.basename(path))[0]
+    return re.sub(r"^[0-9]+[ _-]*", "", name).replace("_", " ").strip() or name
+
+
+class MurottalState:
+    """Penghubung dengan panel takmir lewat mosque_settings: baca sakelar
+    Putar/Jeda (murottal_enabled) dan tulis surat yang sedang diputar
+    (murottal_now_playing) untuk layar jamaah."""
+
+    def __init__(self, db_path: str) -> None:
+        self.db_path = db_path
+        self._written: str | None = None
+
+    def enabled(self) -> bool:
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                row = conn.execute("SELECT murottal_enabled FROM mosque_settings WHERE id = 1").fetchone()
+            finally:
+                conn.close()
+        except sqlite3.Error:
+            return False  # kolom belum dimigrasi: anggap mati
+        return bool(row and row[0])
+
+    def set_now_playing(self, title: str) -> None:
+        if title == self._written:
+            return
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                conn.execute("UPDATE mosque_settings SET murottal_now_playing = ? WHERE id = 1", (title,))
+                conn.commit()
+            finally:
+                conn.close()
+            self._written = title
+        except sqlite3.Error as exc:
+            logger.error("Gagal mencatat murottal yang diputar: %s", exc)
+
+
 def murottal_files() -> list[str]:
     if not os.path.isdir(AUDIO_DIR):
         return []
@@ -226,6 +268,15 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
 
     murottal_queue = murottal_files()
     murottal_index = 0
+    murottal_playing = False  # True selama proses murottal yang kita mulai masih dipantau
+    state = MurottalState(db_path)
+    state.set_now_playing("")
+
+    def stop_murottal() -> None:
+        nonlocal murottal_playing
+        player.stop_background()
+        murottal_playing = False
+        state.set_now_playing("")
 
     while True:
         try:
@@ -238,9 +289,10 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 scheduler = AlarmScheduler(schedule, interval)
                 murottal_queue = murottal_files()
                 murottal_index = 0
+                stop_murottal()
 
             for kind, prayer in scheduler.check(now):
-                player.stop_background()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
+                stop_murottal()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
                 audio_file = alarm_audio_file(kind, prayer)
                 logger.info("Memutar %s untuk %s (%s)", kind, prayer, audio_file)
                 if os.path.isfile(audio_file):
@@ -248,15 +300,27 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 else:
                     logger.warning("File audio tidak ditemukan: %s", audio_file)
 
-            # REQ-F-032 (Should): murottal di luar jendela diam, kalau tidak sedang main apa pun.
-            if murottal_queue and not scheduler.in_quiet_window(now) and not player.is_playing():
+            # Surat selesai dengan sendirinya: lanjut ke surat berikutnya. Kalau dihentikan
+            # (Jeda, jendela diam, adzan), indeks tetap sehingga surat yang sama diulang.
+            if murottal_playing and not player.is_playing():
+                murottal_playing = False
+                murottal_index += 1
+                state.set_now_playing("")
+
+            # REQ-F-032 (Should): murottal hanya bila dinyalakan takmir dan di luar jendela diam.
+            wanted = bool(murottal_queue) and state.enabled() and not scheduler.in_quiet_window(now)
+            if wanted and not murottal_playing:
                 track = murottal_queue[murottal_index % len(murottal_queue)]
                 player.start_background(track)
-                murottal_index += 1
-            elif scheduler.in_quiet_window(now) and player.is_playing():
-                player.stop_background()
+                murottal_playing = player.is_playing()
+                if murottal_playing:
+                    state.set_now_playing(murottal_title(track))
+                    logger.info("Murottal: %s", murottal_title(track))
+            elif not wanted and murottal_playing:
+                stop_murottal()
 
-            time.sleep(15)  # cukup presisi untuk alarm per menit, hemat CPU (REQ-NF-102)
+            # 3 detik: tombol Putar/Jeda di panel terasa langsung, tetap ringan (REQ-NF-102).
+            time.sleep(3)
 
         except KeyboardInterrupt:
             logger.info("Dihentikan oleh pengguna.")

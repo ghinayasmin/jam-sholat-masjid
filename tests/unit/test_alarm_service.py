@@ -10,7 +10,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'alarm_service'))
-from alarm_service import AlarmScheduler, AudioPlayer, alarm_audio_file  # noqa: E402
+from alarm_service import AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, murottal_title  # noqa: E402
 
 
 SCHEDULE = {
@@ -137,6 +137,38 @@ class TestAlarmAudioFile(unittest.TestCase):
     def test_wav_used_when_no_mp3(self):
         self.touch("iqomah.wav")
         self.assertTrue(alarm_audio_file("iqomah", "fajr", self.dir).endswith("iqomah.wav"))
+
+
+class TestMurottal(unittest.TestCase):
+    def test_title_from_filename(self):
+        self.assertEqual(murottal_title("/a/murottal/002_An-Naba.mp3"), "An-Naba")
+        self.assertEqual(murottal_title("Surah_Yasin.mp3"), "Surah Yasin")
+
+    def test_state_reads_switch_and_writes_now_playing(self):
+        import sqlite3
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            db = os.path.join(d, "t.db")
+            conn = sqlite3.connect(db)
+            conn.execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY, murottal_enabled INTEGER, murottal_now_playing TEXT)")
+            conn.execute("INSERT INTO mosque_settings VALUES (1, 0, '')")
+            conn.commit()
+            state = MurottalState(db)
+            self.assertFalse(state.enabled())
+            conn.execute("UPDATE mosque_settings SET murottal_enabled = 1")
+            conn.commit()
+            self.assertTrue(state.enabled())
+            state.set_now_playing("An-Naba")
+            self.assertEqual(conn.execute("SELECT murottal_now_playing FROM mosque_settings").fetchone()[0], "An-Naba")
+            conn.close()
+
+    def test_state_off_when_column_missing(self):
+        import sqlite3
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            db = os.path.join(d, "t.db")
+            sqlite3.connect(db).execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY)").connection.commit()
+            self.assertFalse(MurottalState(db).enabled())
 
 
 if __name__ == '__main__':

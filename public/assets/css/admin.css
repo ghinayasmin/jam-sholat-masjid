@@ -266,6 +266,10 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 .motion-grid figcaption { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); padding: 0 10px; }
 .motion-grid figcaption .link-btn { font-size: 13px; }
 .motion-clear { margin-top: 16px; }
+.murottal-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+.murottal-card .k { display: flex; flex-direction: column; font-weight: 600; }
+.murottal-card .k small { font-weight: 400; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.murottal-card .btn { min-width: 88px; }
 .date-filter { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
 
 /* ---------- Pesan ---------- */

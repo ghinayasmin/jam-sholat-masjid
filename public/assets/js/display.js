@@ -4,6 +4,7 @@
     // REQ-NF-101: jam diperbarui tiap 1 detik.
     const SCHEDULE_POLL_MS = 60 * 1000;      // pengaturan (pengingat, nama masjid) bisa berubah dari admin
     const CONTENT_POLL_MS = 60 * 1000;       // pengumuman & kas
+    const MUROTTAL_POLL_MS = 5 * 1000;       // surat berganti tiap beberapa menit, Putar/Jeda harus cepat terlihat
     const ANNOUNCEMENT_ROTATE_MS = 10 * 1000;
     const POSTER_EVERY_S = 60;               // poster muncul tiap 60 detik...
     const POSTER_SHOW_S = 12;                // ...selama 12 detik
@@ -186,6 +187,17 @@
         }
     }
 
+    async function loadMurottal() {
+        try {
+            const data = await fetchJson('/api/murottal.php');
+            const title = data.success ? data.now_playing : null;
+            $('infoMurottal').hidden = !title;
+            if (title) $('murottalTitle').textContent = /^surah\b/i.test(title) ? title : 'Surah ' + title;
+        } catch (e) {
+            $('infoMurottal').hidden = true;
+        }
+    }
+
     async function loadFinance() {
         const row = $('infoFinance');
         if (!state.showFinance) { row.hidden = true; return; }
@@ -289,5 +301,7 @@
     setInterval(loadSchedule, SCHEDULE_POLL_MS);
     setInterval(loadPublications, CONTENT_POLL_MS);
     setInterval(loadFinance, CONTENT_POLL_MS);
+    loadMurottal();
+    setInterval(loadMurottal, MUROTTAL_POLL_MS);
     setInterval(() => { state.captionIndex++; renderAnnouncement(); }, ANNOUNCEMENT_ROTATE_MS);
 })(this);

@@ -237,3 +237,21 @@ waktu dibuat).
 - Perangkat uji memakai Camera V2 **NoIR** (papan hitam); profil
   `imx219_noir.json` dipakai lewat `JAMSHOLAT_CAMERA_TUNING`.
 
+## 18. Murottal diputar/dijeda dari panel, nama surat tampil di layar (DIKONFIRMASI)
+
+- Murottal **tidak** lagi diputar otomatis sejak perangkat menyala. Takmir
+  menekan **Putar/Jeda** di Beranda (`mosque_settings.murottal_enabled`,
+  bawaan 0). Layanan alarm membaca sakelar ini tiap 3 detik.
+- **Jeda** menghentikan surat yang sedang diputar; **Putar** mengulang surat
+  yang sama dari awal. Surat berganti hanya bila selesai dengan sendirinya.
+  Pertimbangan: jeda sungguhan (menahan proses `mpg123`) membuat keluaran HDMI
+  tetap terkunci sehingga adzan bisa gagal berbunyi.
+- Layanan alarm menulis judul surat ke `murottal_now_playing`; layar jamaah
+  membacanya lewat `api/murottal.php` tiap 5 detik dan menampilkan baris
+  "Murottal · Surah …". Judul diambil dari nama file (`002_An-Naba'.mp3`
+  → "An-Naba'"), jadi takmir cukup memberi nama file yang benar.
+- Jendela diam sekitar waktu sholat (REQ-F-032) tetap berlaku walau sakelar
+  menyala.
+- Adzan Subuh memakai `adzan_subuh.*` bila ada (lafaz tambahan "ash-shalatu
+  khairum minan naum").
+

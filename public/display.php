@@ -39,6 +39,7 @@
         </ol>
         <dl class="info">
             <div id="infoAnnouncement" hidden><dt>Pengumuman</dt><dd id="announcementText"></dd></div>
+            <div id="infoMurottal" hidden><dt>Murottal</dt><dd id="murottalTitle"></dd></div>
             <div id="infoFasting" hidden><dt id="fastingWhen">Puasa sunnah hari ini</dt><dd id="fastingLabel"></dd></div>
             <div id="infoFinance" hidden><dt>Kas masjid</dt><dd id="financeBalance"></dd></div>
         </dl>

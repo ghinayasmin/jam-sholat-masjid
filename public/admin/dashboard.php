@@ -6,6 +6,7 @@ require __DIR__ . '/../../bootstrap.php';
 
 use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
+use App\Auth\Csrf;
 use App\LocalTime;
 use App\Repository\FinancialRepository;
 use App\Repository\MotionEventRepository;
@@ -57,6 +58,25 @@ $rows = [
     ['asr', 'Ashar'], ['maghrib', 'Maghrib'], ['isha', 'Isya'],
 ];
 
+$murottalOn = (int) $settings['murottal_enabled'] === 1;
+$murottalNow = (string) $settings['murottal_now_playing'];
+$murottalReady = glob(dirname(__DIR__) . '/assets/audio/murottal/*.mp3') !== [];
+if (!$murottalReady) {
+    $murottalStatus = 'Belum ada file murottal di perangkat';
+} elseif (!$murottalOn) {
+    $murottalStatus = 'Dijeda';
+} elseif ($murottalNow !== '') {
+    $murottalStatus = 'Sedang diputar: ' . $murottalNow;
+} else {
+    // Sama dengan jendela diam alarm_service.py: 2 menit sebelum s.d. 20 menit sesudah adzan.
+    $quiet = false;
+    foreach (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as $key) {
+        $delta = $nowMinutes - $toMinutes($schedule[$key]);
+        $quiet = $quiet || ($delta >= -2 && $delta <= 20);
+    }
+    $murottalStatus = $quiet ? 'Diam sekitar waktu sholat, lanjut otomatis' : 'Memulai…';
+}
+
 $syncOk = $settings['last_sync_status'] === null || stripos((string) $settings['last_sync_status'], 'gagal') === false;
 
 $pageTitle = "Assalamu'alaikum";
@@ -87,6 +107,19 @@ require __DIR__ . '/_header.php';
             } ?>
             <div class="<?= $cls ?>"><span><?= $label ?></span><b><?= Format::e($schedule[$key]) ?></b></div>
         <?php endforeach; ?>
+    </div>
+</section>
+
+<section class="group" aria-labelledby="murottal-label">
+    <div class="label" id="murottal-label">Murottal</div>
+    <div class="card murottal-card">
+        <span class="k"><?= $murottalOn ? 'Menyala' : 'Mati' ?><small><?= Format::e($murottalStatus) ?></small></span>
+        <?php if ($murottalReady): ?>
+            <form method="post" action="/admin/murottal.php"><?= Csrf::field() ?>
+                <input type="hidden" name="action" value="<?= $murottalOn ? 'pause' : 'play' ?>">
+                <button type="submit" class="btn small<?= $murottalOn ? ' ghost' : '' ?>"><?= $murottalOn ? 'Jeda' : 'Putar' ?></button>
+            </form>
+        <?php endif; ?>
     </div>
 </section>
 

@@ -61,6 +61,8 @@ final class Database
             'reminder_message' => "TEXT NOT NULL DEFAULT 'Mari bersiap dan mengambil air wudhu'",
             'show_finance_on_display' => 'INTEGER NOT NULL DEFAULT 0 CHECK (show_finance_on_display IN (0,1))',
             'location_name' => "TEXT NOT NULL DEFAULT ''",
+            'murottal_enabled' => 'INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1))',
+            'murottal_now_playing' => "TEXT NOT NULL DEFAULT ''",
         ],
         'publications' => [
             'starts_on' => 'TEXT',
