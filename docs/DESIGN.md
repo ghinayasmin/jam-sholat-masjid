@@ -63,6 +63,7 @@ monitor 1920×1080, `1 --u` = 19,2px. Semua ukuran ditulis
 |---|---|
 | Jam | 11 u, tebal 700 |
 | Hitung mundur | 4,4 u |
+| Tanggal Masehi & Hijriah (baris terpisah), teks "menuju adzan …" | 2,1 u |
 | Waktu sholat (angka) | 2,7 u |
 | Nama sholat | 1,8 u |
 | Nama masjid | 1,9 u |

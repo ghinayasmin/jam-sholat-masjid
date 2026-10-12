@@ -78,8 +78,8 @@ html, body {
 .mosque-address { font-size: calc(var(--u) * 1.15); color: #9EAAA3; font-weight: 500; margin-top: calc(var(--u) * .3); }
 .mosque-address:empty { display: none; }
 .clock { font-size: calc(var(--u) * 11); font-weight: 700; letter-spacing: -0.04em; line-height: .9; }
-.date-line { font-size: calc(var(--u) * 1.45); color: #B7BFB9; margin-top: calc(var(--u) * 1); }
-.hijri { font-family: var(--kufi); color: var(--brass); }
+.date-line { font-size: calc(var(--u) * 2.1); color: #B7BFB9; margin-top: calc(var(--u) * 1); }
+.hijri { display: block; font-family: var(--kufi); color: var(--brass); margin-top: calc(var(--u) * .2); }
 .countdown {
     display: flex;
     flex-wrap: wrap;
@@ -89,7 +89,7 @@ html, body {
     border-top: calc(var(--u) * .1) solid var(--line);
 }
 .countdown-value { font-size: calc(var(--u) * 4.4); font-weight: 700; color: var(--brass); letter-spacing: -0.02em; white-space: nowrap; }
-.countdown-text { font-size: calc(var(--u) * 1.5); color: var(--ink-2); line-height: 1.35; white-space: nowrap; }
+.countdown-text { font-size: calc(var(--u) * 2.1); color: var(--ink-2); line-height: 1.35; white-space: nowrap; }
 
 /* Poster pengumuman — tampil bergantian menutupi panel kiri. */
 .poster {

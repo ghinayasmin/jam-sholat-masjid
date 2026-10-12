@@ -18,7 +18,7 @@
         </header>
         <div class="clock-block">
             <div class="clock" id="clock">--:--</div>
-            <div class="date-line"><span id="gregorianDate">-</span> · <span class="hijri" id="hijriDate">-</span></div>
+            <div class="date-line"><span id="gregorianDate">-</span><span class="hijri" id="hijriDate">-</span></div>
         </div>
         <div class="countdown" id="countdown">
             <span class="countdown-value" id="countdownValue">-</span>
