@@ -45,6 +45,14 @@ final class MotionEventRepository
         return $stmt->fetchAll();
     }
 
+    public function find(int $id): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM motion_events WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
     public function delete(int $id): void
     {
         $stmt = Database::connection()->prepare('DELETE FROM motion_events WHERE id = :id');

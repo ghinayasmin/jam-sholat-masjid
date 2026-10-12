@@ -263,7 +263,9 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 .motion-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .motion-grid figure { margin: 0; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
 .motion-grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
-.motion-grid figcaption { font-size: 13px; color: var(--muted); padding: 8px 10px; }
+.motion-grid figcaption { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); padding: 0 10px; }
+.motion-grid figcaption .link-btn { font-size: 13px; }
+.motion-clear { margin-top: 16px; }
 .date-filter { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
 
 /* ---------- Pesan ---------- */
