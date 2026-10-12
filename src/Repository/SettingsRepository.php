@@ -43,7 +43,7 @@ final class SettingsRepository
             'last_sync_at', 'last_sync_status',
             'reminder_enabled', 'reminder_minutes', 'reminder_friday_minutes',
             'reminder_message', 'show_finance_on_display', 'location_name',
-            'murottal_enabled',
+            'murottal_enabled', 'iqomah_sound_enabled',
         ];
         $set = [];
         $params = [];

@@ -254,4 +254,8 @@ waktu dibuat).
   menyala.
 - Adzan Subuh memakai `adzan_subuh.*` bila ada (lafaz tambahan "ash-shalatu
   khairum minan naum").
+- **Suara iqomah bisa dimatikan** (`iqomah_sound_enabled`, bawaan 0) di
+  Pengaturan → Suara iqomah. Di banyak masjid iqomah dikumandangkan langsung,
+  jadi rekaman otomatis justru mengganggu. Fitur REQ-F-031 tetap ada dan
+  berjalan bila dinyalakan.
 

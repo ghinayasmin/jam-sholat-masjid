@@ -158,6 +158,7 @@ class TestMurottal(unittest.TestCase):
             conn.execute("UPDATE mosque_settings SET murottal_enabled = 1")
             conn.commit()
             self.assertTrue(state.enabled())
+            self.assertFalse(state.iqomah_enabled())  # kolom tidak ada di tabel uji
             state.set_now_playing("An-Naba")
             self.assertEqual(conn.execute("SELECT murottal_now_playing FROM mosque_settings").fetchone()[0], "An-Naba")
             conn.close()

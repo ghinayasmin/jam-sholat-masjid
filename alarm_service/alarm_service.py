@@ -227,16 +227,22 @@ class MurottalState:
         self.db_path = db_path
         self._written: str | None = None
 
-    def enabled(self) -> bool:
+    def _flag(self, column: str) -> bool:
         try:
             conn = sqlite3.connect(self.db_path, timeout=5)
             try:
-                row = conn.execute("SELECT murottal_enabled FROM mosque_settings WHERE id = 1").fetchone()
+                row = conn.execute(f"SELECT {column} FROM mosque_settings WHERE id = 1").fetchone()
             finally:
                 conn.close()
         except sqlite3.Error:
             return False  # kolom belum dimigrasi: anggap mati
         return bool(row and row[0])
+
+    def enabled(self) -> bool:
+        return self._flag("murottal_enabled")
+
+    def iqomah_enabled(self) -> bool:
+        return self._flag("iqomah_sound_enabled")
 
     def set_now_playing(self, title: str) -> None:
         if title == self._written:
@@ -292,6 +298,8 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 stop_murottal()
 
             for kind, prayer in scheduler.check(now):
+                if kind == "iqomah" and not state.iqomah_enabled():
+                    continue  # REQ-F-031: dimatikan takmir, iqomah dikumandangkan langsung
                 stop_murottal()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
                 audio_file = alarm_audio_file(kind, prayer)
                 logger.info("Memutar %s untuk %s (%s)", kind, prayer, audio_file)

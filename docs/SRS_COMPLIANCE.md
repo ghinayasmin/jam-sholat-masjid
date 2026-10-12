@@ -25,7 +25,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-025 | Adzan-Iqomah Interval Setting | ✅ | `iqomah.php`, `mosque_settings.azan_iqomah_interval_minutes` | ✅ dipakai `AlarmScheduler`, teruji |
 | REQ-F-026 | Mosque Profile Setting | ✅ | `mosque_profile.php` | Syntax teruji |
 | REQ-F-030 | Adzan Alarm | ✅ | `alarm_service.py` (`AlarmScheduler`) | ✅ 12 assertion Python teruji (trigger tepat waktu, tidak dobel) |
-| REQ-F-031 | Iqomah Alarm | ✅ | `alarm_service.py` | ✅ jarak iqomah teruji |
+| REQ-F-031 | Iqomah Alarm | ✅ | `alarm_service.py`, sakelar `iqomah_sound_enabled` | ✅ jarak iqomah teruji; bawaan mati, bisa dinyalakan di panel (DECISIONS #18) |
 | REQ-F-032 | Murottal Playback | ✅ | `alarm_service.py` (`AudioPlayer`, quiet window) | ✅ quiet window & start/stop teruji dgn mock |
 | REQ-F-033 | Background Alarm Service | ⚠️ | `jamsholat-alarm.service` (bukan `.timer`, lihat `docs/DECISIONS.md` #7) | Deviasi terdokumentasi & beralasan |
 | REQ-F-040 | Continuous Monitoring | 🔍 | `motion_detect.py` loop | Logika teruji frame sintetis; kamera fisik hanya bisa diuji di Pi sungguhan |
