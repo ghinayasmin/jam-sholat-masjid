@@ -97,8 +97,8 @@ require __DIR__ . '/_header.php';
 
 <section class="group" aria-labelledby="murottal-label">
     <div class="label" id="murottal-label">Murottal</div>
-    <div class="card murottal-card">
-        <span class="k"><?= $murottalOn ? 'Menyala' : 'Mati' ?><small><?= Format::e($murottalStatus) ?></small></span>
+    <div class="card murottal-card"<?= $murottalOn ? ' data-murottal-live' : '' ?>>
+        <span class="k"><?= $murottalOn ? 'Menyala' : 'Mati' ?><small data-murottal-status><?= Format::e($murottalStatus) ?></small></span>
         <?php if ($murottalReady): ?>
             <form method="post" action="/admin/murottal.php"><?= Csrf::field() ?>
                 <input type="hidden" name="action" value="<?= $murottalOn ? 'pause' : 'play' ?>">

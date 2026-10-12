@@ -56,8 +56,8 @@ require __DIR__ . '/_header.php';
 <?php if ($tracks === []): ?>
     <div class="card"><div class="empty">Belum ada file murottal di perangkat. Lihat public/assets/audio/README.md.</div></div>
 <?php else: ?>
-    <div class="card murottal-card">
-        <span class="k"><?= $on ? 'Menyala' : 'Dijeda' ?><small><?= Format::e($on ? $status : 'Ketuk surat untuk memutar') ?></small></span>
+    <div class="card murottal-card" data-murottal-live>
+        <span class="k"><?= $on ? 'Menyala' : 'Dijeda' ?><small data-murottal-status><?= Format::e($on ? $status : 'Ketuk surat untuk memutar') ?></small></span>
         <?php if ($on): ?>
             <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="pause"><input type="hidden" name="back" value="list"><button type="submit" class="btn small ghost">Jeda</button></form>
         <?php endif; ?>
@@ -72,7 +72,7 @@ require __DIR__ . '/_header.php';
             <?php foreach ($tracks as $i => $t):
                 $playing = $now !== '' && $now === $t['title']; ?>
                 <form method="post" data-filter-text="<?= Format::e(($i + 1) . ' ' . $t['title'] . ' ' . $t['file']) ?>"><?= Csrf::field() ?><input type="hidden" name="action" value="choose"><input type="hidden" name="file" value="<?= Format::e($t['file']) ?>">
-                    <button type="submit" class="row track<?= $playing ? ' playing' : '' ?>"<?= $playing ? ' aria-current="true"' : '' ?>>
+                    <button type="submit" class="row track<?= $playing ? ' playing' : '' ?>" data-title="<?= Format::e($t['title']) ?>"<?= $playing ? ' aria-current="true"' : '' ?>>
                         <span class="n"><?= $i + 1 ?></span>
                         <span class="k">Surah <?= Format::e($t['title']) ?></span>
                         <span class="v<?= $playing ? ' ok' : '' ?>"><?= $playing ? 'Diputar' : 'Putar' ?></span>

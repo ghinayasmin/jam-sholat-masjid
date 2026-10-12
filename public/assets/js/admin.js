@@ -99,6 +99,34 @@
         });
     });
 
+    // Status murottal ikut berubah tanpa memuat ulang: layanan alarm butuh beberapa
+    // detik untuk pindah surat setelah takmir mengetuk.
+    const live = document.querySelector('[data-murottal-live]');
+    if (live) {
+        const statusEl = live.querySelector('[data-murottal-status]');
+        const tracks = document.querySelectorAll('button.track[data-title]');
+        const refresh = async () => {
+            try {
+                const data = await (await fetch('/api/murottal.php', { cache: 'no-store' })).json();
+                const title = data.success ? data.now_playing : null;
+                if (title) statusEl.textContent = 'Sedang diputar: ' + title;
+                tracks.forEach((btn) => {
+                    const on = title !== null && btn.dataset.title === title;
+                    btn.classList.toggle('playing', on);
+                    btn.toggleAttribute('aria-current', on);
+                    const v = btn.querySelector('.v');
+                    v.textContent = on ? 'Diputar' : 'Putar';
+                    v.classList.toggle('ok', on);
+                });
+            } catch (err) { /* jaringan putus sebentar: coba lagi di putaran berikutnya */ }
+        };
+        refresh();
+        // Halaman bisa diganti lewat document.write (lihat pengiriman formulir di bawah)
+        // tanpa membuang timer lama, jadi simpan di window agar tidak menumpuk.
+        clearInterval(window.murottalTimer);
+        window.murottalTimer = setInterval(() => { if (!document.hidden) refresh(); }, 3000);
+    }
+
     // Konfirmasi sebelum tindakan yang menghapus/menimpa data.
     document.querySelectorAll('form[data-confirm]').forEach((form) => {
         form.addEventListener('submit', (e) => {
