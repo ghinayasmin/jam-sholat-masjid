@@ -37,6 +37,9 @@ CAMERA_INDEX = int(os.environ.get("JAMSHOLAT_CAMERA_INDEX", "0"))
 CAMERA_TYPE = os.environ.get("JAMSHOLAT_CAMERA_TYPE", "auto")
 # Putar gambar Camera Module bila kamera dipasang terbalik (0 atau 180).
 CAMERA_ROTATION = int(os.environ.get("JAMSHOLAT_CAMERA_ROTATION", "0"))
+# File tuning libcamera, mis. "imx219_noir.json" untuk Camera V2 NoIR (papan hitam,
+# tanpa filter inframerah) agar warna tidak terlalu merah muda. Kosong = bawaan.
+CAMERA_TUNING = os.environ.get("JAMSHOLAT_CAMERA_TUNING", "")
 
 # REQ-NF-102: layanan latar belakang tidak boleh membebani resource berlebihan —
 # nilai-nilai ini sengaja konservatif untuk Raspberry Pi 2/3 (RAM 1GB).
@@ -135,11 +138,11 @@ class PiCamera:
     STILL_SIZE = (1280, 960)
     SENSOR_SIZE = (1640, 1232)
 
-    def __init__(self, rotation: int = 0) -> None:
+    def __init__(self, rotation: int = 0, tuning: str = "") -> None:
         from libcamera import Transform
         from picamera2 import Picamera2
 
-        self.cam = Picamera2()
+        self.cam = Picamera2(tuning=Picamera2.load_tuning_file(tuning) if tuning else None)
         flip = 1 if rotation == 180 else 0
         self.cam.configure(self.cam.create_video_configuration(
             # RGB888 di Picamera2 = urutan byte BGR, langsung cocok untuk OpenCV.
@@ -177,7 +180,7 @@ def picamera_available() -> bool:
 def open_camera(camera_type: str, camera_index: int):
     if camera_type == "picamera" or (camera_type == "auto" and picamera_available()):
         logger.info("Membuka Raspberry Pi Camera Module (Picamera2)...")
-        return PiCamera(CAMERA_ROTATION)
+        return PiCamera(CAMERA_ROTATION, CAMERA_TUNING)
     logger.info("Membuka webcam USB index %d...", camera_index)
     cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
