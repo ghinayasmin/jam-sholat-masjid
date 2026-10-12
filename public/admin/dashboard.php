@@ -60,7 +60,7 @@ $rows = [
 
 $murottalOn = (int) $settings['murottal_enabled'] === 1;
 $murottalNow = (string) $settings['murottal_now_playing'];
-$murottalReady = glob(dirname(__DIR__) . '/assets/audio/murottal/*.mp3') !== [];
+$murottalReady = \App\Murottal::tracks() !== [];
 if (!$murottalReady) {
     $murottalStatus = 'Belum ada file murottal di perangkat';
 } elseif (!$murottalOn) {
@@ -121,6 +121,9 @@ require __DIR__ . '/_header.php';
             </form>
         <?php endif; ?>
     </div>
+    <?php if ($murottalReady): ?>
+        <div class="card" style="margin-top:8px"><a class="row" href="/admin/murottal.php"><span></span><span class="k">Pilih surat</span><span class="v"><?= Icon::svg('chevron', 'icon chev') ?></span></a></div>
+    <?php endif; ?>
 </section>
 
 <section class="group" aria-labelledby="tasks-label">

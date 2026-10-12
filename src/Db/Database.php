@@ -63,6 +63,7 @@ final class Database
             'location_name' => "TEXT NOT NULL DEFAULT ''",
             'murottal_enabled' => 'INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1))',
             'murottal_now_playing' => "TEXT NOT NULL DEFAULT ''",
+            'murottal_request' => "TEXT NOT NULL DEFAULT ''",
             'iqomah_sound_enabled' => 'INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1))',
         ],
         'publications' => [

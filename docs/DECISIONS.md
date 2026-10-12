@@ -258,4 +258,9 @@ waktu dibuat).
   Pengaturan → Suara iqomah. Di banyak masjid iqomah dikumandangkan langsung,
   jadi rekaman otomatis justru mengganggu. Fitur REQ-F-031 tetap ada dan
   berjalan bila dinyalakan.
+- **Pilih surat** (`admin/murottal.php`): mengetuk surat menyalakan murottal
+  dan menulis `murottal_request = "file|cap waktu"`. Layanan alarm pindah ke
+  surat itu lalu lanjut berurutan. Cap waktu membuat memilih ulang surat yang
+  sama tetap terbaca sebagai permintaan baru. Daftar dan judul diambil dari
+  nama file oleh `App\Murottal` dengan aturan yang sama seperti Python.
 

@@ -244,6 +244,18 @@ class MurottalState:
     def iqomah_enabled(self) -> bool:
         return self._flag("iqomah_sound_enabled")
 
+    def request(self) -> str:
+        """Surat yang dipilih takmir, "nama_file|cap_waktu" ('' bila belum ada)."""
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                row = conn.execute("SELECT murottal_request FROM mosque_settings WHERE id = 1").fetchone()
+            finally:
+                conn.close()
+        except sqlite3.Error:
+            return ""
+        return (row[0] or "") if row else ""
+
     def set_now_playing(self, title: str) -> None:
         if title == self._written:
             return
@@ -277,6 +289,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
     murottal_playing = False  # True selama proses murottal yang kita mulai masih dipantau
     state = MurottalState(db_path)
     state.set_now_playing("")
+    last_request = state.request()  # permintaan lama sebelum layanan menyala tidak diulang
 
     def stop_murottal() -> None:
         nonlocal murottal_playing
@@ -314,6 +327,17 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 murottal_playing = False
                 murottal_index += 1
                 state.set_now_playing("")
+
+            # Takmir memilih surat di panel: mulai dari surat itu, lalu lanjut berurutan.
+            request = state.request()
+            if request and request != last_request:
+                last_request = request
+                chosen = request.split("|", 1)[0]
+                names = [os.path.basename(f) for f in murottal_queue]
+                if chosen in names:
+                    murottal_index = names.index(chosen)
+                    if murottal_playing:
+                        stop_murottal()
 
             # REQ-F-032 (Should): murottal hanya bila dinyalakan takmir dan di luar jendela diam.
             wanted = bool(murottal_queue) and state.enabled() and not scheduler.in_quiet_window(now)

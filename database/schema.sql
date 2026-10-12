@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     -- Murottal: diputar/dijeda takmir dari panel; layanan alarm menulis surat yang sedang diputar.
     murottal_enabled                INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1)),
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
+    murottal_request                TEXT NOT NULL DEFAULT '',   -- "file|cap waktu": surat yang dipilih takmir
     -- Suara iqomah otomatis (REQ-F-031); bawaan mati karena iqomah biasanya dikumandangkan langsung.
     iqomah_sound_enabled            INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1)),
     last_sync_at                    DATETIME,
