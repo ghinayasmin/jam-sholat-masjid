@@ -45,7 +45,7 @@ class TestRetentionCleanup(unittest.TestCase):
         conn.close()
 
     def _add_event(self, filename: str, days_ago: int):
-        date = (datetime.datetime.utcnow() - datetime.timedelta(days=days_ago)).strftime("%Y-%m-%d %H:%M:%S")
+        date = (datetime.datetime.now() - datetime.timedelta(days=days_ago)).strftime("%Y-%m-%d %H:%M:%S")
         open(os.path.join(self.captures_path, filename), 'w').write('dummy')
         conn = sqlite3.connect(self.db_path)
         conn.execute("INSERT INTO motion_events (detected_at, image_path) VALUES (?, ?)", (date, filename))

@@ -60,7 +60,7 @@ def delete_event(conn: sqlite3.Connection, captures_path: str, event_id: int, im
 
 
 def cleanup_by_age(conn: sqlite3.Connection, captures_path: str, retention_days: int) -> int:
-    cutoff = (datetime.datetime.utcnow() - datetime.timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
+    cutoff = (datetime.datetime.now() - datetime.timedelta(days=retention_days)).strftime("%Y-%m-%d %H:%M:%S")
     rows = conn.execute(
         "SELECT id, image_path FROM motion_events WHERE detected_at < ?", (cutoff,)
     ).fetchall()

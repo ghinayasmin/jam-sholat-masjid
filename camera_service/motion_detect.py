@@ -42,6 +42,9 @@ MIN_CONTOUR_AREA = 1500          # abaikan noise kecil
 MIN_SECONDS_BETWEEN_CAPTURES = 5  # debounce, jangan banjiri DB/disk saat gerakan berkelanjutan
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
+# Latar belakang MOG2 masih kosong saat kamera baru dibuka, sehingga frame awal
+# selalu terbaca "gerakan". Lewati ~5 detik pertama (5 fps).
+WARMUP_FRAMES = 25
 
 logging.basicConfig(
     level=logging.INFO,
@@ -91,7 +94,9 @@ class EventStore:
         return conn
 
     def save_event(self, frame: "np.ndarray") -> str:
-        now = datetime.datetime.utcnow()
+        # Waktu lokal perangkat (Asia/Jakarta, diset install.sh): panel takmir
+        # menampilkan detected_at apa adanya, jadi jangan UTC.
+        now = datetime.datetime.now()
         filename = "motion_" + now.strftime("%Y%m%d_%H%M%S") + ".jpg"
         full_path = os.path.join(self.captures_path, filename)
 
@@ -163,10 +168,12 @@ def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: s
     last_capture_time = 0.0
 
     cap = None
+    warmup_left = 0
     while True:
         try:
             if cap is None or not cap.isOpened():
                 cap = open_camera(camera_type, camera_index)
+                warmup_left = WARMUP_FRAMES
                 if not cap.isOpened():
                     logger.warning("Kamera tidak tersedia, coba lagi dalam 10 detik.")
                     time.sleep(10)
@@ -180,7 +187,10 @@ def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: s
                 time.sleep(5)
                 continue
 
-            if detector.detect(frame):
+            moving = detector.detect(frame)  # tetap dipanggil agar latar belakang terbentuk
+            if warmup_left > 0:
+                warmup_left -= 1
+            elif moving:
                 now = time.time()
                 if now - last_capture_time >= MIN_SECONDS_BETWEEN_CAPTURES:
                     store.save_event(frame)
