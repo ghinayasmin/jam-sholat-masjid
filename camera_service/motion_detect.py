@@ -35,6 +35,8 @@ CAMERA_INDEX = int(os.environ.get("JAMSHOLAT_CAMERA_INDEX", "0"))
 # "auto": Raspberry Pi Camera Module (CSI, lewat Picamera2) bila terpasang,
 # selain itu webcam USB. Bisa dipaksa "picamera" atau "usb".
 CAMERA_TYPE = os.environ.get("JAMSHOLAT_CAMERA_TYPE", "auto")
+# Putar gambar Camera Module bila kamera dipasang terbalik (0 atau 180).
+CAMERA_ROTATION = int(os.environ.get("JAMSHOLAT_CAMERA_ROTATION", "0"))
 
 # REQ-NF-102: layanan latar belakang tidak boleh membebani resource berlebihan —
 # nilai-nilai ini sengaja konservatif untuk Raspberry Pi 2/3 (RAM 1GB).
@@ -64,17 +66,20 @@ class MotionDetector:
         )
 
     def detect(self, frame: "np.ndarray") -> bool:
-        """Return True jika ada gerakan signifikan pada frame ini."""
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        """Return True jika ada gerakan signifikan pada frame ini (BGR atau grayscale)."""
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) if frame.ndim == 3 else frame
         gray = cv2.GaussianBlur(gray, (5, 5), 0)
 
         fg_mask = self.bg_subtractor.apply(gray)
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
         fg_mask = cv2.dilate(fg_mask, np.ones((5, 5), np.uint8), iterations=2)
 
+        # Ambang ditetapkan untuk frame 640x480; skalakan agar frame lores
+        # Camera Module (320x240) sama pekanya.
+        min_area = self.min_contour_area * gray.size / (FRAME_WIDTH * FRAME_HEIGHT)
         contours, _ = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for c in contours:
-            if cv2.contourArea(c) >= self.min_contour_area:
+            if cv2.contourArea(c) >= min_area:
                 return True
         return False
 
@@ -119,15 +124,31 @@ class EventStore:
 class PiCamera:
     """Raspberry Pi Camera Module (CSI). Node /dev/video0 miliknya (unicam)
     hanya memberi data sensor mentah, jadi cv2.VideoCapture tidak bisa
-    membacanya — harus lewat libcamera/Picamera2."""
+    membacanya — harus lewat libcamera/Picamera2.
 
-    def __init__(self) -> None:
+    Dua aliran: "lores" 320x240 untuk deteksi (ringan, dibaca tiap putaran) dan
+    "main" 1280x960 yang hanya diambil saat ada gerakan. Sensor dipaksa ke mode
+    penuh 1640x1232; mode 640x480 imx219 memotong tengah sensor sehingga
+    gambar tampak di-zoom."""
+
+    LORES_SIZE = (320, 240)
+    STILL_SIZE = (1280, 960)
+    SENSOR_SIZE = (1640, 1232)
+
+    def __init__(self, rotation: int = 0) -> None:
+        from libcamera import Transform
         from picamera2 import Picamera2
 
         self.cam = Picamera2()
-        # RGB888 di Picamera2 = urutan byte BGR, langsung cocok untuk OpenCV.
+        flip = 1 if rotation == 180 else 0
         self.cam.configure(self.cam.create_video_configuration(
-            main={"size": (FRAME_WIDTH, FRAME_HEIGHT), "format": "RGB888"}
+            # RGB888 di Picamera2 = urutan byte BGR, langsung cocok untuk OpenCV.
+            main={"size": self.STILL_SIZE, "format": "RGB888"},
+            # Pi 3 (ISP vc4) hanya mendukung YUV420 untuk lores.
+            lores={"size": self.LORES_SIZE, "format": "YUV420"},
+            sensor={"output_size": self.SENSOR_SIZE},
+            transform=Transform(hflip=flip, vflip=flip),
+            buffer_count=3,
         ))
         self.cam.start()
 
@@ -135,7 +156,11 @@ class PiCamera:
         return True
 
     def read(self):
-        return True, self.cam.capture_array()
+        # Bidang Y dari YUV420 = gambar grayscale, cukup untuk deteksi gerakan.
+        return True, self.cam.capture_array("lores")[: self.LORES_SIZE[1], :]
+
+    def capture_still(self) -> "np.ndarray":
+        return self.cam.capture_array("main")
 
     def release(self) -> None:
         self.cam.close()
@@ -152,7 +177,7 @@ def picamera_available() -> bool:
 def open_camera(camera_type: str, camera_index: int):
     if camera_type == "picamera" or (camera_type == "auto" and picamera_available()):
         logger.info("Membuka Raspberry Pi Camera Module (Picamera2)...")
-        return PiCamera()
+        return PiCamera(CAMERA_ROTATION)
     logger.info("Membuka webcam USB index %d...", camera_index)
     cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
@@ -193,7 +218,8 @@ def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: s
             elif moving:
                 now = time.time()
                 if now - last_capture_time >= MIN_SECONDS_BETWEEN_CAPTURES:
-                    store.save_event(frame)
+                    still = cap.capture_still() if hasattr(cap, "capture_still") else frame
+                    store.save_event(still)
                     last_capture_time = now
 
             time.sleep(0.2)  # ~5 fps cukup untuk deteksi gerakan, hemat CPU (REQ-NF-102)

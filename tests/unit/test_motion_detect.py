@@ -35,6 +35,17 @@ class TestMotionDetector(unittest.TestCase):
         moving[100:300, 100:300] = 250
         self.assertTrue(detector.detect(moving))
 
+    def test_grayscale_lores_frame_detected(self):
+        # Camera Module mengirim bidang Y 320x240 (tanpa kanal warna).
+        detector = MotionDetector()
+        base = np.full((240, 320), 100, dtype=np.uint8)
+        for _ in range(15):
+            detector.detect(base)
+
+        moving = base.copy()
+        moving[50:150, 50:150] = 250
+        self.assertTrue(detector.detect(moving))
+
     def test_small_noise_ignored(self):
         detector = MotionDetector(min_contour_area=5000)
         base = np.full((480, 640, 3), 100, dtype=np.uint8)

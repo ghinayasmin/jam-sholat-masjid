@@ -12,6 +12,8 @@ WorkingDirectory=/opt/jamsholat
 Environment=JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db
 Environment=JAMSHOLAT_CAPTURES_PATH=/opt/jamsholat/storage/captures
 Environment=JAMSHOLAT_CAMERA_INDEX=0
+# Camera Module di perangkat uji terpasang terbalik; ganti 0 bila tidak.
+Environment=JAMSHOLAT_CAMERA_ROTATION=180
 ExecStart=/usr/bin/python3 /opt/jamsholat/camera_service/motion_detect.py
 Restart=on-failure
 RestartSec=10
