@@ -46,6 +46,16 @@
     </aside>
 </div>
 
+<!-- Poster landscape: memenuhi layar, jam & sholat berikutnya tetap terlihat di strip bawah. -->
+<div class="poster-full" id="posterFull" hidden>
+    <div class="poster-full-img"><img id="posterFullImg" alt=""></div>
+    <div class="strip">
+        <span class="strip-clock" id="stripClock">--:--</span>
+        <span class="strip-date" id="stripDate"></span>
+        <span class="strip-next" id="stripNext"></span>
+    </div>
+</div>
+
 <div class="overlay" id="reminder" hidden>
     <div class="overlay-inner">
         <div class="overlay-sub">Adzan <b id="reminderPrayer">-</b> dalam</div>

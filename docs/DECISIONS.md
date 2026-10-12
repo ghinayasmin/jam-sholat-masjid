@@ -294,3 +294,14 @@ waktu dibuat).
   juga dipakai untuk puasa sunnah (Ayyamul Bidh, hari terlarang) lewat
   `ScheduleEngine::hijriFor()`, dan cache jadwal dihapus saat disimpan.
 
+## 21. Poster landscape tampil layar penuh (DIKONFIRMASI)
+
+- Orientasi poster dibaca dari ukuran gambar saat dimuat: rasio lebar/tinggi
+  ≥ 1,3 dianggap landscape dan tampil memenuhi layar, dengan strip bawah
+  berisi jam, tanggal, dan sholat berikutnya beserta hitung mundurnya.
+  Portrait dan persegi (format umum Canva/Instagram) tetap di panel kiri.
+- Takmir tidak perlu memilih apa pun saat mengunggah.
+- Perbaikan yang ikut masuk: poster tinggi sebelumnya terpotong bagian
+  bawahnya karena tinggi persen tidak berlaku di sel grid; gambar kini
+  diposisikan absolut dengan `object-fit: contain`.
+

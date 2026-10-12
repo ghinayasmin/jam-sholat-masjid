@@ -8,6 +8,7 @@
     const ANNOUNCEMENT_ROTATE_MS = 10 * 1000;
     const POSTER_EVERY_S = 60;               // poster muncul tiap 60 detik...
     const POSTER_SHOW_S = 12;                // ...selama 12 detik
+    const WIDE_POSTER_RATIO = 1.3;           // lebar/tinggi ≥ ini = landscape → layar penuh
     const ADZAN_SCREEN_S = 180;              // layar adzan tampil 3 menit sejak waktu adzan
 
     const ADZAN_KEYS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -138,6 +139,7 @@
         posters: [],
         captions: [],
         posterIndex: 0,
+        currentPoster: null,     // poster yang sedang tampil (portrait di panel kiri, landscape layar penuh)
         captionIndex: 0,
     };
 
@@ -179,7 +181,12 @@
             const items = data.items || [];
             state.posters = items.filter((p) => p.url);
             state.captions = items.map((p) => (p.caption || '').trim()).filter(Boolean);
-            state.posters.forEach((p) => { const img = new Image(); img.src = p.url; }); // muat lebih dulu
+            // Muat lebih dulu, sekaligus catat orientasi: landscape tampil layar penuh.
+            state.posters.forEach((p) => {
+                const img = new Image();
+                img.onload = () => { p.wide = img.naturalWidth / img.naturalHeight >= WIDE_POSTER_RATIO; };
+                img.src = p.url;
+            });
             renderAnnouncement();
         } catch (e) {
             console.error('Gagal memuat pengumuman:', e);
@@ -278,21 +285,33 @@
             $('adzanTime').textContent = view.adzan.time;
         }
 
+        if (view.next) {
+            $('stripClock').textContent = $('clock').textContent;
+            $('stripDate').textContent = $('gregorianDate').textContent;
+            $('stripNext').textContent = prayerName(view.next.key, view.fridayDhuhr) + ' ' + view.next.time +
+                ' · ' + formatDuration(view.remaining) + ' lagi';
+        }
+
         renderPoster(now, view.mode);
     }
 
     function renderPoster(now, mode) {
-        const poster = $('poster');
         const sinceEpoch = Math.floor(now.getTime() / 1000);
         const show = mode === 'normal' && state.posters.length > 0 && sinceEpoch % POSTER_EVERY_S < POSTER_SHOW_S;
-        if (show && poster.hidden) {
+        if (show && !state.currentPoster) {
             const item = state.posters[state.posterIndex % state.posters.length];
             state.posterIndex++;
-            $('posterImg').onerror = () => { state.posters = state.posters.filter((p) => p !== item); poster.hidden = true; };
-            $('posterImg').src = item.url;
-            $('posterImg').alt = item.caption || 'Pengumuman';
+            state.currentPoster = item;
+            // Portrait/persegi di panel kiri; landscape memenuhi layar.
+            const img = item.wide ? $('posterFullImg') : $('posterImg');
+            img.onerror = () => { state.posters = state.posters.filter((p) => p !== item); state.currentPoster = null; };
+            img.src = item.url;
+            img.alt = item.caption || 'Pengumuman';
         }
-        poster.hidden = !show;
+        if (!show) state.currentPoster = null;
+        const item = state.currentPoster;
+        $('poster').hidden = !(item && !item.wide);
+        $('posterFull').hidden = !(item && item.wide);
     }
 
     render();
