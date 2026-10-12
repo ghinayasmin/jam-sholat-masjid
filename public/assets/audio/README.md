@@ -27,8 +27,9 @@ layanan berhenti.
 
 ## Sumber bebas lisensi yang dipakai saat uji coba
 
-Iqomah dan murottal Juz 'Amma (Al-Fatihah + An-Naba s.d. An-Nas, bacaan
-Aaqib Azeez) diambil dari Wikimedia Commons (CC BY-SA 4.0 dan CC0). Adzan dan
+Iqomah dan murottal 113 surat (bacaan Aaqib Azeez, tanpa Al-Qashash) diambil
+dari Wikimedia Commons (CC BY-SA 4.0 dan CC0), dikompres ke MP3 64 kbps mono
+(±1 GB). Nama file `NNN_Nama-Surat.mp3` dengan NNN = nomor surat. Adzan dan
 adzan Subuh diambil dari Internet Archive. Daftar file, lisensi, dan tautan sumbernya ada di `CREDITS.txt`
 (ikut disalin bersama file audio). CC BY-SA mewajibkan atribusi: cantumkan
 nama pembaca dan tautan sumber bila rekaman ini disebarkan ulang.
