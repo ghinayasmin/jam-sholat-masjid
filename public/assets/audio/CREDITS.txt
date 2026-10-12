@@ -1,5 +1,5 @@
-Sumber: Wikimedia Commons. Murottal 113 surat oleh Aaqib Azeez (uploader Atcovi), dikompres ke MP3 64 kbps mono.
-Surat 28 (Al-Qashash) tidak tersedia; surat 37-50 hanya ada versi mujawwad.
+Sumber: Wikimedia Commons. Murottal 114 surat oleh Aaqib Azeez (uploader Atcovi), dikompres ke MP3 64 kbps mono.
+Surat 37-50 hanya ada versi mujawwad.
 
 iqomah.wav | Iqamah.ogg (dikonversi ke WAV) | CC0 | https://commons.wikimedia.org/wiki/File:Iqamah.ogg
 
@@ -122,3 +122,4 @@ murottal/111_Al-Lahab.mp3 | Chapter 111, Al-Masad (Murattal) - Recitation of the
 murottal/112_Al-Ikhlas.mp3 | Chapter 112, Al-Ikhlas (Murattal) - Recitation of the Holy Qur'an.mp3 (Murattal) | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Chapter_112,_Al-Ikhlas_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
 murottal/113_Al-Falaq.mp3 | Chapter 113, Al-Falaq (Murattal) - Recitation of the Holy Qur'an.mp3 (Murattal) | CC0 | https://commons.wikimedia.org/wiki/File:Chapter_113,_Al-Falaq_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
 murottal/114_An-Nas.mp3 | Chapter 114, Al-Nas (Murattal) - Recitation of the Holy Qur'an.mp3 (Murattal) | CC0 | https://commons.wikimedia.org/wiki/File:Chapter_114,_Al-Nas_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
+murottal/028_Al-Qashash.mp3 | Chapter 28, Al-Qasas (Murattal) - Recitation of the Holy Qur'an.mp3 (Murattal) | CC0 | https://commons.wikimedia.org/wiki/File:Chapter_28,_Al-Qasas_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3

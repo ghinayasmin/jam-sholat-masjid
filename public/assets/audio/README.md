@@ -27,7 +27,7 @@ layanan berhenti.
 
 ## Sumber bebas lisensi yang dipakai saat uji coba
 
-Iqomah dan murottal 113 surat (bacaan Aaqib Azeez, tanpa Al-Qashash) diambil
+Iqomah dan murottal 114 surat (bacaan Aaqib Azeez) diambil
 dari Wikimedia Commons (CC BY-SA 4.0 dan CC0), dikompres ke MP3 64 kbps mono
 (±1 GB). Nama file `NNN_Nama-Surat.mp3` dengan NNN = nomor surat. Adzan dan
 adzan Subuh diambil dari Internet Archive. Daftar file, lisensi, dan tautan sumbernya ada di `CREDITS.txt`
