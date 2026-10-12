@@ -20,6 +20,6 @@ $tabs = [
     </div>
 <?php endif; ?>
 </div>
-<script src="/assets/js/admin.js"></script>
+<script src="/assets/js/admin.js?v=<?= filemtime(dirname(__DIR__) . '/assets/js/admin.js') ?>"></script>
 </body>
 </html>

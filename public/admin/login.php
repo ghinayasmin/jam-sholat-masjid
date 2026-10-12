@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#F2F3EF">
 <title>Masuk · Panel Takmir</title>
-<link rel="stylesheet" href="/assets/css/admin.css">
+<link rel="stylesheet" href="/assets/css/admin.css?v=<?= filemtime(dirname(__DIR__) . '/assets/css/admin.css') ?>">
 </head>
 <body>
 <main class="login">

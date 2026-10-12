@@ -29,7 +29,7 @@ $showTabs = $backHref === null;
 <meta name="apple-mobile-web-app-title" content="Panel Takmir">
 <meta name="mobile-web-app-capable" content="yes">
 <title><?= Format::e($pageTitle) ?> · Panel Takmir</title>
-<link rel="stylesheet" href="/assets/css/admin.css">
+<link rel="stylesheet" href="/assets/css/admin.css?v=<?= filemtime(dirname(__DIR__) . '/assets/css/admin.css') ?>">
 </head>
 <body>
 <div class="shell<?= $showTabs ? ' has-tabs' : '' ?>">

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>Jam Sholat Masjid</title>
 <link rel="preload" href="/assets/fonts/plus-jakarta-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/assets/css/display.css">
+<link rel="stylesheet" href="/assets/css/display.css?v=<?= filemtime(__DIR__ . '/assets/css/display.css') ?>">
 </head>
 <body>
 <div class="screen">
@@ -62,6 +62,6 @@
     </div>
 </div>
 
-<script src="/assets/js/display.js"></script>
+<script src="/assets/js/display.js?v=<?= filemtime(__DIR__ . '/assets/js/display.js') ?>"></script>
 </body>
 </html>
