@@ -199,7 +199,7 @@ SRS): checklist ada di `docs/SRS_COMPLIANCE.md`.
    TV/monitor) atau `... jack` (speaker aktif 3,5 mm). Bawaan Pi OS adalah jack,
    jadi speaker HDMI diam sampai langkah ini dijalankan.
 6. Uji speaker: `speaker-test -c 2 -t wav -l 1`, lalu
-   `mpg123 public/assets/audio/adzan.mp3` (setelah file audio
+   `mpg123 -o alsa public/assets/audio/adzan.mp3` (setelah file audio
    Anda sediakan sendiri — lihat `public/assets/audio/README.md`).
 7. **Rekomendasi opsional** (di luar scope SRS): modul RTC (mis. DS3231)
    untuk akurasi waktu offline jangka panjang — lihat `docs/DECISIONS.md` #9.

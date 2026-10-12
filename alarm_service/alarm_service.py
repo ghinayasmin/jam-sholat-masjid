@@ -124,7 +124,8 @@ class AudioPlayer:
     def _player_for(self, path: str) -> list[str] | None:
         ext = os.path.splitext(path)[1].lower()
         if ext == ".mp3" and shutil.which("mpg123"):
-            return ["mpg123", "-q", path]
+            # -o alsa: tanpa ini mpg123 di Pi OS mencoba JACK lebih dulu dan segfault.
+            return ["mpg123", "-q", "-o", "alsa", path]
         if ext == ".wav" and shutil.which("aplay"):
             return ["aplay", "-q", path]
         if shutil.which("ffplay"):  # fallback universal
