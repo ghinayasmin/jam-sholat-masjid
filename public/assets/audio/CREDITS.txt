@@ -1,4 +1,4 @@
-Sumber: Wikimedia Commons. Adzan & murottal oleh Aaqib Azeez (uploader Atcovi).
+Sumber: Wikimedia Commons. Murottal oleh Aaqib Azeez (uploader Atcovi).
 
 murottal/001_001_Al-Fatiha.mp3 | Chapter 1, Al-Fatiha (Murattal) - Recitation of the Holy Qur'an.mp3 | CC0 | https://commons.wikimedia.org/wiki/File:Chapter_1,_Al-Fatiha_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
 murottal/002_078_An-Naba.mp3 | Chapter 78, An-Naba (Murattal) - Recitation of the Holy Qur'an.mp3 | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Chapter_78,_An-Naba_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
@@ -38,5 +38,10 @@ murottal/035_111_Al-Masad.mp3 | Chapter 111, Al-Masad (Murattal) - Recitation of
 murottal/036_112_Al-Ikhlas.mp3 | Chapter 112, Al-Ikhlas (Murattal) - Recitation of the Holy Qur'an.mp3 | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Chapter_112,_Al-Ikhlas_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
 murottal/037_113_Al-Falaq.mp3 | Chapter 113, Al-Falaq (Murattal) - Recitation of the Holy Qur'an.mp3 | CC0 | https://commons.wikimedia.org/wiki/File:Chapter_113,_Al-Falaq_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
 murottal/038_114_Al-Nas.mp3 | Chapter 114, Al-Nas (Murattal) - Recitation of the Holy Qur'an.mp3 | CC0 | https://commons.wikimedia.org/wiki/File:Chapter_114,_Al-Nas_(Murattal)_-_Recitation_of_the_Holy_Qur%27an.mp3
-adzan.mp3 | The Adhan - Muslim Call to Prayer - Aaqib Azeez.mp3 | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3
 iqomah.wav | Iqamah.ogg (dikonversi ke WAV) | CC0 | https://commons.wikimedia.org/wiki/File:Iqamah.ogg
+
+Adzan (Internet Archive, item AdzanMisyariRasyid, diberi label CC0 oleh pengunggah):
+adzan.mp3 | mecca_56_22.mp3 (Masjidil Haram) | CC0 (label pengunggah) | https://archive.org/details/AdzanMisyariRasyid
+adzan_subuh.mp3 | fajr_128_44.mp3 | CC0 (label pengunggah) | https://archive.org/details/AdzanMisyariRasyid
+Catatan: label lisensi archive.org diisi pengunggah, bukan muadzin/pemegang hak.
+Untuk pemasangan permanen, sebaiknya rekam muadzin masjid sendiri.

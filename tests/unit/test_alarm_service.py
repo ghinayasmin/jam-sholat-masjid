@@ -10,7 +10,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'alarm_service'))
-from alarm_service import AlarmScheduler, AudioPlayer  # noqa: E402
+from alarm_service import AlarmScheduler, AudioPlayer, alarm_audio_file  # noqa: E402
 
 
 SCHEDULE = {
@@ -110,6 +110,33 @@ class TestAudioPlayer(unittest.TestCase):
         first_call_count = len(self.calls)
         self.player.start_background("/tmp/murottal2.mp3")
         self.assertEqual(len(self.calls), first_call_count + 1)
+
+
+class TestAlarmAudioFile(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def touch(self, name):
+        open(os.path.join(self.dir, name), "w").close()
+
+    def test_subuh_uses_its_own_adzan(self):
+        self.touch("adzan.mp3")
+        self.touch("adzan_subuh.mp3")
+        self.assertTrue(alarm_audio_file("adzan", "fajr", self.dir).endswith("adzan_subuh.mp3"))
+        self.assertTrue(alarm_audio_file("adzan", "dhuhr", self.dir).endswith("/adzan.mp3"))
+
+    def test_subuh_falls_back_to_regular_adzan(self):
+        self.touch("adzan.mp3")
+        self.assertTrue(alarm_audio_file("adzan", "fajr", self.dir).endswith("/adzan.mp3"))
+
+    def test_wav_used_when_no_mp3(self):
+        self.touch("iqomah.wav")
+        self.assertTrue(alarm_audio_file("iqomah", "fajr", self.dir).endswith("iqomah.wav"))
 
 
 if __name__ == '__main__':

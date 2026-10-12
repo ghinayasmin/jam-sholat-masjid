@@ -192,14 +192,22 @@ def ensure_schedule_computed() -> None:
         logger.error("Gagal memastikan jadwal hari ini terhitung: %s", exc)
 
 
-def alarm_audio_file(kind: str) -> str:
+def alarm_audio_file(kind: str, prayer: str = "", audio_dir: str | None = None) -> str:
     """adzan/iqomah boleh .mp3 atau .wav (sumber tertentu hanya tersedia sebagai
-    OGG dan lebih mudah dikonversi ke WAV daripada MP3). MP3 didahulukan."""
-    for ext in (".mp3", ".wav"):
-        path = os.path.join(AUDIO_DIR, kind + ext)
-        if os.path.isfile(path):
-            return path
-    return os.path.join(AUDIO_DIR, kind + ".mp3")
+    OGG dan lebih mudah dikonversi ke WAV daripada MP3). MP3 didahulukan.
+
+    Subuh memakai adzan_subuh.* (lafaz "ash-shalatu khairum minan naum") bila
+    ada, selain itu kembali ke adzan biasa."""
+    audio_dir = audio_dir or AUDIO_DIR
+    names = [kind]
+    if kind == "adzan" and prayer == "fajr":
+        names.insert(0, "adzan_subuh")
+    for name in names:
+        for ext in (".mp3", ".wav"):
+            path = os.path.join(audio_dir, name + ext)
+            if os.path.isfile(path):
+                return path
+    return os.path.join(audio_dir, kind + ".mp3")
 
 
 def murottal_files() -> list[str]:
@@ -232,7 +240,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
 
             for kind, prayer in scheduler.check(now):
                 player.stop_background()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
-                audio_file = alarm_audio_file(kind)
+                audio_file = alarm_audio_file(kind, prayer)
                 logger.info("Memutar %s untuk %s (%s)", kind, prayer, audio_file)
                 if os.path.isfile(audio_file):
                     player.play_blocking(audio_file)
