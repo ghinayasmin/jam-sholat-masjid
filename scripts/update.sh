@@ -42,6 +42,10 @@ cp -r "$INSTALL_DIR"/systemd/blank-cursor/. /usr/share/jamsholat/cursors/default
 cp "$INSTALL_DIR"/systemd/*.service "$INSTALL_DIR"/systemd/*.timer /etc/systemd/system/
 systemctl daemon-reload
 
+# Jadwal sholat di database hanya cache; hitung ulang dengan rumus terbaru
+# (mis. perubahan ihtiyat) supaya alarm & layar tidak memakai hasil lama.
+sudo -u "$SERVICE_USER" sqlite3 "$INSTALL_DIR/storage/jamsholat.db" "DELETE FROM prayer_schedules;"
+
 echo "=== [3/3] Memulai ulang layanan ==="
 systemctl restart jamsholat-alarm.service jamsholat-camera.service
 systemctl restart jamsholat-kiosk.service   # memuat ulang tampilan jamaah

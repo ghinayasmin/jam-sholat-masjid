@@ -19,9 +19,12 @@ declare(strict_types=1);
 
 require __DIR__ . '/../bootstrap.php';
 
+use App\LocalTime;
 use App\Schedule\ScheduleEngine;
 
-$date = $argv[1] ?? gmdate('Y-m-d');
+// Tanggal lokal masjid, bukan UTC: alarm_service.py membaca jadwal dengan tanggal
+// lokal, dan jam 00:00–07:00 WIB tanggal UTC masih kemarin (Subuh bisa terlewat).
+$date = $argv[1] ?? LocalTime::today();
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     fwrite(STDERR, "Format tanggal tidak valid, gunakan YYYY-MM-DD.\n");
     exit(1);

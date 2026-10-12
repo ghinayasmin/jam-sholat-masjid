@@ -264,3 +264,24 @@ waktu dibuat).
   sama tetap terbaca sebagai permintaan baru. Daftar dan judul diambil dari
   nama file oleh `App\Murottal` dengan aturan yang sama seperti Python.
 
+## 19. Ihtiyat Kemenag pada jadwal sholat (KOREKSI)
+
+- **Masalah:** kalkulasi astronomis murni (sudut Kemenag 20°/18°) 2–4 menit
+  lebih awal dari jadwal resmi Kemenag setiap hari, sehingga adzan bisa
+  berbunyi sebelum waktu masuk. Kemenag menambahkan ihtiyat lalu membulatkan
+  ke atas.
+- **Keputusan:** `PrayerTimeCalculator::IHTIYAT_KEMENAG` (Subuh +2, Terbit
+  −3,5, Dzuhur +3, Ashar +2, Maghrib +2,5, Isya +2 menit, dibulatkan ke atas).
+  Nilai dicocokkan dengan jadwal resmi (api.myquran.com) untuk Kota
+  Yogyakarta, Jakarta, Makassar, dan Medan pada Januari, April, Juli, dan
+  Oktober 2026 (492 hari): tepat sama 79–95% hari, sisanya selisih 1 menit.
+  Selisih 1 menit itu berasal dari perbedaan koordinat titik kota dan
+  pembulatan Kemenag, dan masih di dalam ihtiyat 2 menit.
+- Sinkron online AlAdhan (belum dipanggil di mana pun) memakai `tune` yang
+  dipilih agar tidak pernah lebih awal dari Kemenag; karena AlAdhan sudah
+  membulatkan, ketepatannya di bawah kalkulasi lokal.
+- `update.sh` menghapus cache `prayer_schedules` agar perubahan rumus langsung
+  berlaku. `compute_schedule_cli.php` memakai tanggal lokal, bukan UTC.
+- Ketepatan di lapangan tetap bergantung pada **koordinat masjid** yang diisi
+  di Pengaturan → Lokasi.
+

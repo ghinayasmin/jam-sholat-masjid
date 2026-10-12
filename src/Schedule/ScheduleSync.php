@@ -47,7 +47,10 @@ final class ScheduleSync
         $school = strtolower((string) $settings['madzhab']) === 'hanafi' ? 1 : 0;
         $baseUrl = Config::get('aladhan_base_url', 'https://api.aladhan.com/v1');
         $url = sprintf(
-            '%s/timings/%s?latitude=%s&longitude=%s&method=20&school=%d',
+            // tune = ihtiyat menit (Imsak,Fajr,Sunrise,Dhuhr,Asr,Maghrib,Sunset,Isha,Midnight).
+            // AlAdhan memberi waktu astronomis yang sudah dibulatkan, jadi nilai ini
+            // dipilih agar tidak pernah lebih awal dari jadwal Kemenag (DECISIONS.md #19).
+            '%s/timings/%s?latitude=%s&longitude=%s&method=20&school=%d&tune=0,3,-4,4,3,4,0,3,0',
             $baseUrl,
             $dateParam,
             rawurlencode((string) $settings['latitude']),

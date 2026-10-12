@@ -54,7 +54,8 @@ $calc = new PrayerTimeCalculator();
 // Expected (dari AlAdhan, difetch langsung saat pengembangan):
 //   Fajr 05:12, Sunrise 06:35, Dhuhr 12:29, Asr 15:51, Maghrib 18:25
 // Toleransi 1-2 menit — sama seperti kriteria lulus TC-JDW-001..004 di SRS.
-$result = $calc->calculate(2015, 3, 9, 25.2048, 55.2708, 4.0, 'syafii', 0, 19.5, 18.0);
+// Tanpa ihtiyat ([]), karena AlAdhan memberi waktu astronomis murni.
+$result = $calc->calculate(2015, 3, 9, 25.2048, 55.2708, 4.0, 'syafii', 0, 19.5, 18.0, []);
 
 function withinTolerance(string $hhmmA, string $hhmmB, int $toleranceMinutes = 2): bool
 {
@@ -69,6 +70,15 @@ assertTrue(withinTolerance($result['sunrise'], '06:35'), 'Sunrise sesuai referen
 assertTrue(withinTolerance($result['dhuhr'], '12:29'), 'Dhuhr sesuai referensi AlAdhan (toleransi 2 menit)');
 assertTrue(withinTolerance($result['asr'], '15:51'), 'Asr sesuai referensi AlAdhan (toleransi 2 menit)');
 assertTrue(withinTolerance($result['maghrib'], '18:25'), 'Maghrib sesuai referensi AlAdhan (toleransi 2 menit)');
+
+// Jadwal resmi Kemenag (api.myquran.com, KOTA YOGYAKARTA, 12-10-2026):
+// Subuh 04:02, Terbit 05:15, Dzuhur 11:29, Ashar 14:30, Maghrib 17:36, Isya 18:45.
+// Sebelum ihtiyat dipasang, hasil kalkulasi 2–4 menit lebih awal dari ini.
+$kemenag = $calc->calculate(2026, 10, 12, -7.797068, 110.370529, 7.0, 'syafii');
+$expectedKemenag = ['fajr' => '04:02', 'sunrise' => '05:15', 'dhuhr' => '11:29', 'asr' => '14:30', 'maghrib' => '17:36', 'isha' => '18:45'];
+foreach ($expectedKemenag as $key => $expected) {
+    assertTrue(withinTolerance($kemenag[$key], $expected, 1), "Kemenag Yogyakarta 12-10-2026: $key {$kemenag[$key]} ≈ $expected (toleransi 1 menit)");
+}
 
 // TC-JDW-002: Asr Hanafi harus lebih lambat dari Asr Syafi'i.
 $resultSyafii = $calc->calculate(2026, 9, 21, -7.797068, 110.370529, 7.0, 'syafii');

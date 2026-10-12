@@ -28,6 +28,25 @@ final class PrayerTimeCalculator
     private const SUNRISE_SUNSET_ANGLE = 0.833; // koreksi refraksi atmosfer + radius matahari
 
     /**
+     * Ihtiyat (menit pengaman) gaya Kemenag: ditambahkan ke waktu astronomis lalu
+     * dibulatkan ke atas. Tanpa ini jadwal 2–4 menit LEBIH AWAL dari jadwal resmi,
+     * sehingga adzan bisa berbunyi sebelum waktunya masuk.
+     *
+     * Nilai dicocokkan dengan jadwal resmi Kemenag (api.myquran.com) untuk Kota
+     * Yogyakarta, Jakarta, Makassar, dan Medan, Januari/April/Juli/Oktober 2026
+     * (492 hari): tepat sama 79–95% hari, sisanya selisih 1 menit. Lihat
+     * docs/DECISIONS.md #19.
+     */
+    public const IHTIYAT_KEMENAG = [
+        'fajr' => 2.0,
+        'sunrise' => -3.5,
+        'dhuhr' => 3.0,
+        'asr' => 2.0,
+        'maghrib' => 2.5,
+        'isha' => 2.0,
+    ];
+
+    /**
      * @return array{fajr:string,sunrise:string,dhuhr:string,asr:string,maghrib:string,isha:string}
      */
     public function calculate(
@@ -40,7 +59,8 @@ final class PrayerTimeCalculator
         string $madzhab,
         int $locationOffsetMinutes = 0,
         float $fajrAngle = self::FAJR_ANGLE_KEMENAG,
-        float $ishaAngle = self::ISHA_ANGLE_KEMENAG
+        float $ishaAngle = self::ISHA_ANGLE_KEMENAG,
+        array $ihtiyatMinutes = self::IHTIYAT_KEMENAG
     ): array {
         $jd = $this->julianDay($year, $month, $day);
         [$decl, $eqt] = $this->sunPosition($jd);
@@ -57,14 +77,24 @@ final class PrayerTimeCalculator
 
         $offsetHours = $locationOffsetMinutes / 60.0;
 
-        return [
-            'fajr' => $this->hoursToHHMM($dhuhr - $hFajr + $offsetHours),
-            'sunrise' => $this->hoursToHHMM($dhuhr - $hSunrise + $offsetHours),
-            'dhuhr' => $this->hoursToHHMM($dhuhr + $offsetHours),
-            'asr' => $this->hoursToHHMM($dhuhr + $hAsr + $offsetHours),
-            'maghrib' => $this->hoursToHHMM($dhuhr + $hSunrise + $offsetHours),
-            'isha' => $this->hoursToHHMM($dhuhr + $hIsha + $offsetHours),
+        $astronomical = [
+            'fajr' => $dhuhr - $hFajr,
+            'sunrise' => $dhuhr - $hSunrise,
+            'dhuhr' => $dhuhr,
+            'asr' => $dhuhr + $hAsr,
+            'maghrib' => $dhuhr + $hSunrise,
+            'isha' => $dhuhr + $hIsha,
         ];
+
+        $times = [];
+        foreach ($astronomical as $key => $hours) {
+            $hours += $offsetHours;
+            // Tanpa ihtiyat (mis. uji silang dengan AlAdhan): bulatkan ke menit terdekat.
+            $times[$key] = $ihtiyatMinutes === []
+                ? $this->hoursToHHMM($hours)
+                : $this->hoursToHHMM($hours + ($ihtiyatMinutes[$key] ?? 0.0) / 60.0, true);
+        }
+        return $times;
     }
 
     private function julianDay(int $year, int $month, int $day): float
@@ -120,13 +150,14 @@ final class PrayerTimeCalculator
         return $h < 0 ? $h + 24.0 : $h;
     }
 
-    private function hoursToHHMM(float $hours): string
+    private function hoursToHHMM(float $hours, bool $roundUp = false): string
     {
         $h = fmod($hours, 24.0);
         if ($h < 0) {
             $h += 24.0;
         }
-        $totalMinutes = (int) round($h * 60);
+        // 1e-9: jangan naikkan menit hanya karena galat floating point (mis. 30.0000000001).
+        $totalMinutes = (int) ($roundUp ? ceil($h * 60 - 1e-9) : round($h * 60));
         $totalMinutes %= (24 * 60);
         if ($totalMinutes < 0) {
             $totalMinutes += 24 * 60;
