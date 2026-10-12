@@ -88,6 +88,17 @@
         input.addEventListener('change', () => input.form.submit());
     });
 
+    // Kolom cari yang menyaring daftar (mis. Pilih surat). Tanda baca diabaikan
+    // supaya "yasin", "Ya-Sin", dan "al baqarah" sama-sama ketemu.
+    const plain = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    document.querySelectorAll('input[data-filter]').forEach((input) => {
+        const items = document.querySelectorAll(input.dataset.filter + ' [data-filter-text]');
+        input.addEventListener('input', () => {
+            const q = plain(input.value);
+            items.forEach((el) => { el.hidden = q !== '' && !plain(el.dataset.filterText).includes(q); });
+        });
+    });
+
     // Konfirmasi sebelum tindakan yang menghapus/menimpa data.
     document.querySelectorAll('form[data-confirm]').forEach((form) => {
         form.addEventListener('submit', (e) => {

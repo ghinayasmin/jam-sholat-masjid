@@ -60,11 +60,14 @@ require __DIR__ . '/_header.php';
     </div>
 
     <section class="group" aria-labelledby="tracks-label">
+        <div class="field">
+            <input type="search" class="input" placeholder="Cari surat, mis. yasin atau 36" aria-label="Cari surat" data-filter="#trackList" autocomplete="off">
+        </div>
         <div class="label" id="tracks-label"><?= count($tracks) ?> surat · diputar berurutan</div>
-        <div class="card">
+        <div class="card" id="trackList">
             <?php foreach ($tracks as $i => $t):
                 $playing = $now !== '' && $now === $t['title']; ?>
-                <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="choose"><input type="hidden" name="file" value="<?= Format::e($t['file']) ?>">
+                <form method="post" data-filter-text="<?= Format::e(($i + 1) . ' ' . $t['title'] . ' ' . $t['file']) ?>"><?= Csrf::field() ?><input type="hidden" name="action" value="choose"><input type="hidden" name="file" value="<?= Format::e($t['file']) ?>">
                     <button type="submit" class="row track<?= $playing ? ' playing' : '' ?>"<?= $playing ? ' aria-current="true"' : '' ?>>
                         <span class="n"><?= $i + 1 ?></span>
                         <span class="k">Surah <?= Format::e($t['title']) ?></span>
