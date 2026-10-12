@@ -305,3 +305,15 @@ waktu dibuat).
   bawahnya karena tinggi persen tidak berlaku di sel grid; gambar kini
   diposisikan absolut dengan `object-fit: contain`.
 
+## 22. Panel tetap HTTP di jaringan lokal (KETERBATASAN DISADARI)
+
+- Browser menandai `http://192.168.x.x` sebagai "Not secure". HTTPS butuh
+  sertifikat yang dipercaya HP: sertifikat buatan sendiri memunculkan halaman
+  peringatan penuh, memasang CA di tiap HP takmir tidak praktis, dan sertifikat
+  publik (Let's Encrypt) butuh domain, internet terus-menerus, dan perpanjangan
+  90 hari.
+- Panel tetap HTTP karena hanya bisa diakses dari jaringan masjid (REQ-NF-122),
+  wajib login (REQ-NF-120), dan password disimpan bcrypt (REQ-NF-121).
+  Pengiriman formulir lewat `fetch` (lihat `admin.js`) menghindari pop-up
+  "not secure" Chrome di HP; ikon di bilah alamat tetap tampil.
+
