@@ -8,7 +8,9 @@ use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
 use App\Auth\Csrf;
 use App\Murottal;
+use App\LocalTime;
 use App\Repository\SettingsRepository;
+use App\Schedule\ScheduleEngine;
 use App\View\Format;
 
 $auth = new AuthManager();
@@ -42,6 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $s = $repo->get();
 $on = (int) $s['murottal_enabled'] === 1;
 $now = (string) $s['murottal_now_playing'];
+$nowMinutes = (int) gmdate('G', LocalTime::now()) * 60 + (int) gmdate('i', LocalTime::now());
+$status = Murottal::status($s, (new ScheduleEngine())->getScheduleForDate(LocalTime::today()), $nowMinutes);
 
 $pageTitle = 'Pilih surat';
 $backHref = '/admin/';
@@ -53,7 +57,7 @@ require __DIR__ . '/_header.php';
     <div class="card"><div class="empty">Belum ada file murottal di perangkat. Lihat public/assets/audio/README.md.</div></div>
 <?php else: ?>
     <div class="card murottal-card">
-        <span class="k"><?= $on ? 'Menyala' : 'Dijeda' ?><small><?= $now !== '' ? 'Sedang diputar: ' . Format::e($now) : 'Ketuk surat untuk memutar' ?></small></span>
+        <span class="k"><?= $on ? 'Menyala' : 'Dijeda' ?><small><?= Format::e($on ? $status : 'Ketuk surat untuk memutar') ?></small></span>
         <?php if ($on): ?>
             <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="pause"><input type="hidden" name="back" value="list"><button type="submit" class="btn small ghost">Jeda</button></form>
         <?php endif; ?>

@@ -59,23 +59,8 @@ $rows = [
 ];
 
 $murottalOn = (int) $settings['murottal_enabled'] === 1;
-$murottalNow = (string) $settings['murottal_now_playing'];
 $murottalReady = \App\Murottal::tracks() !== [];
-if (!$murottalReady) {
-    $murottalStatus = 'Belum ada file murottal di perangkat';
-} elseif (!$murottalOn) {
-    $murottalStatus = 'Dijeda';
-} elseif ($murottalNow !== '') {
-    $murottalStatus = 'Sedang diputar: ' . $murottalNow;
-} else {
-    // Sama dengan jendela diam alarm_service.py: 2 menit sebelum s.d. 20 menit sesudah adzan.
-    $quiet = false;
-    foreach (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as $key) {
-        $delta = $nowMinutes - $toMinutes($schedule[$key]);
-        $quiet = $quiet || ($delta >= -2 && $delta <= 20);
-    }
-    $murottalStatus = $quiet ? 'Diam sekitar waktu sholat, lanjut otomatis' : 'Memulai…';
-}
+$murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes);
 
 $syncOk = $settings['last_sync_status'] === null || stripos((string) $settings['last_sync_status'], 'gagal') === false;
 

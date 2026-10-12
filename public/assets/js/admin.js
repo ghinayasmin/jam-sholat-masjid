@@ -105,4 +105,31 @@
             if (!window.confirm(form.dataset.confirm)) e.preventDefault();
         });
     });
+
+    // Kirim formulir POST lewat fetch. Panel dibuka lewat http:// di jaringan lokal,
+    // dan Chrome di HP menampilkan peringatan "not secure" setiap kali formulir
+    // dikirim biasa. Hasilnya sama dengan pengiriman biasa.
+    document.addEventListener('submit', async (e) => {
+        const form = e.target;
+        // getAttribute, bukan form.action/form.method: formulir panel punya kolom
+        // bernama "action" yang menutupi properti itu.
+        if (e.defaultPrevented || (form.getAttribute('method') || '').toLowerCase() !== 'post') return;
+        e.preventDefault();
+        const body = new FormData(form);
+        if (e.submitter && e.submitter.name) body.append(e.submitter.name, e.submitter.value);
+        form.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+        try {
+            const url = new URL(form.getAttribute('action') || window.location.href, window.location.href);
+            const res = await fetch(url, { method: 'POST', body, credentials: 'same-origin' });
+            // Tampilkan halaman yang sudah diterima (memuat ulang akan menghabiskan pesan
+            // sukses sekali-tampil), lalu samakan alamat di bilah alamat.
+            const html = await res.text();
+            if (res.redirected) window.history.replaceState(null, '', res.url);
+            document.open();
+            document.write(html);
+            document.close();
+        } catch (err) {
+            HTMLFormElement.prototype.submit.call(form); // jaringan putus: kirim cara biasa
+        }
+    });
 })();

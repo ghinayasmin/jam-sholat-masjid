@@ -64,5 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="muted" style="margin:0;font-size:14px">Lupa kata sandi? Minta teknisi menjalankan <code>reset_admin_password.sh</code> di perangkat.</p>
     </form>
 </main>
+<script src="/assets/js/admin.js?v=<?= filemtime(dirname(__DIR__) . '/assets/js/admin.js') ?>"></script>
 </body>
 </html>
