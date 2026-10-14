@@ -70,13 +70,13 @@ Email itu tetap terhitung sebagai kontribusimu.
 ## 3. Aturan main tim
 
 - **Jangan commit langsung ke `main`.** Buat branch, lalu Pull Request (PR).
-- **Satu PR = satu tugas** dari spreadsheet `Pembagian_Kerja_Capstone.xlsx`.
+- **Satu PR = satu perubahan yang jelas**, misalnya satu test baru atau satu perbaikan.
 - **Nama branch:** `nama/topik`, misalnya `ghina/panduan-takmir`, `azhar/sync-online`.
 - **Pesan commit:** kalimat perintah dalam bahasa Indonesia yang menjelaskan
   apa yang berubah, misalnya `Tambah TC pengaturan lokasi dan madzhab`.
 - **Jalankan test sebelum push** (lihat `README.md` bagian 10, Running Tests).
-- **Minta satu orang lain me-review** sebelum merge. Reviewer sebaiknya
-  pendampingmu di spreadsheet.
+- **Minta satu orang lain me-review** sebelum merge, sebaiknya anggota yang
+  bagiannya berhubungan dengan perubahanmu.
 
 ## 4. Alur kerja setiap tugas
 
@@ -164,7 +164,6 @@ ssh -t admincapstone@jamsholat.local 'cd ~/jam-sholat-masjid && sudo bash script
 
 ## 8. Ide kontribusi pertama
 
-Lihat bagian **Latihan** di handbook PDF masing-masing dan daftar tugas di
-`Pembagian_Kerja_Capstone.xlsx`. Setiap latihan sudah dirancang menghasilkan
-satu PR kecil yang nyata: test case baru, test otomatis, dokumentasi, atau
-perbaikan kode.
+Lihat bagian **Latihan** di handbook PDF masing-masing. Latihan bertanda
+*opsional* menambah test otomatis untuk test case yang sudah Pass, cocok
+sebagai PR pertama.
