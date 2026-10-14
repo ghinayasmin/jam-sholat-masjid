@@ -25,14 +25,14 @@ database SQLite:
    Camera Module (Picamera2) atau webcam USB (OpenCV), lalu menyimpan
    gambar+metadata.
 3. **Layanan alarm (Python)** — memutar adzan (adzan Subuh terpisah) dan
-   iqomah tepat waktu, serta murottal yang diputar/dijeda takmir dari panel.
+   iqomah tepat waktu (masing-masing bisa dimatikan dari panel), serta murottal yang diputar/dijeda takmir dari panel.
 
 ### Fitur utama
 
 | Untuk | Fitur |
 |---|---|
 | Jamaah (TV) | Jam besar, jadwal sholat sesuai Kemenag (dengan ihtiyat), tanggal Hijriah yang berganti saat Maghrib, hitung mundur dan pengingat sebelum adzan, info puasa sunnah, pengumuman/poster (landscape tampil layar penuh), nama surat murottal yang diputar |
-| Takmir (HP) | Beranda, pengumuman terjadwal, kas, rekaman kamera (lihat dan hapus), murottal (putar/jeda/pilih dari 114 surat), lokasi dan madzhab, suara iqomah (bawaan mati), koreksi tanggal Hijriah ±1 hari, pengingat adzan, jam & tanggal, backup/restore |
+| Takmir (HP) | Beranda, pengumuman terjadwal, kas, rekaman kamera (lihat dan hapus), murottal (putar/jeda/pilih dari 114 surat), lokasi dan madzhab, suara adzan dan iqomah (bisa dimatikan; iqomah bawaan mati), koreksi tanggal Hijriah ±1 hari, pengingat adzan, jam & tanggal, backup/restore |
 
 Sistem berjalan **sepenuhnya offline** untuk semua fungsi utamanya; koneksi
 internet hanya dipakai opsional untuk sinkronisasi jadwal online dan NTP.

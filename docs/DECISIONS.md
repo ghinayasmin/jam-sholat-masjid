@@ -178,7 +178,7 @@ Perilaku otomatis yang dipilih pengguna:
 - **Layar adzan** selama 3 menit sejak waktu adzan.
 - **Tidak ada** hitung mundur iqomah dan layar redup saat sholat di tampilan,
   karena lama sholat tidak bisa diketahui pasti. Suara iqomah dari layanan
-  alarm (REQ-F-031) tetap berjalan seperti sebelumnya.
+  alarm tetap berjalan seperti sebelumnya.
 
 Baris puasa sunnah selalu menampilkan puasa terdekat (hari ini, besok, atau
 tanggalnya), bukan hanya hari ini, supaya bagian bawah layar tidak kosong.
@@ -255,9 +255,8 @@ waktu dibuat).
 - Adzan Subuh memakai `adzan_subuh.*` bila ada (lafaz tambahan "ash-shalatu
   khairum minan naum").
 - **Suara iqomah bisa dimatikan** (`iqomah_sound_enabled`, bawaan 0) di
-  Pengaturan → Suara iqomah. Di banyak masjid iqomah dikumandangkan langsung,
-  jadi rekaman otomatis justru mengganggu. Fitur REQ-F-031 tetap ada dan
-  berjalan bila dinyalakan.
+  Pengaturan → Suara adzan & iqomah. Di banyak masjid iqomah dikumandangkan
+  langsung, jadi rekaman otomatis justru mengganggu (lihat juga #23).
 - **Pilih surat** (`admin/murottal.php`): mengetuk surat menyalakan murottal
   dan menulis `murottal_request = "file|cap waktu"`. Layanan alarm pindah ke
   surat itu lalu lanjut berurutan. Cap waktu membuat memilih ulang surat yang
@@ -317,3 +316,60 @@ waktu dibuat).
   Pengiriman formulir lewat `fetch` (lihat `admin.js`) menghindari pop-up
   "not secure" Chrome di HP; ikon di bilah alamat tetap tampil.
 
+## 23. Suara adzan dan iqomah bisa dimatikan (DIKONFIRMASI)
+
+- Di masjid sungguhan adzan dikumandangkan muadzin, jadi sistem tidak boleh
+  memaksa memutar rekaman. `mosque_settings.adzan_sound_enabled` (bawaan 1)
+  dan `iqomah_sound_enabled` (bawaan 0) diatur di Pengaturan → Suara adzan &
+  iqomah (`admin/sound.php`, menggantikan `iqomah.php`).
+- Yang mati hanya suara dari speaker. Layar jamaah tetap menampilkan pengingat
+  dan layar adzan, dan murottal tetap berhenti di jendela diam sekitar waktu
+  sholat agar tidak bertabrakan dengan adzan muadzin.
+- Iqomah (dulu REQ-F-025/031) dihapus dari SRS v0.2 karena iqomah sebaiknya
+  dikumandangkan langsung. Kodenya dipertahankan sebagai fitur opsional.
+- Baris "Murottal" di layar hanya tampil selama sakelar Putar menyala dan
+  layanan alarm sedang memutar surat. Layanan mengosongkan judul saat dihentikan
+  (SIGTERM dari `systemctl stop`/`update.sh`), jadi judul tidak tertinggal.
+
+## 24. Jam dicocokkan dengan jam HP setelah listrik padam (KOREKSI)
+
+- **Masalah (TC-SYNC-002 gagal):** Pi tidak punya RTC. Setelah listrik padam
+  tanpa internet, `fake-hwclock` memulihkan jam dari simpanan terakhir sehingga
+  jam tertinggal sepanjang padamnya listrik.
+- **Solusi:** `App\SystemClock` menganggap jam terpercaya bila sudah sinkron NTP
+  sejak boot atau sudah dicocokkan admin sejak boot. Bila belum, panel takmir
+  (`admin.js` → `admin/clock_sync.php`) diam-diam mengirim jam HP, dan jam
+  perangkat diatur lewat aturan sudoers `date` yang sama dengan REQ-F-020.
+  Jam HP dianggap acuan karena mengikuti jaringan seluler.
+- Layar jamaah tidak menampilkan peringatan jam (tidak relevan bagi jamaah).
+  Pengurus cukup membuka panel dari HP sekali setelah listrik kembali.
+- PHP di Raspberry Pi OS (armhf) 32-bit: `PHP_INT_MAX` = 2.147.483.647. Jam HP
+  dikirim dalam detik, bukan milidetik (milidetik meluap dan selalu ditolak 400,
+  ditemukan saat uji ulang TC-SYNC-002). Jumlah kas per catatan dibatasi
+  Rp 999.999.999 karena alasan yang sama.
+
+## 25. Deteksi gerakan lebih tahan salah tangkap (KOREKSI)
+
+- **Masalah:** di perangkat uji, ±80% dari 249 foto sehari diambil di detik
+  :01–:08 tiap menit. Kamera melihat monitor, dan poster layar jamaah muncul
+  tiap menit (detik :00–:12), sehingga pergantian poster terbaca gerakan.
+- **Zona abaikan** (`JAMSHOLAT_CAMERA_IGNORE`, persen terhadap foto yang tampil
+  di panel): area seperti layar TV atau jendela tidak dihitung. Koordinat
+  diterjemahkan ke frame deteksi sesuai `JAMSHOLAT_CAMERA_ROTATION`.
+- **Perubahan cahaya:** bila >50% area yang diawasi berubah sekaligus (lampu
+  dinyalakan, awan), latar belakang dipelajari ulang selama ±5 detik dan tidak
+  ada foto.
+- **Konfirmasi 2 frame** (±0,4 detik pada 5 fps): kedipan satu frame tidak memicu foto.
+- Penempatan kamera tetap faktor terbesar: hari instalasi, arahkan ke pintu atau
+  kotak amal, jangan ke layar, jendela, atau lampu. Camera V2 NoIR butuh lampu
+  inframerah untuk ruangan gelap di malam hari.
+
+## 26. Lama penyimpanan foto kamera diatur takmir (DIKONFIRMASI)
+
+- Tab Kamera → "Simpan foto selama" 3 / 7 / 14 / 30 hari
+  (`mosque_settings.image_retention_days`, bawaan 7 untuk pemasangan baru).
+  Foto lebih lama langsung dihapus saat pilihan diubah, lalu tiap malam oleh
+  `jamsholat-retention.timer` (03:00). Batas memori 80% tetap berlaku.
+- 7 hari disarankan: pencurian kotak amal sering baru ketahuan saat kotak dibuka
+  Jumat berikutnya, jadi 3 hari berisiko bukti sudah terhapus. Satu foto ±185 KB;
+  7 hari pada 300 foto/hari ±400 MB.
