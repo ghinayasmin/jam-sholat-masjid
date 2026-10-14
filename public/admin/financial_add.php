@@ -34,8 +34,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $values['note'] = trim((string) ($_POST['note'] ?? ''));
     $values['entry_date'] = trim((string) ($_POST['entry_date'] ?? ''));
 
-    $amount = (int) preg_replace('/\D/', '', $values['amount']);
-    if ($amount <= 0) {
+    // PHP di Pi 32-bit: int mentok di ±2,1 miliar, jadi batasi di bawahnya (10 digit
+    // ke atas ditolak sebelum diubah ke int agar tidak diam-diam terpotong).
+    $digits = ltrim((string) preg_replace('/\D/', '', $values['amount']), '0');
+    $amount = strlen($digits) > 9 ? -1 : (int) $digits;
+    if ($amount === -1) {
+        $errors[] = 'Jumlah per catatan maksimal Rp 999.999.999.';
+    } elseif ($amount <= 0) {
         $errors[] = 'Isi jumlah uangnya, lebih dari Rp 0.';
     }
     if (!in_array($values['source'], $sources, true)) {

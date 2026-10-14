@@ -33,7 +33,8 @@ final class ScheduleEngine
 
     public function getScheduleForToday(): array
     {
-        return $this->getScheduleForDate(gmdate('Y-m-d'));
+        // Tanggal lokal masjid, bukan UTC (00:00–07:00 WIB masih "kemarin" di UTC).
+        return $this->getScheduleForDate(\App\LocalTime::today());
     }
 
     /**
