@@ -10,12 +10,17 @@ use App\Auth\Csrf;
 use App\Config;
 use App\LocalTime;
 use App\Repository\MotionEventRepository;
+use App\Repository\SettingsRepository;
 use App\View\Format;
 
 $auth = new AuthManager();
 AuthMiddleware::requireLogin($auth);
 
 $repo = new MotionEventRepository();
+$settingsRepo = new SettingsRepository();
+// REQ-F-044: lama penyimpanan foto. Pilihan dibatasi agar mudah dipahami takmir;
+// 7 hari mencakup satu siklus Jumat ke Jumat (DECISIONS.md #26).
+$retentionChoices = [3, 7, 14, 30];
 $today = LocalTime::today();
 $date = $_GET['date'] ?? $_POST['date'] ?? $today;
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
@@ -46,6 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $deleteEvent($event);
         }
         $_SESSION['flash_success'] = count($events) . ' foto dihapus.';
+    } elseif ($action === 'retention') {
+        $days = (int) ($_POST['image_retention_days'] ?? 0);
+        if (in_array($days, $retentionChoices, true)) {
+            $settingsRepo->update(['image_retention_days' => $days]);
+            // Langsung terapkan; pembersihan otomatis (03:00) juga memakai nilai ini.
+            $cutoff = gmdate('Y-m-d H:i:s', LocalTime::now() - $days * 86400);
+            $old = $repo->olderThan($cutoff);
+            foreach ($old as $event) {
+                $deleteEvent($event);
+            }
+            $_SESSION['flash_success'] = "Foto disimpan selama $days hari."
+                . ($old !== [] ? ' ' . count($old) . ' foto lama dihapus.' : '');
+        }
     }
     header('Location: /admin/camera.php?date=' . urlencode($date));
     exit;
@@ -53,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // REQ-F-023: rekaman hanya bisa dilihat admin; gambar dilayani lewat capture.php.
 $events = $repo->list($date, 200);
+$retentionDays = (int) $settingsRepo->get()['image_retention_days'];
 
 $pageTitle = 'Rekaman kamera';
 $pageSubtitle = 'Foto otomatis saat ada gerakan';
@@ -88,6 +107,22 @@ require __DIR__ . '/_header.php';
     <?php else: ?>
         <div class="card"><div class="empty">Tidak ada gerakan terekam pada tanggal ini.</div></div>
     <?php endif; ?>
+</section>
+
+<section class="group" aria-labelledby="retention-label">
+    <div class="label" id="retention-label">Simpan foto selama</div>
+    <form method="post">
+        <?= Csrf::field() ?>
+        <input type="hidden" name="action" value="retention">
+        <input type="hidden" name="date" value="<?= Format::e($date) ?>">
+        <div class="seg four" role="radiogroup" aria-labelledby="retention-label">
+            <?php foreach ($retentionChoices as $d): ?>
+                <label><input type="radio" name="image_retention_days" value="<?= $d ?>" data-autosubmit<?= $d < $retentionDays ? ' data-confirm-change="Foto yang lebih lama dari ' . $d . ' hari akan langsung dihapus. Lanjutkan?"' : '' ?><?= $d === $retentionDays ? ' checked' : '' ?>><span><?= $d ?> hari</span></label>
+            <?php endforeach; ?>
+        </div>
+        <noscript><button type="submit" class="btn small">Simpan</button></noscript>
+    </form>
+    <div class="note">Foto lebih lama dihapus otomatis tiap malam. Bila memori hampir penuh, foto terlama dihapus lebih dulu.</div>
 </section>
 
 <?php require __DIR__ . '/_footer.php'; ?>

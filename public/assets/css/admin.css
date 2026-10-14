@@ -213,6 +213,7 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 
 /* Pilihan dua sisi (radio) */
 .seg { display: grid; grid-template-columns: 1fr 1fr; background: #E3E6E0; border-radius: 12px; padding: 4px; }
+.seg.four { grid-template-columns: repeat(4, 1fr); }
 .seg label { position: relative; }
 .seg input { position: absolute; opacity: 0; }
 .seg span { display: flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 9px; font-weight: 700; color: var(--muted); cursor: pointer; }

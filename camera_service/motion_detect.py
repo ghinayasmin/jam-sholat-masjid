@@ -43,6 +43,10 @@ ROTATE_CODES = {
     180: cv2.ROTATE_180,
     270: cv2.ROTATE_90_COUNTERCLOCKWISE,
 }
+# Zona yang diabaikan, mis. layar TV atau jendela yang terlihat kamera. Format persen
+# terhadap FOTO yang tersimpan (sudah diputar): "x1,y1,x2,y2", beberapa zona dipisah
+# ";". Contoh "0,60,100,100" = 40% bagian bawah foto diabaikan.
+CAMERA_IGNORE = os.environ.get("JAMSHOLAT_CAMERA_IGNORE", "")
 # File tuning libcamera, mis. "imx219_noir.json" untuk Camera V2 NoIR (papan hitam,
 # tanpa filter inframerah) agar warna tidak terlalu merah muda. Kosong = bawaan.
 CAMERA_TUNING = os.environ.get("JAMSHOLAT_CAMERA_TUNING", "")
@@ -56,6 +60,12 @@ FRAME_HEIGHT = 480
 # Latar belakang MOG2 masih kosong saat kamera baru dibuka, sehingga frame awal
 # selalu terbaca "gerakan". Lewati ~5 detik pertama (5 fps).
 WARMUP_FRAMES = 25
+# Gerakan dianggap nyata bila terlihat di sekian frame berturut-turut (5 fps → 0,4 detik).
+# Menyaring kedipan lampu dan noise sensor satu frame.
+CONFIRM_FRAMES = 2
+# Bila lebih dari separuh gambar berubah sekaligus, itu perubahan cahaya (lampu
+# dinyalakan, awan), bukan orang: latar belakang dipelajari ulang.
+LIGHTING_CHANGE_FRACTION = 0.5
 
 logging.basicConfig(
     level=logging.INFO,
@@ -64,22 +74,92 @@ logging.basicConfig(
 logger = logging.getLogger("motion_detect")
 
 
+def parse_zones(spec: str) -> list[tuple[float, float, float, float]]:
+    """"0,60,100,100;10,0,30,20" -> [(0, .6, 1, 1), (.1, 0, .3, .2)] (pecahan 0..1)."""
+    zones = []
+    for part in filter(None, (p.strip() for p in spec.split(";"))):
+        try:
+            x1, y1, x2, y2 = (min(100.0, max(0.0, float(v))) / 100 for v in part.split(","))
+        except ValueError:
+            logger.warning("Zona abaikan tidak valid, dilewati: %r", part)
+            continue
+        zones.append((min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)))
+    return zones
+
+
+def unrotate_zone(zone: tuple[float, float, float, float], rotation: int) -> tuple[float, float, float, float]:
+    """Zona pada foto yang sudah diputar -> zona pada frame deteksi (belum diputar)."""
+    def point(u: float, v: float) -> tuple[float, float]:
+        if rotation == 90:    # searah jarum jam
+            return v, 1 - u
+        if rotation == 180:
+            return 1 - u, 1 - v
+        if rotation == 270:   # berlawanan jarum jam
+            return 1 - v, u
+        return u, v
+    (ax, ay), (bx, by) = point(zone[0], zone[1]), point(zone[2], zone[3])
+    return min(ax, bx), min(ay, by), max(ax, bx), max(ay, by)
+
+
 class MotionDetector:
     """Deteksi gerakan murni dari array frame — tidak menyentuh hardware,
     supaya bisa diuji dengan frame sintetis (lihat unit test)."""
 
-    def __init__(self, min_contour_area: int = MIN_CONTOUR_AREA) -> None:
+    def __init__(self, min_contour_area: int = MIN_CONTOUR_AREA, confirm_frames: int = CONFIRM_FRAMES,
+                 ignore_zones: list | None = None, rotation: int = 0) -> None:
         self.min_contour_area = min_contour_area
+        self.confirm_frames = confirm_frames
+        self.set_ignore_zones(ignore_zones or [], rotation)
+        self.restart()
+
+    def set_ignore_zones(self, zones: list, rotation: int = 0) -> None:
+        """zones dalam pecahan 0..1 terhadap foto tersimpan (lihat parse_zones)."""
+        self.ignore_zones = [unrotate_zone(z, rotation) for z in zones]
+        self._mask = None
+        self._mask_shape = None
+
+    def restart(self, skip_frames: int = 0) -> None:
+        """Mulai belajar latar belakang dari awal dan abaikan beberapa frame berikutnya."""
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
             history=300, varThreshold=32, detectShadows=False
         )
+        # Frame pertama setelah model baru selalu terbaca 100% berubah: minimal lewati satu.
+        self.skip_left = max(1, skip_frames)
+        self.streak = 0
+
+    def _ignore_mask(self, shape: tuple[int, int]):
+        if not self.ignore_zones:
+            return None
+        if self._mask_shape != shape:
+            h, w = shape
+            mask = np.full(shape, 255, np.uint8)
+            for x1, y1, x2, y2 in self.ignore_zones:
+                mask[round(y1 * h):round(y2 * h), round(x1 * w):round(x2 * w)] = 0
+            self._mask, self._mask_shape = mask, shape
+        return self._mask
 
     def detect(self, frame: "np.ndarray") -> bool:
-        """Return True jika ada gerakan signifikan pada frame ini (BGR atau grayscale)."""
+        """Return True jika ada gerakan signifikan pada frame ini (BGR atau grayscale)
+        dan sudah terlihat di confirm_frames frame berturut-turut."""
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) if frame.ndim == 3 else frame
         gray = cv2.GaussianBlur(gray, (5, 5), 0)
 
         fg_mask = self.bg_subtractor.apply(gray)
+        if self.skip_left > 0:  # latar belakang belum terbentuk: tetap belajar, jangan lapor
+            self.skip_left -= 1
+            return False
+
+        ignore = self._ignore_mask(gray.shape)
+        if ignore is not None:
+            fg_mask = cv2.bitwise_and(fg_mask, ignore)
+        watched = cv2.countNonZero(ignore) if ignore is not None else gray.size
+        if watched == 0:
+            return False
+        if cv2.countNonZero(fg_mask) / watched > LIGHTING_CHANGE_FRACTION:
+            logger.info("Perubahan cahaya mendadak, latar belakang dipelajari ulang.")
+            self.restart(WARMUP_FRAMES)
+            return False
+
         fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
         fg_mask = cv2.dilate(fg_mask, np.ones((5, 5), np.uint8), iterations=2)
 
@@ -87,10 +167,9 @@ class MotionDetector:
         # Camera Module (320x240) sama pekanya.
         min_area = self.min_contour_area * gray.size / (FRAME_WIDTH * FRAME_HEIGHT)
         contours, _ = cv2.findContours(fg_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        for c in contours:
-            if cv2.contourArea(c) >= min_area:
-                return True
-        return False
+        moving = any(cv2.contourArea(c) >= min_area for c in contours)
+        self.streak = self.streak + 1 if moving else 0
+        return self.streak >= self.confirm_frames
 
 
 class EventStore:
@@ -198,16 +277,20 @@ def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: s
     """Loop utama — REQ-F-040 (continuous), dengan graceful error handling (REQ-NF-112):
     kegagalan membuka webcam TIDAK menghentikan proses, hanya retry berkala."""
     detector = MotionDetector()
+    ignore_zones = parse_zones(CAMERA_IGNORE)
     store = EventStore(db_path, captures_path)
     last_capture_time = 0.0
 
     cap = None
-    warmup_left = 0
     while True:
         try:
             if cap is None or not cap.isOpened():
                 cap = open_camera(camera_type, camera_index)
-                warmup_left = WARMUP_FRAMES
+                # Zona ditulis terhadap foto tersimpan; hanya foto Camera Module yang diputar.
+                detector.set_ignore_zones(ignore_zones, CAMERA_ROTATION if isinstance(cap, PiCamera) else 0)
+                detector.restart(WARMUP_FRAMES)
+                if ignore_zones:
+                    logger.info("Zona diabaikan: %s", CAMERA_IGNORE)
                 if not cap.isOpened():
                     logger.warning("Kamera tidak tersedia, coba lagi dalam 10 detik.")
                     time.sleep(10)
@@ -221,10 +304,7 @@ def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: s
                 time.sleep(5)
                 continue
 
-            moving = detector.detect(frame)  # tetap dipanggil agar latar belakang terbentuk
-            if warmup_left > 0:
-                warmup_left -= 1
-            elif moving:
+            if detector.detect(frame):
                 now = time.time()
                 if now - last_capture_time >= MIN_SECONDS_BETWEEN_CAPTURES:
                     still = cap.capture_still() if hasattr(cap, "capture_still") else frame

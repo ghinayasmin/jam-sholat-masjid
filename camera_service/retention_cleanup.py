@@ -45,7 +45,7 @@ def get_settings(conn: sqlite3.Connection) -> dict:
         "SELECT image_retention_days, image_retention_storage_pct FROM mosque_settings WHERE id = 1"
     ).fetchone()
     if row is None:
-        return {"days": 30, "storage_pct": 80}
+        return {"days": 7, "storage_pct": 80}
     return {"days": row[0], "storage_pct": row[1]}
 
 

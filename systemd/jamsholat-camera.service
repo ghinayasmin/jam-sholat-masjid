@@ -16,6 +16,9 @@ Environment=JAMSHOLAT_CAMERA_INDEX=0
 Environment=JAMSHOLAT_CAMERA_ROTATION=270
 # Camera V2 NoIR (papan hitam) di perangkat uji; hapus baris ini untuk Camera V2 biasa.
 Environment=JAMSHOLAT_CAMERA_TUNING=imx219_noir.json
+# Zona yang diabaikan (persen terhadap foto di panel: x1,y1,x2,y2; pisahkan dengan ;),
+# mis. layar TV atau jendela yang terlihat kamera. Contoh: 40% bagian bawah foto.
+#Environment=JAMSHOLAT_CAMERA_IGNORE=0,60,100,100
 ExecStart=/usr/bin/python3 /opt/jamsholat/camera_service/motion_detect.py
 Restart=on-failure
 RestartSec=10
