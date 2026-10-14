@@ -142,6 +142,15 @@ a2dissite 000-default.conf || true
 a2ensite jamsholat.conf
 a2enmod rewrite
 systemctl reload apache2
+# Router/hotspot yang memberi IPv6 publik membuat browser membuka Pi lewat
+# IPv6 dan ditolak "Require ip" di atas (403). Pi cukup IPv4 di LAN, jadi
+# IPv6 dimatikan kecuali loopback; sekaligus Pi tidak terbuka lewat IPv6.
+cat > /etc/sysctl.d/90-jamsholat-ipv4-only.conf << EOF
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 0
+EOF
+sysctl --system > /dev/null
 
 echo "=== [10/10] Memasang & mengaktifkan systemd services ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
@@ -157,6 +166,14 @@ systemctl enable --now jamsholat-retention.timer
 systemctl disable getty@tty1.service || true
 systemctl enable jamsholat-kiosk.service
 echo "Layanan kiosk (Chromium fullscreen) akan aktif setelah reboot berikutnya."
+
+# REQ-NF-102: kernel Raspberry Pi bawaan mematikan cgroup memori (cgroup_disable=memory),
+# sehingga MemoryMax di unit systemd diabaikan. Aktifkan; berlaku setelah reboot.
+CMDLINE=/boot/firmware/cmdline.txt
+if [ -f "$CMDLINE" ] && ! grep -q "cgroup_enable=memory" "$CMDLINE"; then
+    sed -i "s/$/ cgroup_memory=1 cgroup_enable=memory/" "$CMDLINE"
+    echo "Batas memori layanan (MemoryMax) aktif setelah reboot berikutnya."
+fi
 
 echo ""
 echo "=================================================================="
