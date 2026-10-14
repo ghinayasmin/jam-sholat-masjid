@@ -84,8 +84,16 @@
     }
 
     // Sakelar yang langsung tersimpan saat diubah.
+    // data-confirm-change: tanya dulu (mis. pilihan yang menghapus data); batal = kembali ke pilihan semula.
     document.querySelectorAll('[data-autosubmit]').forEach((input) => {
-        input.addEventListener('change', () => input.form.requestSubmit()); // lewat handler fetch di bawah
+        const initial = input.form.querySelector('[data-autosubmit]:checked');
+        input.addEventListener('change', () => {
+            if (input.dataset.confirmChange && !window.confirm(input.dataset.confirmChange)) {
+                if (initial) initial.checked = true;
+                return;
+            }
+            input.form.requestSubmit(); // lewat handler fetch di bawah
+        });
     });
 
     // Kolom cari yang menyaring daftar (mis. Pilih surat). Tanda baca diabaikan
@@ -160,4 +168,18 @@
             HTMLFormElement.prototype.submit.call(form); // jaringan putus: kirim cara biasa
         }
     });
+
+    // Jam perangkat belum tersinkron (listrik padam tanpa internet): cocokkan
+    // dengan jam HP ini, lalu muat ulang agar jam yang tampil sudah benar.
+    const clockSync = document.querySelector('[data-clock-sync]');
+    if (clockSync) {
+        const body = new FormData();
+        body.append('csrf_token', clockSync.dataset.csrf);
+        // Detik, bukan milidetik: PHP di Pi 32-bit, milidetik melebihi batas bilangan bulatnya.
+        body.append('epoch', String(Math.floor(Date.now() / 1000)));
+        fetch('/admin/clock_sync.php', { method: 'POST', body, credentials: 'same-origin' })
+            .then((res) => res.json())
+            .then((data) => { if (data.changed) window.location.reload(); })
+            .catch(() => {});
+    }
 })();

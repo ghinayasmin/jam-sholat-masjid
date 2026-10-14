@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exec($cmd, $output, $exitCode);
 
             if ($exitCode === 0) {
+                \App\SystemClock::markSet();
                 $success = 'Jam perangkat diatur ke ' . $dt->format('H:i') . ', ' . \App\View\Format::longDate($dt->format('Y-m-d')) . '.';
             } else {
                 error_log('[settings_time] ' . implode(' ', $output));
