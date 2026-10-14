@@ -49,6 +49,14 @@ class TestAlarmScheduler(unittest.TestCase):
         t_far = datetime.datetime(2026, 9, 21, 9, 0, 0)
         self.assertFalse(self.scheduler.in_quiet_window(t_far))
 
+    def test_friday_quiet_window_covers_khutbah(self):
+        h, m = map(int, SCHEDULE["dhuhr"].split(":"))
+        dhuhr = datetime.datetime(2026, 9, 25, h, m, 0)  # Jumat
+        self.assertTrue(self.scheduler.in_quiet_window(dhuhr + datetime.timedelta(minutes=45)))
+        self.assertFalse(self.scheduler.in_quiet_window(dhuhr + datetime.timedelta(minutes=61)))
+        senin = datetime.datetime(2026, 9, 21, h, m, 0)
+        self.assertFalse(self.scheduler.in_quiet_window(senin + datetime.timedelta(minutes=45)))
+
     def test_reset_daily_allows_retrigger_next_day(self):
         t_day1 = datetime.datetime(2026, 9, 21, 4, 11, 0)
         self.scheduler.check(t_day1)
@@ -168,6 +176,11 @@ class TestMurottal(unittest.TestCase):
             conn.commit()
             self.assertTrue(state.enabled())
             self.assertFalse(state.iqomah_enabled())  # kolom tidak ada di tabel uji
+            self.assertTrue(state.adzan_enabled())  # kolom tidak ada: adzan bawaan menyala
+            conn.execute("ALTER TABLE mosque_settings ADD COLUMN adzan_sound_enabled INTEGER")
+            conn.execute("UPDATE mosque_settings SET adzan_sound_enabled = 0")
+            conn.commit()
+            self.assertFalse(state.adzan_enabled())
             self.assertEqual(state.request(), "")  # kolom tidak ada di tabel uji
             state.set_now_playing("An-Naba")
             self.assertEqual(conn.execute("SELECT murottal_now_playing FROM mosque_settings").fetchone()[0], "An-Naba")

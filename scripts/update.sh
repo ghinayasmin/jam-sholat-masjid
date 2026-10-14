@@ -33,6 +33,8 @@ rsync -a --chown="$SERVICE_USER":"$SERVICE_USER" \
     --exclude 'config/config.php' --exclude 'config/.env' \
     --exclude 'tests/' \
     "$SCRIPT_DIR"/ "$INSTALL_DIR"/
+# File yang sudah dihapus dari repo (rsync di atas tidak menghapus).
+rm -f "$INSTALL_DIR"/public/admin/iqomah.php   # diganti sound.php (DECISIONS.md #23)
 
 echo "=== [2/3] Memperbarui unit systemd ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).

@@ -29,12 +29,13 @@ final class Murottal
 
     /**
      * Keterangan status untuk panel. Jendela diam sama dengan alarm_service.py:
-     * 2 menit sebelum s.d. 20 menit sesudah tiap adzan.
+     * 2 menit sebelum s.d. 20 menit sesudah tiap adzan (Jumat: 60 menit sesudah
+     * adzan Dzuhur, agar tidak menyela khutbah).
      *
      * @param array<string, mixed>  $settings baris mosque_settings
      * @param array<string, string> $schedule jadwal hari ini (HH:MM)
      */
-    public static function status(array $settings, array $schedule, int $nowMinutes): string
+    public static function status(array $settings, array $schedule, int $nowMinutes, bool $isFriday = false): string
     {
         if (self::tracks() === []) {
             return 'Belum ada file murottal di perangkat';
@@ -48,8 +49,10 @@ final class Murottal
         foreach (['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as $key) {
             $at = (int) substr($schedule[$key], 0, 2) * 60 + (int) substr($schedule[$key], 3, 2);
             $delta = $nowMinutes - $at;
-            if ($delta >= -2 && $delta <= 20) {
-                return sprintf('Diam sekitar waktu sholat, mulai lagi pukul %02d:%02d', intdiv($at + 21, 60) % 24, ($at + 21) % 60);
+            $after = $key === 'dhuhr' && $isFriday ? 60 : 20;
+            if ($delta >= -2 && $delta <= $after) {
+                $resume = $at + $after + 1;
+                return sprintf('Diam sekitar waktu sholat, mulai lagi pukul %02d:%02d', intdiv($resume, 60) % 24, $resume % 60);
             }
         }
         return 'Memulai…';

@@ -1,7 +1,7 @@
 # File Audio (belum disertakan)
 
 Folder ini butuh file audio berikut sebelum `alarm_service.py` bisa memutar suara
-(REQ-F-030, REQ-F-031, REQ-F-032). File audio TIDAK disertakan dalam paket
+(REQ-F-030, REQ-F-032). File audio TIDAK disertakan dalam paket
 ini karena rekaman adzan/murottal biasanya berlisensi/hak cipta pihak lain —
 silakan sediakan sendiri file yang sudah dimiliki/berlisensi legal masjid Anda.
 
@@ -11,7 +11,7 @@ Letakkan file berikut:
 public/assets/audio/
 ├── adzan.mp3              # diputar saat masuk waktu sholat (REQ-F-030)
 ├── adzan_subuh.mp3        # opsional, khusus Subuh; tanpa file ini Subuh memakai adzan.mp3
-├── iqomah.mp3              # diputar saat masuk waktu iqomah (REQ-F-031)
+├── iqomah.mp3              # opsional, bila suara iqomah dinyalakan di panel
 │                            # (adzan/iqomah boleh .wav bila tidak ada .mp3)
 └── murottal/
     ├── 001.mp3              # diputar bergantian di luar waktu adzan/iqomah (REQ-F-032)

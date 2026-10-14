@@ -3,7 +3,7 @@
 
 PRAGMA foreign_keys = ON;
 
--- Singleton config table (REQ-F-020, REQ-F-021, REQ-F-025, REQ-F-026, REQ-F-044)
+-- Singleton config table (REQ-F-020, REQ-F-021, REQ-F-026, REQ-F-030, REQ-F-044)
 CREATE TABLE IF NOT EXISTS mosque_settings (
     id                              INTEGER PRIMARY KEY CHECK (id = 1),
     mosque_name                     TEXT NOT NULL DEFAULT 'Masjid',
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     madzhab                         TEXT NOT NULL DEFAULT 'syafii' CHECK (madzhab IN ('syafii','hanafi')),
     location_offset_minutes         INTEGER NOT NULL DEFAULT 0,
     azan_iqomah_interval_minutes    INTEGER NOT NULL DEFAULT 10,
-    image_retention_days            INTEGER NOT NULL DEFAULT 30,
+    image_retention_days            INTEGER NOT NULL DEFAULT 7,    -- 3/7/14/30, diatur di tab Kamera
     image_retention_storage_pct     INTEGER NOT NULL DEFAULT 80,
     online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),
     -- Layar jamaah: pengingat sebelum adzan & visibilitas kas (lihat DECISIONS.md #14, #15).
@@ -29,7 +29,9 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     murottal_enabled                INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1)),
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
     murottal_request                TEXT NOT NULL DEFAULT '',   -- "file|cap waktu": surat yang dipilih takmir
-    -- Suara iqomah otomatis (REQ-F-031); bawaan mati karena iqomah biasanya dikumandangkan langsung.
+    -- Suara adzan/iqomah dari speaker. Bisa dimatikan bila dikumandangkan langsung oleh muadzin;
+    -- iqomah bawaan mati karena di kebanyakan masjid dikumandangkan langsung.
+    adzan_sound_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1)),
     iqomah_sound_enabled            INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1)),
     -- Koreksi tanggal Hijriah agar sama dengan keputusan isbat (−1, 0, +1 hari).
     hijri_offset_days               INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2),

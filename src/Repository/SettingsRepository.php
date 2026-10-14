@@ -8,7 +8,7 @@ use App\Db\Database;
 use PDO;
 
 /**
- * REQ-F-020, REQ-F-021, REQ-F-025, REQ-F-026, REQ-F-044.
+ * REQ-F-020, REQ-F-021, REQ-F-026, REQ-F-030, REQ-F-044.
  * mosque_settings selalu berupa satu baris (id=1).
  */
 final class SettingsRepository
@@ -43,7 +43,8 @@ final class SettingsRepository
             'last_sync_at', 'last_sync_status',
             'reminder_enabled', 'reminder_minutes', 'reminder_friday_minutes',
             'reminder_message', 'show_finance_on_display', 'location_name',
-            'murottal_enabled', 'murottal_request', 'iqomah_sound_enabled', 'hijri_offset_days',
+            'murottal_enabled', 'murottal_request', 'adzan_sound_enabled', 'iqomah_sound_enabled',
+            'hijri_offset_days',
         ];
         $set = [];
         $params = [];

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Alarm & Audio Service — REQ-F-030 (Adzan Alarm), REQ-F-031 (Iqomah Alarm),
-REQ-F-032 (Murottal Playback), REQ-F-033 (Background Alarm Service).
+Alarm & Audio Service — REQ-F-030 (Adzan Alarm), REQ-F-032 (Murottal Playback),
+REQ-F-033 (Background Alarm Service). Suara adzan dan iqomah bisa dimatikan
+takmir; iqomah fitur tambahan di luar SRS v0.2, bawaan mati (DECISIONS.md #23).
 
 PENTING: skrip ini membandingkan jam LOKAL sistem (datetime.now(), bukan
 UTC) terhadap jadwal sholat yang disimpan sebagai jam dinding lokal
@@ -25,6 +26,7 @@ import sqlite3
 import subprocess
 import sys
 import re
+import signal
 import time
 from glob import glob
 
@@ -41,6 +43,8 @@ ADZAN_PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
 # dengan adzan/iqomah — beri jeda "diam" di sekitar tiap waktu sholat.
 QUIET_WINDOW_BEFORE_MIN = 2
 QUIET_WINDOW_AFTER_MIN = 20  # cukup untuk adzan + iqomah + sholat singkat
+# Jumat: khutbah + sholat Jumat jauh lebih lama; murottal jangan menyela khutbah.
+QUIET_WINDOW_AFTER_FRIDAY_DHUHR_MIN = 60
 
 logging.basicConfig(
     level=logging.INFO,
@@ -100,7 +104,9 @@ class AlarmScheduler:
             h, m = self._parse_hhmm(self.schedule[prayer])
             prayer_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
             window_start = prayer_dt - datetime.timedelta(minutes=QUIET_WINDOW_BEFORE_MIN)
-            window_end = prayer_dt + datetime.timedelta(minutes=QUIET_WINDOW_AFTER_MIN)
+            after = QUIET_WINDOW_AFTER_FRIDAY_DHUHR_MIN if prayer == "dhuhr" and now.weekday() == 4 \
+                else QUIET_WINDOW_AFTER_MIN
+            window_end = prayer_dt + datetime.timedelta(minutes=after)
             if window_start <= now <= window_end:
                 return True
         return False
@@ -236,7 +242,7 @@ class MurottalState:
         self.db_path = db_path
         self._written: str | None = None
 
-    def _flag(self, column: str) -> bool:
+    def _flag(self, column: str, default: bool = False) -> bool:
         try:
             conn = sqlite3.connect(self.db_path, timeout=5)
             try:
@@ -244,11 +250,14 @@ class MurottalState:
             finally:
                 conn.close()
         except sqlite3.Error:
-            return False  # kolom belum dimigrasi: anggap mati
-        return bool(row and row[0])
+            return default  # kolom belum dimigrasi: pakai nilai bawaan
+        return bool(row[0]) if row else default
 
     def enabled(self) -> bool:
         return self._flag("murottal_enabled")
+
+    def adzan_enabled(self) -> bool:
+        return self._flag("adzan_sound_enabled", default=True)
 
     def iqomah_enabled(self) -> bool:
         return self._flag("iqomah_sound_enabled")
@@ -326,8 +335,12 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 stop_murottal()
 
             for kind, prayer in scheduler.check(now):
+                # Dimatikan takmir bila adzan/iqomah dikumandangkan langsung oleh muadzin.
+                # Murottal tetap berhenti di jendela diam sekitar waktu sholat.
+                if kind == "adzan" and not state.adzan_enabled():
+                    continue
                 if kind == "iqomah" and not state.iqomah_enabled():
-                    continue  # REQ-F-031: dimatikan takmir, iqomah dikumandangkan langsung
+                    continue
                 stop_murottal()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
                 audio_file = alarm_audio_file(kind, prayer)
                 logger.info("Memutar %s untuk %s (%s)", kind, prayer, audio_file)
@@ -373,13 +386,22 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
             time.sleep(3)
 
         except KeyboardInterrupt:
-            logger.info("Dihentikan oleh pengguna.")
+            logger.info("Dihentikan.")
             break
         except Exception as exc:  # noqa: BLE001 — REQ-NF-112
             logger.error("Error tak terduga di loop alarm: %s", exc)
             time.sleep(5)
 
+    # Jangan biarkan layar jamaah tetap menampilkan surat yang sudah tidak diputar.
+    stop_murottal()
+
+
+def _stop_on_sigterm(signum, frame) -> None:  # noqa: ARG001
+    # systemctl stop / update.sh mengirim SIGTERM: berhenti lewat jalur yang sama dengan Ctrl+C.
+    raise KeyboardInterrupt
+
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGTERM, _stop_on_sigterm)
     logger.info("Memulai layanan alarm. DB=%s, Audio=%s", DEFAULT_DB_PATH, AUDIO_DIR)
     sys.exit(run_loop() or 0)

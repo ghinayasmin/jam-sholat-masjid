@@ -45,7 +45,7 @@ $s = $repo->get();
 $on = (int) $s['murottal_enabled'] === 1;
 $now = (string) $s['murottal_now_playing'];
 $nowMinutes = (int) gmdate('G', LocalTime::now()) * 60 + (int) gmdate('i', LocalTime::now());
-$status = Murottal::status($s, (new ScheduleEngine())->getScheduleForDate(LocalTime::today()), $nowMinutes);
+$status = Murottal::status($s, (new ScheduleEngine())->getScheduleForDate(LocalTime::today()), $nowMinutes, gmdate('w', LocalTime::now()) === '5');
 
 $pageTitle = 'Pilih surat';
 $backHref = '/admin/';

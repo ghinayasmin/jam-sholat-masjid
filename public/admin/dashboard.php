@@ -60,7 +60,7 @@ $rows = [
 
 $murottalOn = (int) $settings['murottal_enabled'] === 1;
 $murottalReady = \App\Murottal::tracks() !== [];
-$murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes);
+$murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes, $isFriday);
 
 $syncOk = $settings['last_sync_status'] === null || stripos((string) $settings['last_sync_status'], 'gagal') === false;
 

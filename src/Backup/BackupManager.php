@@ -101,6 +101,8 @@ final class BackupManager
                     reminder_enabled=:reminder_enabled, reminder_minutes=:reminder_minutes,
                     reminder_friday_minutes=:reminder_friday_minutes, reminder_message=:reminder_message,
                     show_finance_on_display=:show_finance_on_display, location_name=:location_name,
+                    adzan_sound_enabled=:adzan_sound_enabled, iqomah_sound_enabled=:iqomah_sound_enabled,
+                    hijri_offset_days=:hijri_offset_days,
                     updated_at=CURRENT_TIMESTAMP
                  WHERE id = 1'
             );
@@ -120,6 +122,9 @@ final class BackupManager
                 'reminder_message' => $s['reminder_message'] ?? 'Mari bersiap dan mengambil air wudhu',
                 'show_finance_on_display' => $s['show_finance_on_display'] ?? 0,
                 'location_name' => $s['location_name'] ?? '',
+                'adzan_sound_enabled' => $s['adzan_sound_enabled'] ?? 1,
+                'iqomah_sound_enabled' => $s['iqomah_sound_enabled'] ?? 0,
+                'hijri_offset_days' => $s['hijri_offset_days'] ?? 0,
             ]);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten
