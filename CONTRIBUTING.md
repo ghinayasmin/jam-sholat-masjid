@@ -71,9 +71,9 @@ Email itu tetap terhitung sebagai kontribusimu.
 
 - **Jangan commit langsung ke `main`.** Buat branch, lalu Pull Request (PR).
 - **Satu PR = satu perubahan yang jelas**, misalnya satu test baru atau satu perbaikan.
-- **Nama branch:** `nama/topik`, misalnya `ghina/panduan-takmir`, `azhar/sync-online`.
+- **Nama branch:** `nama/topik`, misalnya `ghina/test-login`, `dhiwa/test-jendela-diam`.
 - **Pesan commit:** kalimat perintah dalam bahasa Indonesia yang menjelaskan
-  apa yang berubah, misalnya `Tambah TC pengaturan lokasi dan madzhab`.
+  apa yang berubah, misalnya `Tambah test login untuk TC-AUTH-001`.
 - **Jalankan test sebelum push** (lihat `README.md` bagian 10, Running Tests).
 - **Minta satu orang lain me-review** sebelum merge, sebaiknya anggota yang
   bagiannya berhubungan dengan perubahanmu.
@@ -86,18 +86,18 @@ git switch main
 git pull
 
 # 2. Buat branch untuk tugasmu
-git switch -c ghina/panduan-takmir
+git switch -c ghina/test-login
 
 # 3. Kerjakan. Lihat apa yang berubah:
 git status
 git diff
 
 # 4. Simpan perubahan sebagai commit
-git add docs/PANDUAN_TAKMIR.md
-git commit -m "Tambah panduan pengguna untuk takmir"
+git add tests/integration/test_core_integration.php
+git commit -m "Tambah test login untuk TC-AUTH-001"
 
 # 5. Kirim ke GitHub
-git push -u origin ghina/panduan-takmir
+git push -u origin ghina/test-login
 
 # 6. Buka Pull Request
 gh pr create --fill --reviewer azharm2412
@@ -111,7 +111,7 @@ Lalu bersihkan:
 ```bash
 git switch main
 git pull
-git branch -d ghina/panduan-takmir
+git branch -d ghina/test-login
 ```
 
 ## 5. Kalau terjadi konflik
@@ -124,13 +124,13 @@ menandainya di file seperti ini:
 versi di main
 =======
 versi kamu
->>>>>>> ghina/panduan-takmir
+>>>>>>> ghina/test-login
 ```
 
 Cara menyelesaikannya:
 
 ```bash
-git switch ghina/panduan-takmir
+git switch ghina/test-login
 git pull origin main          # ambil perubahan terbaru dari main
 # buka file yang konflik, pilih isi yang benar, hapus tanda <<<<<<< ======= >>>>>>>
 git add <file>
