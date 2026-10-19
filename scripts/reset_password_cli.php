@@ -22,7 +22,7 @@ if (PHP_SAPI !== 'cli') {
     exit(1);
 }
 
-$args = array_slice($argv, 1);
+$args = array_slice($_SERVER['argv'] ?? [], 1);
 $codeOnly = in_array('--kode', $args, true);
 $args = array_values(array_filter($args, static fn (string $a): bool => $a !== '--kode'));
 $users = new AdminUserRepository();

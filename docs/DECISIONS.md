@@ -565,3 +565,23 @@ waktu dibuat).
   catatan lama. Mode hapus terpisah ("Hapus catatan yang salah") dihilangkan.
 - Tautan panduan pengguna di panel ditunda ke Tahap D bersama isinya.
 
+## 38. Perapian kode (KOREKSI)
+
+- **Kode mati dihapus:** `src/Schedule/ScheduleSync.php` (sinkron AlAdhan, tidak
+  pernah dipanggil) dan `aladhan_base_url` di config. Kolom `online_sync_enabled`,
+  `last_sync_at`, `last_sync_status`, dan `azan_iqomah_interval_minutes` tetap di
+  database (menghapus kolom SQLite di database lama berisiko) dan ditandai tidak
+  dipakai.
+- **Kolom pengaturan dibaca dari tabel.** `SettingsRepository::update()` dan
+  pemulihan cadangan tidak lagi memakai daftar kolom tertulis tangan. Pengaturan
+  baru cukup ditambahkan di `schema.sql` dan `Database::ADDED_COLUMNS`; sebelumnya
+  juga harus di daftar izin repository dan di SQL restore, dan lupa satu tempat
+  membuat pengaturan itu tidak pulih dari cadangan. Kolom status layanan alarm
+  (murottal/adzan yang sedang diputar) tidak ikut dipulihkan. Cadangan lama yang
+  belum punya suatu kolom: kolom itu tetap bernilai sekarang (dulu: nilai bawaan).
+- `ScheduleEngine::PRAYER_NAMES` menggantikan empat salinan daftar nama sholat
+  di halaman panel. Gaya inline yang berulang diganti kelas `.row.ctl`,
+  `.row.solo`, dan `.aside` (lihat DESIGN.md).
+- Pemeriksaan: PHPStan level 5, pyflakes, shellcheck, `node --check`, dan
+  semua test lolos.
+

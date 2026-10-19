@@ -27,29 +27,46 @@ final class SettingsRepository
     }
 
     /**
-     * Update parsial — hanya kolom yang ada di $fields yang diubah.
-     * $fields harus subset dari kolom valid mosque_settings (whitelist di caller).
+     * Kolom yang diisi langsung oleh layanan alarm (status saat ini), bukan pengaturan takmir:
+     * tidak ikut dipulihkan dari cadangan. id dan updated_at diatur sendiri.
+     */
+    private const RUNTIME_COLUMNS = [
+        'id', 'updated_at', 'murottal_now_playing', 'murottal_request', 'alarm_now_playing',
+        'last_sync_at', 'last_sync_status',
+    ];
+
+    /** @var \WeakMap<PDO, list<string>>|null daftar kolom per koneksi (test berganti database) */
+    private static ?\WeakMap $columns = null;
+
+    /**
+     * Semua kolom mosque_settings, dibaca dari tabel. Kolom baru cukup ditambahkan di
+     * schema.sql dan Database::ADDED_COLUMNS; update() dan pemulihan cadangan ikut otomatis.
+     *
+     * @return list<string>
+     */
+    public static function columns(): array
+    {
+        $pdo = Database::connection();
+        self::$columns ??= new \WeakMap();
+        if (!isset(self::$columns[$pdo])) {
+            self::$columns[$pdo] = array_column($pdo->query('PRAGMA table_info(mosque_settings)')->fetchAll(), 'name');
+        }
+        return self::$columns[$pdo];
+    }
+
+    /** Kolom pengaturan yang ikut dicadangkan dan dipulihkan. @return list<string> */
+    public static function settingColumns(): array
+    {
+        return array_values(array_diff(self::columns(), self::RUNTIME_COLUMNS));
+    }
+
+    /**
+     * Update parsial — hanya kolom yang ada di $fields yang diubah. Nama kolom yang
+     * tidak ada di tabel diabaikan (bukan dirangkai ke SQL).
      */
     public function update(array $fields): void
     {
-        if ($fields === []) {
-            return;
-        }
-        $allowed = [
-            'mosque_name', 'mosque_address', 'latitude', 'longitude',
-            'timezone_offset_hours', 'madzhab', 'location_offset_minutes',
-            'azan_iqomah_interval_minutes', 'image_retention_days',
-            'image_retention_storage_pct', 'online_sync_enabled',
-            'last_sync_at', 'last_sync_status',
-            'reminder_enabled', 'reminder_minutes', 'reminder_friday_minutes',
-            'reminder_message', 'show_finance_on_display', 'location_name',
-            'murottal_enabled', 'murottal_request', 'adzan_sound_enabled', 'iqomah_sound_enabled',
-            'hijri_offset_days', 'poster_gap_seconds', 'poster_show_seconds', 'mosque_photo',
-            'iqomah_fajr_minutes', 'iqomah_dhuhr_minutes', 'iqomah_asr_minutes',
-            'iqomah_maghrib_minutes', 'iqomah_isha_minutes', 'iqomah_countdown_enabled',
-            'adjust_fajr_minutes', 'adjust_dhuhr_minutes', 'adjust_asr_minutes',
-            'adjust_maghrib_minutes', 'adjust_isha_minutes',
-        ];
+        $allowed = array_diff(self::columns(), ['id', 'updated_at']);
         $set = [];
         $params = [];
         foreach ($fields as $key => $value) {

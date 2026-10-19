@@ -7,6 +7,7 @@ namespace App\Backup;
 use App\Config;
 use App\Db\Database;
 use App\Repository\BackupRepository;
+use App\Repository\SettingsRepository;
 use RuntimeException;
 
 /**
@@ -94,67 +95,19 @@ final class BackupManager
         $pdo = Database::connection();
         $pdo->beginTransaction();
         try {
-            // mosque_settings
+            // mosque_settings: semua kolom pengaturan yang ada di cadangan dan di tabel.
+            // Cadangan lama yang belum punya kolom baru: kolom itu tetap bernilai sekarang.
             $s = $data['mosque_settings'];
-            $stmt = $pdo->prepare(
-                'UPDATE mosque_settings SET
-                    mosque_name=:mosque_name, mosque_address=:mosque_address, latitude=:latitude,
-                    longitude=:longitude, timezone_offset_hours=:timezone_offset_hours, madzhab=:madzhab,
-                    location_offset_minutes=:location_offset_minutes,
-                    azan_iqomah_interval_minutes=:azan_iqomah_interval_minutes,
-                    image_retention_days=:image_retention_days,
-                    image_retention_storage_pct=:image_retention_storage_pct,
-                    online_sync_enabled=:online_sync_enabled,
-                    reminder_enabled=:reminder_enabled, reminder_minutes=:reminder_minutes,
-                    reminder_friday_minutes=:reminder_friday_minutes, reminder_message=:reminder_message,
-                    show_finance_on_display=:show_finance_on_display, location_name=:location_name,
-                    adzan_sound_enabled=:adzan_sound_enabled, iqomah_sound_enabled=:iqomah_sound_enabled,
-                    hijri_offset_days=:hijri_offset_days,
-                    poster_gap_seconds=:poster_gap_seconds, poster_show_seconds=:poster_show_seconds,
-                    mosque_photo=:mosque_photo,
-                    iqomah_fajr_minutes=:iqomah_fajr_minutes, iqomah_dhuhr_minutes=:iqomah_dhuhr_minutes,
-                    iqomah_asr_minutes=:iqomah_asr_minutes, iqomah_maghrib_minutes=:iqomah_maghrib_minutes,
-                    iqomah_isha_minutes=:iqomah_isha_minutes, iqomah_countdown_enabled=:iqomah_countdown_enabled,
-                    adjust_fajr_minutes=:adjust_fajr_minutes, adjust_dhuhr_minutes=:adjust_dhuhr_minutes,
-                    adjust_asr_minutes=:adjust_asr_minutes, adjust_maghrib_minutes=:adjust_maghrib_minutes,
-                    adjust_isha_minutes=:adjust_isha_minutes,
-                    updated_at=CURRENT_TIMESTAMP
-                 WHERE id = 1'
-            );
-            $stmt->execute([
-                'mosque_name' => $s['mosque_name'], 'mosque_address' => $s['mosque_address'],
-                'latitude' => $s['latitude'], 'longitude' => $s['longitude'],
-                'timezone_offset_hours' => $s['timezone_offset_hours'], 'madzhab' => $s['madzhab'],
-                'location_offset_minutes' => $s['location_offset_minutes'],
-                'azan_iqomah_interval_minutes' => $s['azan_iqomah_interval_minutes'],
-                'image_retention_days' => $s['image_retention_days'],
-                'image_retention_storage_pct' => $s['image_retention_storage_pct'],
-                'online_sync_enabled' => $s['online_sync_enabled'],
-                // Backup lama (sebelum kolom ini ada) memakai nilai bawaan.
-                'reminder_enabled' => $s['reminder_enabled'] ?? 1,
-                'reminder_minutes' => $s['reminder_minutes'] ?? 10,
-                'reminder_friday_minutes' => $s['reminder_friday_minutes'] ?? 30,
-                'reminder_message' => $s['reminder_message'] ?? 'Mari bersiap dan mengambil air wudhu',
-                'show_finance_on_display' => $s['show_finance_on_display'] ?? 0,
-                'location_name' => $s['location_name'] ?? '',
-                'adzan_sound_enabled' => $s['adzan_sound_enabled'] ?? 1,
-                'iqomah_sound_enabled' => $s['iqomah_sound_enabled'] ?? 0,
-                'hijri_offset_days' => $s['hijri_offset_days'] ?? 0,
-                'poster_gap_seconds' => $s['poster_gap_seconds'] ?? 15,
-                'poster_show_seconds' => $s['poster_show_seconds'] ?? 15,
-                'mosque_photo' => basename((string) ($s['mosque_photo'] ?? '')),
-                'iqomah_fajr_minutes' => $s['iqomah_fajr_minutes'] ?? 20,
-                'iqomah_dhuhr_minutes' => $s['iqomah_dhuhr_minutes'] ?? 10,
-                'iqomah_asr_minutes' => $s['iqomah_asr_minutes'] ?? 10,
-                'iqomah_maghrib_minutes' => $s['iqomah_maghrib_minutes'] ?? 10,
-                'iqomah_isha_minutes' => $s['iqomah_isha_minutes'] ?? 10,
-                'iqomah_countdown_enabled' => $s['iqomah_countdown_enabled'] ?? 1,
-                'adjust_fajr_minutes' => $s['adjust_fajr_minutes'] ?? 0,
-                'adjust_dhuhr_minutes' => $s['adjust_dhuhr_minutes'] ?? 0,
-                'adjust_asr_minutes' => $s['adjust_asr_minutes'] ?? 0,
-                'adjust_maghrib_minutes' => $s['adjust_maghrib_minutes'] ?? 0,
-                'adjust_isha_minutes' => $s['adjust_isha_minutes'] ?? 0,
-            ]);
+            $fields = [];
+            foreach (SettingsRepository::settingColumns() as $column) {
+                if (array_key_exists($column, $s)) {
+                    $fields[$column] = $s[$column];
+                }
+            }
+            if (isset($fields['mosque_photo'])) {
+                $fields['mosque_photo'] = basename((string) $fields['mosque_photo']);
+            }
+            (new SettingsRepository())->update($fields);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten
             $pdo->exec('DELETE FROM financial_entries');

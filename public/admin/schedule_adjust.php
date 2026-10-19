@@ -17,7 +17,7 @@ AuthMiddleware::requireLogin($auth);
 
 $settingsRepo = new SettingsRepository();
 $engine = new ScheduleEngine();
-$prayers = ['fajr' => 'Subuh', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+$prayers = ScheduleEngine::PRAYER_NAMES;
 $error = null;
 
 // Koreksi menit per waktu sholat (DECISIONS.md #35): mis. masjid ingin Dzuhur selalu
@@ -73,13 +73,13 @@ require __DIR__ . '/_header.php';
 
 <form method="post" class="stack">
     <?= Csrf::field() ?>
-    <p class="hint muted" style="margin:0;padding-left:4px;font-size:14px">
+    <p class="aside">
         Geser waktu adzan tiap sholat bila masjid memakai jadwal yang sedikit berbeda dari hitungan.
         Koreksi berlaku setiap hari. Contoh jam di bawah untuk hari ini, <?= Format::e(Format::longDate($today)) ?>.
     </p>
 
     <div class="card">
-        <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+        <div class="row ctl">
             <label class="k" for="location_offset_minutes">Semua sholat<small>Geser kelima waktu sekaligus</small></label>
             <span class="stepper"><button type="button" data-step="-1" aria-label="Kurangi 1 menit">−</button><input type="number" id="location_offset_minutes" name="location_offset_minutes" min="-30" max="30" inputmode="numeric" value="<?= $all ?>" data-all><button type="button" data-step="1" aria-label="Tambah 1 menit">+</button></span>
         </div>
@@ -87,7 +87,7 @@ require __DIR__ . '/_header.php';
 
     <div class="card">
         <?php foreach ($prayers as $key => $name): ?>
-        <div class="row adjust-row" style="grid-template-columns:minmax(0,1fr) auto" data-base="<?= Format::e($base[$key]) ?>">
+        <div class="row ctl adjust-row" data-base="<?= Format::e($base[$key]) ?>">
             <label class="k" for="adjust_<?= $key ?>_minutes"><?= $name ?>
                 <small>Hitungan <?= Format::e($base[$key]) ?> → tampil <b data-result><?= Format::e(ScheduleEngine::shiftTime($base[$key], $all + $adjust[$key])) ?></b></small>
             </label>

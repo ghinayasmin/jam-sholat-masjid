@@ -89,7 +89,7 @@ require __DIR__ . '/_header.php';
             <input type="text" id="longitude" name="longitude" inputmode="decimal" value="<?= Format::e((string) $v('longitude')) ?>" required>
         </div>
     </div>
-    <p class="hint muted" style="margin:-8px 0 0;padding-left:4px;font-size:13px">Buka Google Maps, tekan lama titik masjid, lalu salin dua angka koordinatnya.</p>
+    <p class="aside tight">Buka Google Maps, tekan lama titik masjid, lalu salin dua angka koordinatnya.</p>
 
     <div class="field">
         <label class="field-label" for="madzhab">Madzhab waktu Ashar</label>
@@ -99,7 +99,7 @@ require __DIR__ . '/_header.php';
         </select>
     </div>
 
-    <p class="hint muted" style="margin:0;padding-left:4px;font-size:13px">Untuk menggeser jam adzan beberapa menit, pakai Pengaturan → Koreksi jadwal.</p>
+    <p class="aside">Untuk menggeser jam adzan beberapa menit, pakai Pengaturan → Koreksi jadwal.</p>
 
     <div class="foot"><button type="submit" class="btn">Simpan lokasi</button></div>
 </form>

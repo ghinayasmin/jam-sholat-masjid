@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $groups = $repo->groupedFor($today);
 
 /** Satu baris pengumuman beserta tombol aksinya. */
-$renderItem = static function (array $p, string $group) use ($today): void {
+$renderItem = static function (array $p, string $group): void {
     $title = $p['caption'] !== null && $p['caption'] !== '' ? $p['caption'] : 'Poster tanpa keterangan';
     if ($group === 'showing') {
         $when = $p['ends_on'] !== null ? 'Sampai ' . Format::shortDate($p['ends_on']) : 'Tanpa batas waktu';

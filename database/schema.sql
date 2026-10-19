@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     adjust_isha_minutes             INTEGER NOT NULL DEFAULT 0,
     image_retention_days            INTEGER NOT NULL DEFAULT 7,    -- 3/7/14/30, diatur di tab Kamera
     image_retention_storage_pct     INTEGER NOT NULL DEFAULT 80,
-    online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),
+    online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),  -- tidak dipakai (#36)
     -- Layar jamaah: pengingat sebelum adzan & visibilitas kas (lihat DECISIONS.md #14, #15).
     -- Kolom yang sama ditambahkan ke database lama lewat Database::migrate().
     reminder_enabled                INTEGER NOT NULL DEFAULT 1 CHECK (reminder_enabled IN (0,1)),
@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     poster_gap_seconds              INTEGER NOT NULL DEFAULT 15,
     poster_show_seconds             INTEGER NOT NULL DEFAULT 15,
     mosque_photo                    TEXT NOT NULL DEFAULT '',   -- nama file di uploads/publications, '' = tanpa foto
-    last_sync_at                    DATETIME,
-    last_sync_status                TEXT,
+    last_sync_at                    DATETIME,   -- tidak dipakai (#36)
+    last_sync_status                TEXT,       -- tidak dipakai (#36)
     updated_at                      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

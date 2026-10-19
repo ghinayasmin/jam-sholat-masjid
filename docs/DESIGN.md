@@ -167,15 +167,16 @@ Setelah simpan, arahkan kembali ke halaman asal dan tulis hasilnya di
 | Komponen | Kelas | Catatan |
 |---|---|---|
 | Kelompok berlabel | `.group` + `.label` | Label kapital kecil di atas kartu |
-| Kartu daftar | `.card` + `.row` | Baris berisi ikon/titik, `.k` (judul + `<small>`), dan nilai `.v` atau panah |
+| Kartu daftar | `.card` + `.row` | Baris berisi ikon/titik, `.k` (judul + `<small>`), dan nilai `.v` atau panah. `.row.ctl` = label + kontrol tanpa ikon, `.row.solo` = label saja |
 | Tombol | `.btn`, `.btn.ghost`, `.btn.danger`, `.btn.small` | Satu tombol utama per layar |
 | Ubin tugas | `.tiles` + `.tile` | Hanya di Beranda |
 | Pilihan siap ketuk | `.chips` + `.chip` (radio) | Lebih mudah daripada dropdown |
-| Dua pilihan | `.seg` (radio) | Contoh: Nyala / Mati |
+| Dua sampai empat pilihan | `.seg` (radio) | Contoh: simpan foto 3 / 7 / 14 / 30 hari. Untuk nyala/mati pakai `.switch` (DECISIONS.md #37) |
 | Angka − / + | `.stepper` | Tombol berisi `data-step` |
-| Sakelar | `.switch` (checkbox) | Tambah `data-autosubmit` agar tersimpan saat diubah |
+| Sakelar | `.switch` (checkbox, `value="1"`) | Semua pilihan nyala/mati. Tambah `data-autosubmit` agar tersimpan saat diubah; di formulir biasa, kotak yang tidak dicentang tidak terkirim, jadi bawaannya mati |
 | Rupiah | `.money` + `data-money` | Format ribuan otomatis, ditambah tombol `.quick` |
 | Pesan | `.flash-success`, `.flash-error`, `.note`, `.note.warn` | Tanpa tanda seru |
+| Catatan kecil | `.aside` (`.tight`, `.spaced`) | Keterangan di bawah kartu, di luar `.field` |
 | Konfirmasi | `form[data-confirm="..."]` | Wajib untuk hapus dan pulihkan data |
 
 ### Penulisan

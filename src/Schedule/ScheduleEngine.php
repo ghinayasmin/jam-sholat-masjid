@@ -60,7 +60,10 @@ final class ScheduleEngine
         return $row === false ? null : $row;
     }
 
-    /** Waktu sholat yang dikoreksi takmir per sholat (DECISIONS.md #35). Terbit tidak. */
+    /** Lima waktu sholat (yang punya adzan) dan namanya di panel. Terbit tidak termasuk. */
+    public const PRAYER_NAMES = ['fajr' => 'Subuh', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+
+    /** Waktu sholat yang dikoreksi takmir per sholat (DECISIONS.md #35). */
     public const ADJUSTABLE = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
     /**

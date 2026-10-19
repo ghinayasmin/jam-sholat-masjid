@@ -65,7 +65,7 @@ require __DIR__ . '/_header.php';
         <?php endif; ?>
     </div>
     <?php if ($entries !== []): ?>
-        <p class="hint muted" style="margin:8px 0 0;padding-left:4px;font-size:13px">Salah catat? Ketuk catatannya untuk memperbaiki atau menghapus.</p>
+        <p class="aside spaced">Salah catat? Ketuk catatannya untuk memperbaiki atau menghapus.</p>
     <?php endif; ?>
 </section>
 

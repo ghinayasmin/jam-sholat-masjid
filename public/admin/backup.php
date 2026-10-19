@@ -86,7 +86,7 @@ require __DIR__ . '/_header.php';
     <div class="label" id="hist-label">Riwayat cadangan</div>
     <div class="card">
         <?php foreach ($backups as $b): ?>
-            <a class="row" href="?download=<?= (int) $b['id'] ?>" style="grid-template-columns:minmax(0,1fr) auto">
+            <a class="row ctl" href="?download=<?= (int) $b['id'] ?>">
                 <span class="k"><?= htmlspecialchars(\App\View\Format::shortDate(substr($b['created_at'], 0, 10))) ?>, <?= htmlspecialchars(substr($b['created_at'], 11, 5)) ?> UTC
                     <small><?= $b['type'] === 'manual' ? 'Dibuat manual' : 'Otomatis' ?> · <?= round((int) $b['size_bytes'] / 1024, 1) ?> KB</small></span>
                 <span class="v ok">Unduh</span>

@@ -109,7 +109,7 @@ require __DIR__ . '/_header.php';
             <input type="date" id="ends_on" name="ends_on" value="<?= Format::e($values['ends_on']) ?>">
         </div>
     </div>
-    <p class="hint muted" style="margin:-8px 0 0;padding-left:4px;font-size:13px">Kosongkan "Sampai" bila pengumuman tampil terus sampai dihentikan.</p>
+    <p class="aside tight">Kosongkan "Sampai" bila pengumuman tampil terus sampai dihentikan.</p>
 
     <div class="foot"><button type="submit" class="btn">Pasang pengumuman</button></div>
 </form>

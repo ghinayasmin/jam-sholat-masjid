@@ -65,7 +65,7 @@ require __DIR__ . '/_header.php';
     <div class="flash flash-error" role="alert"><?= Format::e(implode(' ', $errors)) ?></div>
 <?php endif; ?>
 
-<div class="card"><div class="row" style="grid-template-columns:minmax(0,1fr) auto"><span class="k">Nama pengguna</span><span class="v"><?= Format::e($user['username'] ?? '-') ?></span></div></div>
+<div class="card"><div class="row ctl"><span class="k">Nama pengguna</span><span class="v"><?= Format::e($user['username'] ?? '-') ?></span></div></div>
 
 <section class="group" aria-labelledby="recovery-label" id="kode-pemulihan">
     <div class="label" id="recovery-label">Kode pemulihan</div>

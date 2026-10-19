@@ -32,10 +32,10 @@ database SQLite:
 | Untuk | Fitur |
 |---|---|
 | Jamaah (TV) | Jam besar, jadwal sholat sesuai Kemenag (dengan ihtiyat), tanggal Hijriah yang berganti saat Maghrib, hitung mundur dan pengingat sebelum adzan, info puasa sunnah, pengumuman/poster (landscape tampil layar penuh), nama surat murottal yang diputar |
-| Takmir (HP) | Beranda, pengumuman terjadwal, kas, rekaman kamera (lihat dan hapus), murottal (putar/jeda/pilih dari 114 surat), lokasi dan madzhab, suara adzan dan iqomah (bisa dimatikan; iqomah bawaan mati), koreksi tanggal Hijriah ±1 hari, pengingat adzan, jam & tanggal, backup/restore |
+| Takmir (HP) | Beranda, pengumuman terjadwal, kas (catat, ubah, hapus), rekaman kamera (lihat dan hapus), murottal (putar/jeda/pilih dari 114 surat), profil & foto masjid, lokasi dan madzhab, koreksi jadwal per sholat, suara adzan dan iqomah dengan jeda per sholat (Subuh 20 menit), hitung mundur iqomah, pengingat adzan, pergantian slide, koreksi tanggal Hijriah ±1 hari, jam & tanggal, kode pemulihan kata sandi, backup/restore, tentang aplikasi |
 
 Sistem berjalan **sepenuhnya offline** untuk semua fungsi utamanya; koneksi
-internet hanya dipakai opsional untuk sinkronisasi jadwal online dan NTP.
+internet hanya dipakai saat instalasi dan (opsional) untuk mencocokkan jam lewat NTP.
 
 ## 2. Architecture
 
@@ -275,10 +275,10 @@ Dikumpulkan dari `docs/DECISIONS.md` — ringkasan:
 3. **Deteksi kamera** hanya deteksi gerakan sederhana (background
    subtraction) — bukan pengenalan wajah/penghitungan orang (memang di luar
    scope SRS, lihat Appendix B).
-4. **Online schedule sync** (REQ-F-004, `ScheduleSync.php`) belum dipanggil
-   terjadwal. Jadwal dihitung lokal dengan ihtiyat Kemenag dan sudah tepat
-   sama dengan jadwal resmi pada 79–95% hari (sisanya selisih 1 menit,
-   DECISIONS #19).
+4. **Tanpa sinkron jadwal online** (REQ-F-004 tidak dipakai, DECISIONS #36).
+   Jadwal dihitung lokal dengan ihtiyat Kemenag dan sudah tepat sama dengan
+   jadwal resmi pada 79–95% hari (sisanya selisih 1 menit, DECISIONS #19).
+   Selisih setempat bisa diatur di Koreksi jadwal.
 5. **Satu akun admin** per instalasi — tidak ada manajemen multi-user
    (lihat `docs/DECISIONS.md` #4).
 6. **File audio** (adzan/iqomah/murottal, ±1 GB) tidak masuk git. Sumber

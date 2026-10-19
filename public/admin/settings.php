@@ -42,9 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $s = $settingsRepo->get();
 $me = (new \App\Repository\AdminUserRepository())->findById((int) ($_SESSION['admin_id'] ?? 0));
 $hasRecovery = !empty($me['recovery_created_at']);
-$adjustNames = ['fajr' => 'Subuh', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
 $adjustParts = [];
-foreach ($adjustNames as $key => $name) {
+foreach (\App\Schedule\ScheduleEngine::PRAYER_NAMES as $key => $name) {
     $m = (int) ($s["adjust_{$key}_minutes"] ?? 0);
     if ($m !== 0) {
         $adjustParts[] = $name . ' ' . ($m > 0 ? '+' : '−') . abs($m);

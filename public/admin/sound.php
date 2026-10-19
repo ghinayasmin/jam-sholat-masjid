@@ -8,6 +8,7 @@ use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
 use App\Auth\Csrf;
 use App\Repository\SettingsRepository;
+use App\Schedule\ScheduleEngine;
 use App\View\Format;
 
 $auth = new AuthManager();
@@ -20,7 +21,7 @@ $error = null;
 // masjid adzan dan iqomah biasanya dikumandangkan langsung oleh muadzin (DECISIONS.md #23).
 // Jeda adzan→iqomah per waktu sholat (DECISIONS.md #30). Jumat siang tidak ada iqomah
 // otomatis karena iqomah Jumat dikumandangkan setelah khutbah.
-$prayers = ['fajr' => 'Subuh', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+$prayers = ScheduleEngine::PRAYER_NAMES;
 $defaults = ['fajr' => 20, 'dhuhr' => 10, 'asr' => 10, 'maghrib' => 10, 'isha' => 10];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -74,7 +75,7 @@ require __DIR__ . '/_header.php';
     <section class="group" aria-labelledby="adzan-label">
         <div class="label" id="adzan-label">Suara adzan</div>
         <div class="card">
-            <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+            <div class="row ctl">
                 <label class="k" for="adzan_sound_enabled">Putar suara adzan<small>Dari speaker saat waktu sholat tiba</small></label>
                 <span class="switch"><input type="checkbox" id="adzan_sound_enabled" name="adzan_sound_enabled" value="1"<?= $adzan ? ' checked' : '' ?>><span></span></span>
             </div>
@@ -84,14 +85,14 @@ require __DIR__ . '/_header.php';
     <section class="group" aria-labelledby="iqomah-label">
         <div class="label" id="iqomah-label">Suara iqomah</div>
         <div class="card">
-            <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+            <div class="row ctl">
                 <label class="k" for="iqomah_sound_enabled">Putar suara iqomah<small>Setelah jeda di bawah ini</small></label>
                 <span class="switch"><input type="checkbox" id="iqomah_sound_enabled" name="iqomah_sound_enabled" value="1"<?= $iqomah ? ' checked' : '' ?>><span></span></span>
             </div>
         </div>
         <div class="card" style="margin-top:8px">
             <?php foreach ($prayers as $key => $name): ?>
-            <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+            <div class="row ctl">
                 <label class="k" for="iqomah_<?= $key ?>_minutes"><?= $name ?><small><?= $key === 'dhuhr' ? 'Menit setelah adzan · Jumat: setelah khutbah' : 'Menit setelah adzan · bawaan ' . $defaults[$key] ?></small></label>
                 <span class="stepper"><button type="button" data-step="-1" aria-label="Kurangi">−</button><input type="number" id="iqomah_<?= $key ?>_minutes" name="iqomah_<?= $key ?>_minutes" min="5" max="60" inputmode="numeric" value="<?= $minutes[$key] ?>"><button type="button" data-step="1" aria-label="Tambah">+</button></span>
             </div>

@@ -31,7 +31,7 @@ $motionToday = count((new MotionEventRepository())->list($today, 500));
 $nowMinutes = (int) gmdate('G', LocalTime::now()) * 60 + (int) gmdate('i', LocalTime::now());
 $toMinutes = static fn (string $hhmm): int => (int) substr($hhmm, 0, 2) * 60 + (int) substr($hhmm, 3, 2);
 $isFriday = gmdate('w', LocalTime::now()) === '5';
-$names = ['fajr' => 'Subuh', 'dhuhr' => $isFriday ? 'Jumat' : 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+$names = array_merge(ScheduleEngine::PRAYER_NAMES, $isFriday ? ['dhuhr' => 'Jumat'] : []);
 $next = null;
 foreach ($names as $key => $name) {
     if ($toMinutes($schedule[$key]) > $nowMinutes) {

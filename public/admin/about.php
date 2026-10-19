@@ -33,7 +33,7 @@ require __DIR__ . '/_header.php';
     <div class="label" id="g-tim">Tim pengembang</div>
     <div class="card">
         <?php foreach ($team as $name): ?>
-            <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k"><?= Format::e($name) ?></span></div>
+            <div class="row solo"><span class="k"><?= Format::e($name) ?></span></div>
         <?php endforeach; ?>
     </div>
 </section>
@@ -41,25 +41,25 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-dosen">
     <div class="label" id="g-dosen">Dosen pembimbing</div>
     <div class="card">
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Faizal Makhrus, S.Kom., M.Sc., Ph.D.</span></div>
+        <div class="row solo"><span class="k">Faizal Makhrus, S.Kom., M.Sc., Ph.D.</span></div>
     </div>
 </section>
 
 <section class="group" aria-labelledby="g-kampus">
     <div class="label" id="g-kampus">Proyek</div>
     <div class="card">
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Capstone Project 2026<small>Program Studi Ilmu Komputer, Universitas Gadjah Mada</small></span></div>
+        <div class="row solo"><span class="k">Capstone Project 2026<small>Program Studi Ilmu Komputer, Universitas Gadjah Mada</small></span></div>
     </div>
 </section>
 
 <section class="group" aria-labelledby="g-sumber">
     <div class="label" id="g-sumber">Sumber &amp; lisensi</div>
     <div class="card about-list">
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Waktu sholat<small>Dihitung di perangkat dengan kriteria Kemenag RI (Subuh 20°, Isya 18°, dengan ihtiyat).</small></span></div>
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Adzan<small>Rekaman adzan Masjidil Haram dari Internet Archive, ditandai CC0 oleh pengunggahnya.</small></span></div>
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Iqomah<small>Wikimedia Commons, Iqamah.ogg, CC0.</small></span></div>
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Murottal<small>Bacaan Aaqib Azeez dari Wikimedia Commons, lisensi CC0 dan CC BY-SA 4.0, dikompres ke MP3 64 kbps. Sumber dan lisensi tiap surat: <a href="/assets/audio/CREDITS.txt" target="_blank" rel="noopener">daftar sumber audio</a>.</small></span></div>
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Huruf<small>Plus Jakarta Sans dan Reem Kufi, SIL Open Font License.</small></span></div>
+        <div class="row solo"><span class="k">Waktu sholat<small>Dihitung di perangkat dengan kriteria Kemenag RI (Subuh 20°, Isya 18°, dengan ihtiyat).</small></span></div>
+        <div class="row solo"><span class="k">Adzan<small>Rekaman adzan Masjidil Haram dari Internet Archive, ditandai CC0 oleh pengunggahnya.</small></span></div>
+        <div class="row solo"><span class="k">Iqomah<small>Wikimedia Commons, Iqamah.ogg, CC0.</small></span></div>
+        <div class="row solo"><span class="k">Murottal<small>Bacaan Aaqib Azeez dari Wikimedia Commons, lisensi CC0 dan CC BY-SA 4.0, dikompres ke MP3 64 kbps. Sumber dan lisensi tiap surat: <a href="/assets/audio/CREDITS.txt" target="_blank" rel="noopener">daftar sumber audio</a>.</small></span></div>
+        <div class="row solo"><span class="k">Huruf<small>Plus Jakarta Sans dan Reem Kufi, SIL Open Font License.</small></span></div>
     </div>
 </section>
 

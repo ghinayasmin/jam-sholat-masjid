@@ -10,8 +10,7 @@ declare(strict_types=1);
  * display.php/api, yang belum tentu terjadi sebelum Subuh.
  *
  * Menjaga logika kalkulasi astronomis tetap di SATU tempat (PHP), supaya
- * hasil yang dipakai alarm & yang ditampilkan di layar selalu identik
- * (lihat catatan konsistensi di src/Schedule/ScheduleSync.php).
+ * hasil yang dipakai alarm & yang ditampilkan di layar selalu identik.
  *
  * Usage: php scripts/compute_schedule_cli.php [YYYY-MM-DD]
  * Output: JSON jadwal ke stdout, exit code 0 = sukses, 1 = gagal.

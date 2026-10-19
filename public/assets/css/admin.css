@@ -315,3 +315,12 @@ button.row { width: 100%; background: none; border: 0; font: inherit; text-align
 .about-ver { font-size: 14px; color: #B7BFB9; }
 .about-hero p { margin: 8px 0 0; font-size: 14px; color: #C7CCC6; }
 .about-list .k small { white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* Baris tanpa ikon di kiri: label + kontrol (stepper/sakelar), atau label saja. */
+.row.ctl { grid-template-columns: minmax(0, 1fr) auto; }
+.row.solo { grid-template-columns: minmax(0, 1fr); }
+
+/* Catatan kecil di bawah kartu atau kolom (bukan bagian dari .field). */
+.aside { margin: 0; padding-left: 4px; font-size: 13px; color: var(--muted); }
+.aside.tight { margin-top: -8px; }
+.aside.spaced { margin-top: 8px; }

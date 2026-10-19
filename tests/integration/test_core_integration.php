@@ -103,10 +103,11 @@ check('Financial: saldo berjalan benar (100000-30000=70000)', $finRepo->currentB
 
 // --- Backup & Restore round-trip (REQ-F-050, REQ-F-051) ---
 $backupMgr = new BackupManager();
+$settingsRepo->update(['adjust_isha_minutes' => 4, 'iqomah_fajr_minutes' => 25]);
 $backup = $backupMgr->createBackup('manual');
 check('Backup: file dibuat', is_file($backup['file_path']));
 
-$settingsRepo->update(['mosque_name' => 'BERUBAH']);
+$settingsRepo->update(['mosque_name' => 'BERUBAH', 'adjust_isha_minutes' => 0, 'iqomah_fajr_minutes' => 20]);
 $finRepo->create('2026-09-03', 'Entry ekstra', 'masuk', 999, null);
 check('Sanity: saldo berubah sebelum restore', $finRepo->currentBalance() !== 70000);
 
@@ -114,6 +115,21 @@ $backupMgr->restoreFromFile($backup['file_path']);
 check('Restore: saldo pulih ke 70000', $finRepo->currentBalance() === 70000);
 check('Restore: mosque_name pulih (bukan "BERUBAH")', $settingsRepo->get()['mosque_name'] !== 'BERUBAH');
 check('Restore: file publikasi tetap ada', is_file($tmpDir . '/publications/p1.jpg'));
+check('Restore: pengaturan baru ikut pulih tanpa daftar manual',
+    (int) $settingsRepo->get()['adjust_isha_minutes'] === 4 && (int) $settingsRepo->get()['iqomah_fajr_minutes'] === 25);
+// Cadangan lama yang belum punya suatu kolom: kolom itu tetap bernilai sekarang.
+$legacy = json_decode((string) file_get_contents($backup['file_path']), true);
+unset($legacy['mosque_settings']['adjust_isha_minutes']);
+$legacyPath = $tmpDir . '/legacy-backup.json';
+file_put_contents($legacyPath, json_encode($legacy));
+$settingsRepo->update(['adjust_isha_minutes' => 7]);
+$backupMgr->restoreFromFile($legacyPath);
+check('Restore cadangan lama: kolom yang tidak ada tetap', (int) $settingsRepo->get()['adjust_isha_minutes'] === 7);
+$settingsRepo->update(['adjust_isha_minutes' => 0, 'iqomah_fajr_minutes' => 20]);
+check('Settings: kolom tak dikenal diabaikan', (function () use ($settingsRepo) {
+    $settingsRepo->update(['mosque_name = 1; --' => 'x', 'tidak_ada' => 1]);
+    return true;
+})());
 
 // --- Kode pemulihan & batas percobaan (DECISIONS.md #33) ---
 $code = App\Auth\RecoveryCode::generate();

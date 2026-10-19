@@ -1,6 +1,10 @@
 <?php
 use App\View\Icon;
 
+// Diisi _header.php; nilai cadangan bila footer dipakai tanpa header.
+$showTabs ??= false;
+$activeTab ??= null;
+
 $tabs = [
     'home' => ['/admin/dashboard.php', 'home', 'Beranda'],
     'announce' => ['/admin/publications.php', 'announce', 'Pengumuman'],
