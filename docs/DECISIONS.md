@@ -398,7 +398,8 @@ waktu dibuat).
   dan bintang delapan terlihat kurang pas di monitor): gradasi zamrud diagonal
   tanpa motif, bingkai kuningan tipis, label "Baitul Maal بيت المال", isi di
   tengah kotak, tulisan besar dan tebal. Pemasukan dan pengeluaran bertumpuk
-  dua baris supaya angkanya bisa lebih besar. Tanpa efek blur karena Chromium
+  dua baris supaya angkanya bisa lebih besar. Warna gradasinya kemudian
+  diperdalam mendekati warna panel jadwal. Tanpa efek blur karena Chromium
   di Pi 3 merender lewat CPU.
 - Karena slide kini berganti tiap 30 detik, zona abaikan kamera (#25) wajib
   menutupi layar TV bila layar terlihat oleh kamera.
