@@ -60,7 +60,7 @@ return [
     'publication_allowed_mime' => ['image/jpeg', 'image/png'],
     'admin_session_days' => 30,
 ];
-"@ | Set-Content -Encoding UTF8 (Join-Path $Root 'app\config\config.php')
+"@ | Set-Content -Encoding ASCII (Join-Path $Root 'app\config\config.php')   # UTF8 di PowerShell 5.1 = dengan BOM, yang ikut terkirim sebelum respons PHP
 
 $Php = Join-Path $Root 'php\php.exe'
 $Db = Join-Path $Data 'storage\jamsholat.db'

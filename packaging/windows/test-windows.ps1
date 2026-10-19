@@ -34,8 +34,14 @@ if ((Get-Service JamSholatApache -ErrorAction SilentlyContinue).Status -eq 'Runn
 }
 
 try {
-    $api = Invoke-RestMethod -Uri "$B/api/schedule.php" -TimeoutSec 30
-    if ($api.success) { Pass "API jadwal: Subuh $($api.fajr) · Maghrib $($api.maghrib)" } else { Fail 'API jadwal success=false' }
+    $raw = Invoke-WebRequest -UseBasicParsing -Uri "$B/api/schedule.php" -TimeoutSec 30
+    $api = $raw.Content | ConvertFrom-Json -ErrorAction SilentlyContinue
+    if ($api.success) { Pass "API jadwal: Subuh $($api.fajr) · Maghrib $($api.maghrib)" } else {
+        Fail 'API jadwal tidak valid'
+        Write-Host ('  respons: ' + $raw.Content.Substring(0, [Math]::Min(300, $raw.Content.Length)))
+        Write-Host ('  byte awal: ' + (($raw.RawContentStream.ToArray() | Select-Object -First 4) -join ' '))
+        Get-Content "$Data\logs\php-error.log" -Tail 20 -ErrorAction SilentlyContinue
+    }
 } catch { Fail "API jadwal: $($_.Exception.Message)"; Get-Content "$Data\logs\apache-error.log" -Tail 20 -ErrorAction SilentlyContinue; Get-Content "$Data\logs\php-error.log" -Tail 20 -ErrorAction SilentlyContinue }
 
 $r = Invoke-WebRequest -UseBasicParsing -Uri "$B/display.php"
