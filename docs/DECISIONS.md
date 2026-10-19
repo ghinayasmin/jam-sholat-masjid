@@ -585,3 +585,43 @@ waktu dibuat).
 - Pemeriksaan: PHPStan level 5, pyflakes, shellcheck, `node --check`, dan
   semua test lolos.
 
+## 39. Paket untuk komputer biasa: .deb dan installer Windows (DIKONFIRMASI)
+
+- **Revisi dosen 19 Okt 2026:** aplikasi harus bisa dipasang di komputer masjid
+  tanpa Raspberry Pi, lengkap dengan Apache dan PHP, untuk Windows dan Linux
+  keluarga Debian (Debian, Ubuntu, Linux Mint, Raspberry Pi OS).
+- **Linux:** satu paket `jamsholat_<versi>_all.deb` (`packaging/debian/build-deb.sh`).
+  `apt` menarik Apache, PHP, Python, mpg123 dari repositori distro; `postinst`
+  menyiapkan user `jamsholat`, database, situs Apache, sudoers `date`, dan
+  layanan. Komputer berdesktop (graphical.target): alarm, kamera, dan kiosk
+  berjalan di sesi pengguna lewat XDG autostart (`packaging/linux/jamsholat-session`),
+  karena suara di desktop hanya lewat PulseAudio/PipeWire milik sesi; pengguna
+  desktop ditambahkan ke grup `jamsholat`. Tanpa desktop: layanan systemd biasa.
+  Raspberry Pi OS Lite tetap memakai `scripts/install.sh` (kiosk cage).
+- **Windows 10/11 64-bit:** `JamSholat-Setup-<versi>.exe` (Inno Setup,
+  `packaging/windows/`). Membawa Apache 2.4.66 (Apache Lounge VS17), PHP 8.4.26
+  TS, Python 3.12 embeddable + OpenCV, mpg123 1.33.7, dan VC++ Runtime. Program di
+  `C:\Program Files\JamSholat`, data di `C:\ProgramData\JamSholat`. Apache
+  menjadi layanan Windows; alarm, kamera, dan Edge mode kiosk berjalan saat
+  pengguna masuk (pintasan Startup → `session.pyw`), alasannya sama dengan
+  desktop Linux. Windows 7/8 tidak didukung: PHP 8 dan Python 3.12 sudah tidak
+  berjalan di sana.
+- **Akun pertama** dibuat di halaman `admin/setup.php` yang hanya bisa dibuka dari
+  komputer itu sendiri (localhost) dan hanya selama belum ada akun, jadi
+  installer tidak perlu bertanya apa pun.
+- **Penyesuaian kode:** keluaran mpg123 per platform (`JAMSHOLAT_MPG123_OUTPUT`),
+  WAV lewat PowerShell di Windows, webcam DirectShow di Windows dan V4L2 di
+  Linux, jam dianggap terpercaya di Windows atau bila ada RTC (`/dev/rtc0`);
+  hanya Linux yang bisa mengatur jam dari panel.
+- **Audio ikut di paket** atas permintaan pengguna (±1 GB, murottal 114 surah).
+  Audio tidak boleh masuk repo, jadi disimpan sebagai rilis `audio-v1`
+  (`jamsholat-audio-v1.zip`, SHA256 dicek) dan diambil saat build. iqomah.wav
+  dikonversi ke MP3 64 kbps agar satu pemutar (mpg123) cukup di semua OS.
+- **Build & uji di GitHub Actions** (`.github/workflows/package.yml`, disetujui
+  pemilik repo): .deb diuji di Debian 12/13, Ubuntu 22.04/24.04, Linux Mint 22;
+  installer diuji di Windows Server 2022/2025 (instal senyap, API, setup akun,
+  unggah foto, reset kata sandi, alarm, OpenCV, uninstall). Paket diunggah ke
+  Releases hanya saat tag `v*`.
+- **Bug yang ditemukan uji paket:** SIGTERM ganda (runuser/timeout) memotong
+  pembersihan layanan alarm; sinyal berikutnya kini diabaikan.
+

@@ -1,0 +1,93 @@
+# Membangun & menguji paket .deb (Debian/Ubuntu/Mint) dan installer Windows (DECISIONS.md #39).
+#
+# - Dijalankan manual (Actions → Package → Run workflow) atau saat tag v* di-push.
+# - Audio (adzan, iqomah, 114 surah murottal, ±1 GB) tidak ada di repo; diambil dari
+#   rilis "audio-v1" (jamsholat-audio-v1.zip).
+# - Saat tag v*: paket diunggah ke halaman Releases. Paket ±1 GB, terlalu besar untuk
+#   artifact Actions di akun gratis, jadi selain tag hasilnya hanya diuji.
+name: Package
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  AUDIO_TAG: audio-v1
+  AUDIO_ZIP: jamsholat-audio-v1.zip
+  AUDIO_SHA256: c02456b2f9f4939098834164de3f180b928d0960d5867a038295b9f613795153
+
+jobs:
+  linux:
+    name: .deb di ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['debian:12', 'debian:13', 'ubuntu:22.04', 'ubuntu:24.04', 'linuxmintd/mint22-amd64']
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ambil audio
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release download "$AUDIO_TAG" -p "$AUDIO_ZIP" -D "$RUNNER_TEMP"
+          echo "$AUDIO_SHA256  $RUNNER_TEMP/$AUDIO_ZIP" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/$AUDIO_ZIP" -d "$RUNNER_TEMP/audio-bundle"
+      - name: Versi
+        run: echo "VERSION=$(echo "${GITHUB_REF_NAME}" | sed -n 's/^v//p' | grep . || echo 1.1.0)" >> "$GITHUB_ENV"
+      - name: Bangun .deb
+        run: bash packaging/debian/build-deb.sh "$VERSION" "$RUNNER_TEMP/audio-bundle/audio" dist
+      - name: Uji di ${{ matrix.image }}
+        run: docker run --rm -v "$PWD/packaging":/pkg:ro -v "$PWD/dist":/dist:ro ${{ matrix.image }} bash /pkg/debian/test-deb.sh "/dist/jamsholat_${VERSION}_all.deb"
+      - name: Unggah ke Releases
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.image == 'ubuntu:24.04'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --title "Jam Sholat Masjid $VERSION" --notes-file packaging/RELEASE_NOTES.md || true
+          gh release upload "$GITHUB_REF_NAME" "dist/jamsholat_${VERSION}_all.deb" --clobber
+
+  windows:
+    name: Installer di ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+    defaults:
+      run: { shell: pwsh }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Ambil audio
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release download $env:AUDIO_TAG -p $env:AUDIO_ZIP -D $env:RUNNER_TEMP
+          $hash = (Get-FileHash "$env:RUNNER_TEMP\$env:AUDIO_ZIP" -Algorithm SHA256).Hash.ToLower()
+          if ($hash -ne $env:AUDIO_SHA256) { throw "SHA256 audio tidak cocok: $hash" }
+          Expand-Archive "$env:RUNNER_TEMP\$env:AUDIO_ZIP" "$env:RUNNER_TEMP\audio-bundle"
+      - name: Inno Setup
+        run: |
+          choco install innosetup --no-progress -y
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          (Get-Item $iscc).VersionInfo.ProductVersion
+      - name: Versi
+        run: |
+          $v = if ($env:GITHUB_REF_NAME -match '^v(.+)$') { $Matches[1] } else { '1.1.0' }
+          "VERSION=$v" | Out-File -Append $env:GITHUB_ENV
+      - name: Bangun installer
+        run: ./packaging/windows/build.ps1 -Version $env:VERSION -AudioDir "$env:RUNNER_TEMP\audio-bundle\audio" -OutDir dist
+      - name: Uji installer
+        run: ./packaging/windows/test-windows.ps1 -Installer "dist\JamSholat-Setup-$env:VERSION.exe"
+      - name: Unggah ke Releases
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-2022'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release view $env:GITHUB_REF_NAME 2>$null | Out-Null
+          if ($LASTEXITCODE -ne 0) { gh release create $env:GITHUB_REF_NAME --title "Jam Sholat Masjid $env:VERSION" --notes-file packaging/RELEASE_NOTES.md }
+          gh release upload $env:GITHUB_REF_NAME "dist\JamSholat-Setup-$env:VERSION.exe" --clobber

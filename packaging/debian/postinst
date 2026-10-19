@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# postinst — paket jamsholat untuk Debian, Ubuntu, Linux Mint, Raspberry Pi OS
+# (DECISIONS.md #39). Padanan langkah scripts/install.sh, tanpa bertanya apa pun:
+# akun takmir pertama dibuat di http://localhost/admin/ setelah instalasi.
+#
+set -e
+
+INSTALL_DIR="/opt/jamsholat"
+SERVICE_USER="jamsholat"
+
+[ "$1" = "configure" ] || exit 0
+
+# --- Pengguna layanan & grup -------------------------------------------------
+if ! getent passwd "$SERVICE_USER" > /dev/null; then
+    adduser --system --group --home "$INSTALL_DIR" --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER" > /dev/null
+fi
+usermod -aG audio,video "$SERVICE_USER" 2>/dev/null || true
+usermod -aG "$SERVICE_USER" www-data
+
+# --- Folder data ----------------------------------------------------------------
+mkdir -p "$INSTALL_DIR"/storage/captures "$INSTALL_DIR"/storage/backups "$INSTALL_DIR"/storage/sessions \
+         "$INSTALL_DIR"/public/uploads/publications
+chown -R "$SERVICE_USER":"$SERVICE_USER" "$INSTALL_DIR"/storage "$INSTALL_DIR"/public/uploads
+find "$INSTALL_DIR"/storage "$INSTALL_DIR"/public/uploads -type d -exec chmod 2775 {} +
+
+if [ ! -f "$INSTALL_DIR"/config/config.php ]; then
+    cp "$INSTALL_DIR"/config/config.example.php "$INSTALL_DIR"/config/config.php
+fi
+
+DB="$INSTALL_DIR/storage/jamsholat.db"
+if [ ! -f "$DB" ]; then
+    runuser -u "$SERVICE_USER" -- sqlite3 "$DB" < "$INSTALL_DIR"/database/schema.sql
+fi
+chmod 664 "$DB"
+chown "$SERVICE_USER":"$SERVICE_USER" "$DB"
+
+# --- Apache & PHP ---------------------------------------------------------------
+for d in /etc/php/*/apache2/conf.d; do
+    [ -d "$d" ] && cp "$INSTALL_DIR"/config/php-jamsholat.ini "$d"/90-jamsholat.ini
+done
+a2dissite -q 000-default.conf > /dev/null 2>&1 || true
+a2ensite -q jamsholat.conf > /dev/null
+a2enmod -q rewrite > /dev/null
+if command -v systemctl > /dev/null && [ -d /run/systemd/system ]; then
+    systemctl reload-or-restart apache2 || true
+fi
+
+# Jam bisa dicocokkan dari panel di perangkat tanpa RTC (lihat App\SystemClock).
+echo "www-data ALL=(root) NOPASSWD: /usr/bin/date -s *" > /etc/sudoers.d/jamsholat-date
+chmod 440 /etc/sudoers.d/jamsholat-date
+
+# --- Mode: komputer berdesktop atau server tanpa layar -------------------------
+# Berdesktop: alarm, kamera, dan kiosk jalan di sesi pengguna (suara lewat
+# PulseAudio/PipeWire). Tanpa desktop: layanan systemd biasa lewat ALSA.
+mkdir -p /etc/jamsholat
+MODE="headless"
+if [ -d /run/systemd/system ] && [ "$(systemctl get-default 2>/dev/null)" = "graphical.target" ]; then
+    MODE="desktop"
+fi
+echo "$MODE" > /etc/jamsholat/mode
+
+if [ "$MODE" = "desktop" ]; then
+    # Pengguna desktop (UID 1000 ke atas) perlu menulis database jamsholat.
+    getent passwd | awk -F: '$3 >= 1000 && $3 < 60000 && $7 !~ /(nologin|false)$/ {print $1}' | while read -r u; do
+        usermod -aG "$SERVICE_USER" "$u"
+    done
+fi
+
+if [ -d /run/systemd/system ]; then
+    systemctl daemon-reload
+    systemctl enable --now jamsholat-retention.timer > /dev/null 2>&1 || true
+    if [ "$MODE" = "headless" ]; then
+        systemctl enable --now jamsholat-alarm.service > /dev/null 2>&1 || true
+        if [ -e /dev/video0 ]; then
+            systemctl enable --now jamsholat-camera.service > /dev/null 2>&1 || true
+        fi
+    else
+        systemctl disable --now jamsholat-alarm.service jamsholat-camera.service > /dev/null 2>&1 || true
+    fi
+    # Panggil API sekali: migrasi database & jadwal hari ini dihitung sekarang.
+    curl -fs -o /dev/null http://localhost/api/schedule.php || true
+fi
+
+cat << EOF
+
+==================================================================
+ Jam Sholat Masjid terpasang (mode: $MODE).
+ 1. Buka http://localhost/admin/ di komputer ini untuk membuat akun takmir.
+ 2. Panel bisa dibuka dari HP lewat WiFi yang sama: http://<IP komputer ini>/admin/
+EOF
+if [ "$MODE" = "desktop" ]; then
+    echo " 3. Keluar lalu masuk lagi ke desktop (atau restart): layar jamaah dan"
+    echo "    suara adzan mulai otomatis setiap kali masuk."
+fi
+echo " Lupa kata sandi: sudo jamsholat-reset-password"
+echo "=================================================================="
+
+exit 0

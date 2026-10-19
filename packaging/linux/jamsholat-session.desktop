@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Jam Sholat Masjid
+Comment=Layar jamaah, suara adzan & iqomah, dan kamera masjid
+Exec=/opt/jamsholat/packaging/linux/jamsholat-session
+Icon=clock
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=5

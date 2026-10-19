@@ -1,0 +1,22 @@
+#!/bin/bash
+# postrm — "remove" membiarkan data (database, poster, foto kamera, cadangan) tetap
+# di /opt/jamsholat/storage; "purge" menghapus semuanya.
+set -e
+case "$1" in
+    remove|purge)
+        a2dissite -q jamsholat.conf > /dev/null 2>&1 || true
+        rm -f /etc/sudoers.d/jamsholat-date
+        for f in /etc/php/*/apache2/conf.d/90-jamsholat.ini; do rm -f "$f"; done
+        if [ -d /run/systemd/system ]; then
+            systemctl daemon-reload || true
+            systemctl reload apache2 > /dev/null 2>&1 || true
+        fi
+        ;;
+esac
+if [ "$1" = "purge" ]; then
+    rm -rf /opt/jamsholat/storage /opt/jamsholat/public/uploads /opt/jamsholat/config/config.php /etc/jamsholat
+    if getent passwd jamsholat > /dev/null; then
+        deluser --quiet --system jamsholat > /dev/null 2>&1 || true
+    fi
+fi
+exit 0

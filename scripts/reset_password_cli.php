@@ -30,7 +30,8 @@ $users = new AdminUserRepository();
 function ask(string $prompt, bool $hidden = false): string
 {
     echo $prompt;
-    $tty = $hidden && function_exists('posix_isatty') ? posix_isatty(STDIN) : $hidden;
+    // stty hanya ada di Linux/macOS; di Windows ketikan tetap terlihat.
+    $tty = $hidden && PHP_OS_FAMILY !== 'Windows' && function_exists('posix_isatty') && posix_isatty(STDIN);
     if ($tty) {
         shell_exec('stty -echo');
     }
@@ -65,7 +66,7 @@ if ($user === null) {
 }
 
 if (!$codeOnly) {
-    echo 'Huruf yang diketik tidak tampil di layar. Tekan Ctrl+C untuk batal.' . PHP_EOL;
+    echo (PHP_OS_FAMILY === 'Windows' ? 'Tekan Ctrl+C untuk batal.' : 'Huruf yang diketik tidak tampil di layar. Tekan Ctrl+C untuk batal.') . PHP_EOL;
     $new = ask('Kata sandi baru (min. 8 karakter): ', true);
     $confirm = ask('Ulangi kata sandi baru: ', true);
     if ($new !== $confirm) {

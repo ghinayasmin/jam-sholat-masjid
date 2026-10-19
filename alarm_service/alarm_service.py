@@ -472,18 +472,31 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
             time.sleep(3)
 
         except KeyboardInterrupt:
-            logger.info("Dihentikan.")
             break
         except Exception as exc:  # noqa: BLE001 — REQ-NF-112
             logger.error("Error tak terduga di loop alarm: %s", exc)
             time.sleep(5)
 
     # Jangan biarkan layar jamaah tetap menampilkan surat yang sudah tidak diputar.
-    stop_murottal()
+    # Sinyal berhenti kedua yang datang hampir bersamaan dengan yang pertama tidak
+    # boleh memotong pembersihan ini.
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    for _ in range(2):
+        try:
+            stop_murottal()
+            state.set_alarm_playing("")
+            logger.info("Dihentikan.")
+            break
+        except KeyboardInterrupt:
+            continue
 
 
 def _stop_on_sigterm(signum, frame) -> None:  # noqa: ARG001
     # systemctl stop / update.sh mengirim SIGTERM: berhenti lewat jalur yang sama dengan Ctrl+C.
+    # Sinyal berikutnya diabaikan supaya pembersihan (mengosongkan judul murottal di
+    # layar) tidak terputus bila SIGTERM datang dua kali.
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
     raise KeyboardInterrupt
 
 

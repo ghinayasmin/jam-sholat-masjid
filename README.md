@@ -157,6 +157,18 @@ mengubahnya per perangkat tanpa tertimpa `update.sh`, pakai drop-in:
 `sudo systemctl edit jamsholat-camera` lalu tulis `[Service]` dan
 `Environment=JAMSHOLAT_CAMERA_ROTATION=90`.
 
+## 8b. Instalasi di komputer biasa (tanpa Raspberry Pi)
+
+Paket siap pakai ada di halaman **Releases** (dibangun oleh `.github/workflows/package.yml`):
+
+- **Windows 10/11 64-bit:** jalankan `JamSholat-Setup-<versi>.exe`. Apache, PHP,
+  Python, dan audio sudah termasuk.
+- **Debian, Ubuntu, Linux Mint, Raspberry Pi OS (desktop):**
+  `sudo apt install ./jamsholat_<versi>_all.deb`
+
+Lalu buka `http://localhost/admin/` di komputer itu untuk membuat akun takmir.
+Detail rancangan: `docs/DECISIONS.md` #39, sumber paket: `packaging/`.
+
 ## 9. Running the Application
 
 **Development/testing di komputer lokal** (bukan Raspberry Pi):

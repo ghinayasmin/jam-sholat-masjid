@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# jamsholat-session — dijalankan saat pengguna masuk ke desktop (XDG autostart,
+# /etc/xdg/autostart/jamsholat-session.desktop) pada instalasi dari paket .deb.
+#
+# Di komputer berdesktop, suara hanya bisa keluar lewat sesi pengguna
+# (PulseAudio/PipeWire), jadi layanan alarm, kamera, dan layar kiosk berjalan di
+# sini, bukan sebagai layanan sistem (DECISIONS.md #39). Di server tanpa desktop,
+# postinst menyalakan layanan systemd biasa dan skrip ini tidak melakukan apa-apa.
+#
+set -u
+INSTALL_DIR="/opt/jamsholat"
+MODE_FILE="/etc/jamsholat/mode"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/jamsholat"
+URL="http://localhost/display.php"
+
+[ "$(cat "$MODE_FILE" 2>/dev/null)" = "desktop" ] || exit 0
+mkdir -p "$LOG_DIR"
+
+export JAMSHOLAT_DB_PATH="$INSTALL_DIR/storage/jamsholat.db"
+export JAMSHOLAT_AUDIO_PATH="$INSTALL_DIR/public/assets/audio"
+export JAMSHOLAT_CAPTURES_PATH="$INSTALL_DIR/storage/captures"
+export JAMSHOLAT_PHP_BIN="/usr/bin/php"
+export JAMSHOLAT_MPG123_OUTPUT=""   # keluaran bawaan sesi (PulseAudio/PipeWire)
+
+# Jalankan ulang bila berhenti (mis. kamera dicabut), seperti Restart= di systemd.
+keep_running() {
+    local name="$1"; shift
+    while true; do
+        "$@" >> "$LOG_DIR/$name.log" 2>&1
+        sleep 10
+    done
+}
+
+# Akun pengguna baru masuk grup jamsholat saat paket dipasang; grup baru berlaku
+# setelah keluar-masuk desktop. Tanpa itu database tidak bisa ditulis.
+if ! id -nG | tr ' ' '\n' | grep -qx jamsholat; then
+    notify-send "Jam Sholat Masjid" "Keluar lalu masuk lagi ke desktop (atau restart) agar suara adzan aktif." 2>/dev/null || true
+fi
+
+keep_running alarm /usr/bin/python3 "$INSTALL_DIR/alarm_service/alarm_service.py" &
+if [ -e /dev/video0 ] && python3 -c "import cv2" 2>/dev/null; then
+    keep_running camera /usr/bin/python3 "$INSTALL_DIR/camera_service/motion_detect.py" &
+fi
+
+# Tunggu Apache siap, lalu buka layar jamaah layar penuh.
+for _ in $(seq 1 30); do
+    curl -fs -o /dev/null "$URL" && break
+    sleep 2
+done
+for browser in chromium chromium-browser google-chrome firefox-esr firefox; do
+    if command -v "$browser" > /dev/null; then
+        case "$browser" in
+            firefox*) "$browser" --kiosk "$URL" >> "$LOG_DIR/kiosk.log" 2>&1 & ;;
+            *) "$browser" --kiosk --noerrdialogs --disable-infobars --no-first-run \
+                   --disable-session-crashed-bubble --password-store=basic \
+                   --user-data-dir="$HOME/.config/jamsholat-kiosk" "$URL" >> "$LOG_DIR/kiosk.log" 2>&1 & ;;
+        esac
+        break
+    fi
+done
+
+wait
