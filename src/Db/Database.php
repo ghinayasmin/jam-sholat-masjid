@@ -75,6 +75,7 @@ final class Database
             'iqomah_asr_minutes' => 'INTEGER NOT NULL DEFAULT 10',
             'iqomah_maghrib_minutes' => 'INTEGER NOT NULL DEFAULT 10',
             'iqomah_isha_minutes' => 'INTEGER NOT NULL DEFAULT 10',
+            'iqomah_countdown_enabled' => 'INTEGER NOT NULL DEFAULT 1 CHECK (iqomah_countdown_enabled IN (0,1))',
         ],
         'publications' => [
             'starts_on' => 'TEXT',

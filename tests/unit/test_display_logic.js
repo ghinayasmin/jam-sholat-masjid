@@ -52,6 +52,26 @@ check('masih adzan di detik ke-179', v.mode === 'adzan');
 v = computeView(at('2026-10-01', '17:36:00'), today, tomorrow, reminder);
 check('kembali normal setelah 3 menit', v.mode === 'normal');
 
+console.log('computeView — hitung mundur iqomah');
+const iq = { countdown: true, minutes: { fajr: 20, dhuhr: 10, asr: 10, maghrib: 10, isha: 10 } };
+v = computeView(at('2026-10-01', '17:36:00'), today, tomorrow, reminder, iq);
+check('setelah layar adzan: hitung mundur iqomah Maghrib 07:00', v.mode === 'iqomah' && v.iqomah.key === 'maghrib'
+    && formatCountdown(v.iqomah.remaining) === '07:00' && v.iqomah.total === 420);
+v = computeView(at('2026-10-01', '17:42:59'), today, tomorrow, reminder, iq);
+check('1 detik sebelum iqomah', v.mode === 'iqomah' && !v.iqomah.now && v.iqomah.remaining === 1);
+v = computeView(at('2026-10-01', '17:43:00'), today, tomorrow, reminder, iq);
+check('tepat iqomah: "rapatkan shaf"', v.mode === 'iqomah' && v.iqomah.now);
+v = computeView(at('2026-10-01', '17:44:00'), today, tomorrow, reminder, iq);
+check('1 menit setelah iqomah kembali normal', v.mode === 'normal');
+v = computeView(at('2026-10-01', '04:20:00'), today, tomorrow, reminder, iq);
+check('Subuh 20 menit: 04:20 masih 6 menit lagi', v.mode === 'iqomah' && v.iqomah.key === 'fajr' && v.iqomah.remaining === 360);
+v = computeView(at('2026-10-01', '17:36:00'), today, tomorrow, reminder, { ...iq, countdown: false });
+check('sakelar mati = tetap normal', v.mode === 'normal');
+v = computeView(at('2026-10-02', '11:33:00'), tomorrow, null, reminder, iq);
+check('Jumat siang tanpa hitung mundur iqomah', v.mode === 'normal');
+v = computeView(at('2026-10-01', '17:34:00'), today, tomorrow, reminder, iq);
+check('layar adzan tetap didahulukan', v.mode === 'adzan');
+
 console.log('computeView — setelah Isya & dini hari');
 v = computeView(at('2026-10-01', '21:00:00'), today, tomorrow, reminder);
 check('berikutnya Subuh besok', v.next.key === 'fajr' && v.next.tomorrow);

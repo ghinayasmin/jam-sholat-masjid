@@ -114,7 +114,7 @@ final class BackupManager
                     mosque_photo=:mosque_photo,
                     iqomah_fajr_minutes=:iqomah_fajr_minutes, iqomah_dhuhr_minutes=:iqomah_dhuhr_minutes,
                     iqomah_asr_minutes=:iqomah_asr_minutes, iqomah_maghrib_minutes=:iqomah_maghrib_minutes,
-                    iqomah_isha_minutes=:iqomah_isha_minutes,
+                    iqomah_isha_minutes=:iqomah_isha_minutes, iqomah_countdown_enabled=:iqomah_countdown_enabled,
                     updated_at=CURRENT_TIMESTAMP
                  WHERE id = 1'
             );
@@ -145,6 +145,7 @@ final class BackupManager
                 'iqomah_asr_minutes' => $s['iqomah_asr_minutes'] ?? 10,
                 'iqomah_maghrib_minutes' => $s['iqomah_maghrib_minutes'] ?? 10,
                 'iqomah_isha_minutes' => $s['iqomah_isha_minutes'] ?? 10,
+                'iqomah_countdown_enabled' => $s['iqomah_countdown_enabled'] ?? 1,
             ]);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten

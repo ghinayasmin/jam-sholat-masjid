@@ -92,6 +92,21 @@
     </div>
 </div>
 
+<!-- Hitung mundur iqomah setelah layar adzan; bisa dimatikan takmir (DECISIONS.md #31). -->
+<div class="overlay" id="iqomah" hidden>
+    <div class="overlay-inner" id="iqomahCountdown">
+        <div class="overlay-sub">Iqomah <b id="iqomahPrayer">-</b> dalam</div>
+        <div class="overlay-count" id="iqomahCount">--:--</div>
+        <div class="overlay-bar"><i id="iqomahBar"></i></div>
+        <div class="overlay-sub">Mari mengisi shaf terdepan</div>
+    </div>
+    <div class="overlay-inner" id="iqomahNow" hidden>
+        <div class="overlay-ar">قَدْ قَامَتِ الصَّلَاةُ</div>
+        <div class="overlay-title">Luruskan dan rapatkan shaf</div>
+        <div class="overlay-sub">Mohon matikan atau senyapkan HP</div>
+    </div>
+</div>
+
 <div class="overlay" id="adzan" hidden>
     <div class="overlay-inner">
         <div class="overlay-ar">حَيَّ عَلَى الصَّلَاةِ</div>

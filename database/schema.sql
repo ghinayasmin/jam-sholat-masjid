@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     iqomah_asr_minutes              INTEGER NOT NULL DEFAULT 10,
     iqomah_maghrib_minutes          INTEGER NOT NULL DEFAULT 10,
     iqomah_isha_minutes             INTEGER NOT NULL DEFAULT 10,
+    iqomah_countdown_enabled        INTEGER NOT NULL DEFAULT 1 CHECK (iqomah_countdown_enabled IN (0,1)),  -- layar, #31
     image_retention_days            INTEGER NOT NULL DEFAULT 7,    -- 3/7/14/30, diatur di tab Kamera
     image_retention_storage_pct     INTEGER NOT NULL DEFAULT 80,
     online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),

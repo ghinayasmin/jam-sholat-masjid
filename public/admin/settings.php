@@ -17,9 +17,17 @@ AuthMiddleware::requireLogin($auth);
 
 $settingsRepo = new SettingsRepository();
 
-// Sakelar langsung di halaman ini: tampilkan saldo kas di layar jamaah (DECISIONS.md #14).
+// Sakelar langsung di halaman ini: saldo kas (DECISIONS.md #14) dan hitung mundur
+// iqomah (#31) di layar jamaah.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Csrf::requireValid($_POST['csrf_token'] ?? null);
+    if (($_POST['action'] ?? '') === 'iqomah_countdown_toggle') {
+        $on = isset($_POST['iqomah_countdown_enabled']);
+        $settingsRepo->update(['iqomah_countdown_enabled' => $on ? 1 : 0]);
+        $_SESSION['flash_success'] = $on
+            ? 'Hitung mundur iqomah tampil di layar jamaah setelah adzan.'
+            : 'Hitung mundur iqomah tidak lagi tampil di layar jamaah.';
+    }
     if (($_POST['action'] ?? '') === 'finance_toggle') {
         $on = isset($_POST['show_finance_on_display']);
         $settingsRepo->update(['show_finance_on_display' => $on ? 1 : 0]);
@@ -69,6 +77,14 @@ require __DIR__ . '/_header.php';
             <span></span>
             <label class="k" for="show_finance_on_display">Tampilkan saldo kas<small>Sebagai slide, bergantian dengan poster</small></label>
             <span class="switch"><input type="checkbox" id="show_finance_on_display" name="show_finance_on_display" data-autosubmit<?= (int) $s['show_finance_on_display'] === 1 ? ' checked' : '' ?>><span></span></span>
+            <noscript><button type="submit" class="btn small">Simpan</button></noscript>
+        </form>
+        <form method="post" class="row">
+            <?= Csrf::field() ?>
+            <input type="hidden" name="action" value="iqomah_countdown_toggle">
+            <span></span>
+            <label class="k" for="iqomah_countdown_enabled">Hitung mundur iqomah<small>Layar penuh setelah adzan sampai iqomah</small></label>
+            <span class="switch"><input type="checkbox" id="iqomah_countdown_enabled" name="iqomah_countdown_enabled" data-autosubmit<?= (int) $s['iqomah_countdown_enabled'] === 1 ? ' checked' : '' ?>><span></span></span>
             <noscript><button type="submit" class="btn small">Simpan</button></noscript>
         </form>
         <a class="row" href="/admin/slides.php"><span></span><span class="k">Pergantian slide<small>Poster, saldo kas, foto masjid</small></span><span class="v">Tampil <?= (int) $s['poster_show_seconds'] ?> dtk · jeda <?= (int) $s['poster_gap_seconds'] ?> dtk <?= $chev ?></span></a>

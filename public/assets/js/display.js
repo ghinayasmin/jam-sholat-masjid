@@ -8,6 +8,7 @@
     const ANNOUNCEMENT_ROTATE_MS = 10 * 1000;
     const WIDE_POSTER_RATIO = 1.3;           // lebar/tinggi ≥ ini = landscape → layar penuh
     const ADZAN_SCREEN_S = 180;              // layar adzan tampil 3 menit sejak waktu adzan
+    const IQOMAH_NOW_S = 60;                 // "Luruskan dan rapatkan shaf" tampil 1 menit saat iqomah
 
     const ADZAN_KEYS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
     const ROW_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -30,8 +31,9 @@
     /**
      * Inti logika layar (tanpa DOM, diuji di tests/unit/test_display_logic.js).
      * now: Date lokal. today/tomorrow: jadwal dari /api/schedule.php. reminder: pengaturan pengingat.
+     * iqomah: { countdown: bool, minutes: { fajr: 20, ... } } — hitung mundur iqomah (DECISIONS.md #31).
      */
-    function computeView(now, today, tomorrow, reminder) {
+    function computeView(now, today, tomorrow, reminder, iqomah) {
         const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
         const isFriday = now.getDay() === 5;
 
@@ -45,9 +47,20 @@
         }
 
         let adzan = null;
+        let iqomahView = null;
         for (const key of ADZAN_KEYS) {
             const at = toSeconds(today[key]);
             if (sec >= at && sec < at + ADZAN_SCREEN_S) adzan = { key, time: today[key] };
+            // Hitung mundur iqomah setelah layar adzan. Jumat siang tidak: iqomah setelah khutbah.
+            const minutes = iqomah && iqomah.countdown && iqomah.minutes ? Number(iqomah.minutes[key]) : 0;
+            if (minutes > 0 && !(key === 'dhuhr' && isFriday)) {
+                const iqomahAt = at + minutes * 60;
+                if (sec >= at + ADZAN_SCREEN_S && sec < iqomahAt) {
+                    iqomahView = { key, now: false, remaining: iqomahAt - sec, total: iqomahAt - at - ADZAN_SCREEN_S };
+                } else if (sec >= iqomahAt && sec < iqomahAt + IQOMAH_NOW_S) {
+                    iqomahView = { key, now: true, remaining: 0, total: 0 };
+                }
+            }
         }
 
         // Setelah Isya, daftar menampilkan jadwal besok dengan Subuh sebagai berikutnya.
@@ -64,9 +77,10 @@
 
         let mode = 'normal';
         if (adzan) mode = 'adzan';
+        else if (iqomahView) mode = 'iqomah';
         else if (reminder.enabled && next && lead > 0 && remaining <= lead) mode = 'reminder';
 
-        return { mode, next, adzan, remaining, lead, rows, listDay, isFriday, fridayDhuhr };
+        return { mode, next, adzan, iqomah: iqomahView, remaining, lead, rows, listDay, isFriday, fridayDhuhr };
     }
 
     /** "12 menit", "1 jam 5 menit", "kurang dari 1 menit". */
@@ -149,6 +163,7 @@
         today: null,
         tomorrow: null,
         reminder: { enabled: false, minutes: 10, friday_minutes: 30, message: '' },
+        iqomah: { countdown: false, minutes: {} },
         showFinance: false,
         finance: null,           // data slide kas; null bila disembunyikan takmir
         mosquePhoto: null,       // URL foto masjid; null bila belum diunggah
@@ -178,6 +193,7 @@
             state.tomorrow = tomorrow.success ? tomorrow : null;
             state.loadedDate = localDate(now);
             state.reminder = today.reminder || state.reminder;
+            state.iqomah = { countdown: Boolean(today.iqomah_countdown), minutes: today.iqomah_minutes || {} };
 
             const financeWasOn = state.showFinance;
             state.showFinance = Boolean(today.show_finance);
@@ -277,7 +293,7 @@
         }
         if (!state.today) return;
 
-        const view = computeView(now, state.today, state.tomorrow, state.reminder);
+        const view = computeView(now, state.today, state.tomorrow, state.reminder, state.iqomah);
         // Hari dalam kalender Hijriah dimulai saat Maghrib.
         const hijriAfterMaghrib = state.tomorrow && now.getHours() * 3600 + now.getMinutes() * 60 >= toSeconds(state.today.maghrib);
         $('hijriDate').textContent = hijriAfterMaghrib ? state.tomorrow.hijri_date : state.today.hijri_date;
@@ -314,11 +330,21 @@
 
         $('reminder').hidden = view.mode !== 'reminder';
         $('adzan').hidden = view.mode !== 'adzan';
+        $('iqomah').hidden = view.mode !== 'iqomah';
         if (view.mode === 'reminder') {
             $('reminderPrayer').textContent = prayerName(view.next.key, view.fridayDhuhr);
             $('reminderCount').textContent = formatCountdown(view.remaining);
             $('reminderBar').style.width = Math.max(0, Math.min(100, view.remaining / view.lead * 100)) + '%';
             $('reminderMessage').textContent = view.fridayDhuhr ? 'Persiapan sholat Jumat' : state.reminder.message;
+        } else if (view.mode === 'iqomah') {
+            const iq = view.iqomah;
+            $('iqomahCountdown').hidden = iq.now;
+            $('iqomahNow').hidden = !iq.now;
+            if (!iq.now) {
+                $('iqomahPrayer').textContent = prayerName(iq.key, false);
+                $('iqomahCount').textContent = formatCountdown(iq.remaining);
+                $('iqomahBar').style.width = Math.max(0, Math.min(100, iq.remaining / iq.total * 100)) + '%';
+            }
         } else if (view.mode === 'adzan') {
             $('adzanTitle').textContent = 'Adzan ' + prayerName(view.adzan.key, view.isFriday);
             $('adzanTime').textContent = view.adzan.time;

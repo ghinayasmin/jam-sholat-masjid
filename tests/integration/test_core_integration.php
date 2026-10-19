@@ -123,6 +123,7 @@ check('Settings: kas bawaan tampil di layar jamaah (instalasi baru)', (int) $s['
 check('Settings: slide bawaan tampil 15 dtk, jeda 15 dtk', (int) $s['poster_show_seconds'] === 15 && (int) $s['poster_gap_seconds'] === 15);
 check('Settings: iqomah bawaan nyala, Subuh 20 menit, lainnya 10', (int) $s['iqomah_sound_enabled'] === 1
     && (int) $s['iqomah_fajr_minutes'] === 20 && (int) $s['iqomah_dhuhr_minutes'] === 10 && (int) $s['iqomah_isha_minutes'] === 10);
+check('Settings: hitung mundur iqomah bawaan tampil', (int) $s['iqomah_countdown_enabled'] === 1);
 $settingsRepo->update(['reminder_minutes' => 15, 'show_finance_on_display' => 0]);
 $s = $settingsRepo->get();
 check('Settings: pengingat & kas bisa diubah', (int) $s['reminder_minutes'] === 15 && (int) $s['show_finance_on_display'] === 0);

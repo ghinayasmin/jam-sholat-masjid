@@ -452,3 +452,17 @@ waktu dibuat).
 - Murottal tetap diam sampai 15 menit setelah iqomah (perkiraan sholat
   berjamaah). Sebelumnya jendela diam tetap 20 menit setelah adzan, sehingga
   dengan jeda Subuh 20 menit murottal bisa menyala saat sholat.
+
+## 31. Hitung mundur iqomah di layar, bisa dimatikan (DIKONFIRMASI)
+
+- Dulu dihapus saat desain ulang layar (#15). Atas permintaan pengguna
+  dikembalikan sebagai pilihan: Pengaturan → Layar jamaah → Hitung mundur
+  iqomah (`iqomah_countdown_enabled`, bawaan nyala untuk instalasi baru).
+- Setelah layar adzan (3 menit), tampil layar penuh "Iqomah <sholat> dalam
+  MM:SS" dengan bar, gaya sama dengan pengingat sebelum adzan. Tepat saat
+  iqomah, selama 1 menit tampil "قَدْ قَامَتِ الصَّلَاةُ · Luruskan dan rapatkan
+  shaf". Jedanya mengikuti `iqomah_<sholat>_minutes` (#30).
+- Tidak tampil untuk Dzuhur hari Jumat (iqomah setelah khutbah). Layar ini tidak
+  bergantung pada sakelar suara iqomah: masjid yang iqomahnya dikumandangkan
+  muadzin tetap bisa memakai hitung mundurnya.
+

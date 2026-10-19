@@ -46,7 +46,7 @@ final class SettingsRepository
             'murottal_enabled', 'murottal_request', 'adzan_sound_enabled', 'iqomah_sound_enabled',
             'hijri_offset_days', 'poster_gap_seconds', 'poster_show_seconds', 'mosque_photo',
             'iqomah_fajr_minutes', 'iqomah_dhuhr_minutes', 'iqomah_asr_minutes',
-            'iqomah_maghrib_minutes', 'iqomah_isha_minutes',
+            'iqomah_maghrib_minutes', 'iqomah_isha_minutes', 'iqomah_countdown_enabled',
         ];
         $set = [];
         $params = [];

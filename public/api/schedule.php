@@ -57,6 +57,7 @@ try {
             'friday_minutes' => (int) $settings['reminder_friday_minutes'],
             'message' => $settings['reminder_message'],
         ],
+        'iqomah_countdown' => (int) $settings['iqomah_countdown_enabled'] === 1,
         'show_finance' => (int) $settings['show_finance_on_display'] === 1,
         // Rotasi slide (poster, kas, foto masjid) — DECISIONS.md #27, #28.
         'slides' => [
