@@ -624,4 +624,13 @@ waktu dibuat).
   Releases hanya saat tag `v*`.
 - **Bug yang ditemukan uji paket:** SIGTERM ganda (runuser/timeout) memotong
   pembersihan layanan alarm; sinyal berikutnya kini diabaikan.
+- **Temuan saat uji installer Windows** (Actions, 19 Okt 2026): (1) PowerShell 5.1
+  membuang tanda kutip ganda di argumen `php -r` → database dibuat lewat
+  `scripts/init_db_cli.php`; (2) port 80 dipegang Windows sendiri (http.sys, PID 4)
+  → `setup.ps1` memakai 80 bila kosong, selain itu 8080 dst., disimpan di
+  `C:\ProgramData\JamSholat\port.txt` dan diikuti kiosk, pintasan, firewall;
+  (3) `robocopy /XF config.php` ikut membuang `src\Config.php` karena nama file
+  Windows tidak peka huruf besar-kecil; (4) `Set-Content -Encoding UTF8` menulis
+  BOM yang terkirim sebelum respons PHP (JSON rusak, redirect gagal) → ASCII.
+  Hasil akhir: semua pemeriksaan lolos di Windows Server 2022 dan 2025.
 
