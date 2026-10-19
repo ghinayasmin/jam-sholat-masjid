@@ -8,6 +8,8 @@ StartLimitBurst=5
 Type=simple
 User=jamsholat
 Group=jamsholat
+# Foto bisa ditulis grup (www-data) supaya panel bisa menimpa isinya sebelum menghapus.
+UMask=0002
 WorkingDirectory=/opt/jamsholat
 Environment=JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db
 Environment=JAMSHOLAT_CAPTURES_PATH=/opt/jamsholat/storage/captures

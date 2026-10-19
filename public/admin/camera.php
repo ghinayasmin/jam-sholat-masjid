@@ -27,13 +27,45 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
     $date = $today;
 }
 
-/** Hapus baris DB beserta file fotonya. */
-$deleteEvent = static function (array $event) use ($repo): void {
+/**
+ * Hapus file foto lalu barisnya di DB. Isi file ditimpa nol dulu supaya foto tidak
+ * bisa dipulihkan dari kartu SD dengan alat pemulihan biasa. Baris DB hanya dihapus
+ * bila filenya benar-benar hilang, jadi tidak ada foto tersembunyi yang tertinggal.
+ */
+$deleteEvent = static function (array $event) use ($repo): bool {
     $file = Config::get('captures_path') . '/' . basename($event['image_path']);
     if (is_file($file)) {
-        @unlink($file);
+        $size = (int) filesize($file);
+        $fh = @fopen($file, 'r+b');
+        if ($fh !== false) {
+            for ($left = $size; $left > 0; $left -= 65536) {
+                fwrite($fh, str_repeat("\0", min(65536, $left)));
+            }
+            fflush($fh);
+            fsync($fh);
+            fclose($fh);
+        } else {
+            error_log('[camera] Tidak bisa menimpa ' . $file . ' sebelum dihapus (izin file).');
+        }
+        if (!@unlink($file)) {
+            error_log('[camera] Gagal menghapus ' . $file);
+            return false;
+        }
     }
     $repo->delete((int) $event['id']);
+    return true;
+};
+
+/** @param list<array> $events  @return int jumlah yang gagal dihapus */
+$deleteEvents = static function (array $events) use ($deleteEvent): int {
+    $failed = 0;
+    foreach ($events as $event) {
+        $failed += $deleteEvent($event) ? 0 : 1;
+    }
+    if ($failed > 0) {
+        $_SESSION['flash_error'] = "$failed foto gagal dihapus dari perangkat. Minta teknisi memeriksa izin folder storage/captures.";
+    }
+    return $failed;
 };
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,16 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     if ($action === 'delete') {
         $event = $repo->find((int) ($_POST['id'] ?? 0));
-        if ($event !== null) {
-            $deleteEvent($event);
+        if ($event !== null && $deleteEvents([$event]) === 0) {
             $_SESSION['flash_success'] = 'Foto dihapus.';
         }
     } elseif ($action === 'delete_day') {
         $events = $repo->list($date, 10000);
-        foreach ($events as $event) {
-            $deleteEvent($event);
-        }
-        $_SESSION['flash_success'] = count($events) . ' foto dihapus.';
+        $failed = $deleteEvents($events);
+        $_SESSION['flash_success'] = (count($events) - $failed) . ' foto dihapus.';
     } elseif ($action === 'retention') {
         $days = (int) ($_POST['image_retention_days'] ?? 0);
         if (in_array($days, $retentionChoices, true)) {
@@ -58,11 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Langsung terapkan; pembersihan otomatis (03:00) juga memakai nilai ini.
             $cutoff = gmdate('Y-m-d H:i:s', LocalTime::now() - $days * 86400);
             $old = $repo->olderThan($cutoff);
-            foreach ($old as $event) {
-                $deleteEvent($event);
-            }
+            $removed = count($old) - $deleteEvents($old);
             $_SESSION['flash_success'] = "Foto disimpan selama $days hari."
-                . ($old !== [] ? ' ' . count($old) . ' foto lama dihapus.' : '');
+                . ($removed > 0 ? " $removed foto lama dihapus." : '');
         }
     }
     header('Location: /admin/camera.php?date=' . urlencode($date));

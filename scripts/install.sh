@@ -151,6 +151,11 @@ net.ipv6.conf.default.disable_ipv6 = 1
 net.ipv6.conf.lo.disable_ipv6 = 0
 EOF
 sysctl --system > /dev/null
+# NetworkManager menyalakan lagi IPv6 untuk profil WiFi yang ipv6.method-nya
+# auto, jadi matikan juga per profil (pakai UUID: nama profil bisa berspasi).
+for uuid in $(nmcli -t -f UUID,TYPE connection show | awk -F: '$2 == "802-11-wireless" {print $1}'); do
+    nmcli connection modify "$uuid" ipv6.method disabled || true
+done
 
 echo "=== [10/10] Memasang & mengaktifkan systemd services ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).

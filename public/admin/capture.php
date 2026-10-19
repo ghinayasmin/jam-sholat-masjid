@@ -36,5 +36,6 @@ if (!is_file($fullPath)) {
 }
 
 header('Content-Type: image/jpeg');
-header('Cache-Control: private, max-age=86400');
+// Jangan simpan di cache browser: foto yang sudah dihapus tidak boleh masih terbuka dari HP.
+header('Cache-Control: no-store, private');
 readfile($fullPath);

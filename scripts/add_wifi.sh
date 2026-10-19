@@ -40,7 +40,8 @@ if nmcli -t -f NAME connection show | grep -Fxq "$CON_NAME"; then
 fi
 nmcli connection add type wifi con-name "$CON_NAME" ifname wlan0 ssid "$SSID" \
     wifi-sec.key-mgmt wpa-psk wifi-sec.psk "$PSK" \
-    connection.autoconnect yes connection.autoconnect-priority "$PRIORITY" > /dev/null
+    connection.autoconnect yes connection.autoconnect-priority "$PRIORITY" \
+    ipv6.method disabled > /dev/null   # lihat install.sh: IPv6 publik -> 403
 unset PSK
 
 echo "Tersimpan: \"$SSID\" (prioritas $PRIORITY). Jaringan yang diingat Pi:"

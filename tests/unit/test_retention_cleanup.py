@@ -86,5 +86,27 @@ class TestRetentionCleanup(unittest.TestCase):
         self.assertEqual(deleted, 0)
 
 
+    def test_file_wiped_and_removed(self):
+        self._add_event("old.jpg", days_ago=40)
+        path = os.path.join(self.captures_path, "old.jpg")
+        conn = _connect(self.db_path)
+        self.assertEqual(cleanup_by_age(conn, self.captures_path, 30), 1)
+        self.assertFalse(os.path.exists(path))
+        self.assertEqual(conn.execute("SELECT COUNT(*) FROM motion_events").fetchone()[0], 0)
+        conn.close()
+
+    def test_row_kept_when_file_cannot_be_deleted(self):
+        if os.geteuid() == 0:
+            self.skipTest("root bisa menghapus file walau folder read-only")
+        self._add_event("stuck.jpg", days_ago=40)
+        os.chmod(self.captures_path, 0o500)  # folder tidak bisa diubah: file tidak bisa dihapus
+        try:
+            conn = _connect(self.db_path)
+            self.assertEqual(cleanup_by_age(conn, self.captures_path, 30), 0)
+            self.assertEqual(conn.execute("SELECT COUNT(*) FROM motion_events").fetchone()[0], 1)
+            conn.close()
+        finally:
+            os.chmod(self.captures_path, 0o700)
+
 if __name__ == '__main__':
     unittest.main()

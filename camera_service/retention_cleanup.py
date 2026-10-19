@@ -49,14 +49,23 @@ def get_settings(conn: sqlite3.Connection) -> dict:
     return {"days": row[0], "storage_pct": row[1]}
 
 
-def delete_event(conn: sqlite3.Connection, captures_path: str, event_id: int, image_path: str) -> None:
+def delete_event(conn: sqlite3.Connection, captures_path: str, event_id: int, image_path: str) -> bool:
+    """Timpa isi foto dengan nol, hapus filenya, lalu barisnya di DB. Baris hanya
+    dihapus bila file benar-benar hilang (sama dengan admin/camera.php)."""
     full_path = os.path.join(captures_path, os.path.basename(image_path))
     if os.path.isfile(full_path):
         try:
+            size = os.path.getsize(full_path)
+            with open(full_path, "r+b") as fh:
+                fh.write(b"\0" * size)
+                fh.flush()
+                os.fsync(fh.fileno())
             os.remove(full_path)
         except OSError as exc:
             logger.warning("Gagal hapus file %s: %s", full_path, exc)
+            return False
     conn.execute("DELETE FROM motion_events WHERE id = ?", (event_id,))
+    return True
 
 
 def cleanup_by_age(conn: sqlite3.Connection, captures_path: str, retention_days: int) -> int:
@@ -64,12 +73,11 @@ def cleanup_by_age(conn: sqlite3.Connection, captures_path: str, retention_days:
     rows = conn.execute(
         "SELECT id, image_path FROM motion_events WHERE detected_at < ?", (cutoff,)
     ).fetchall()
-    for event_id, image_path in rows:
-        delete_event(conn, captures_path, event_id, image_path)
+    deleted = sum(delete_event(conn, captures_path, event_id, image_path) for event_id, image_path in rows)
     conn.commit()
-    if rows:
-        logger.info("Hapus %d gambar lebih tua dari %d hari.", len(rows), retention_days)
-    return len(rows)
+    if deleted:
+        logger.info("Hapus %d gambar lebih tua dari %d hari.", deleted, retention_days)
+    return deleted
 
 
 def storage_usage_pct(path: str) -> float:
@@ -87,7 +95,8 @@ def cleanup_by_storage(conn: sqlite3.Connection, captures_path: str, threshold_p
         ).fetchone()
         if row is None:
             break  # tidak ada lagi yang bisa dihapus
-        delete_event(conn, captures_path, row[0], row[1])
+        if not delete_event(conn, captures_path, row[0], row[1]):
+            break  # file tidak bisa dihapus: berhenti, jangan mengulang foto yang sama
         deleted += 1
         guard += 1
     conn.commit()

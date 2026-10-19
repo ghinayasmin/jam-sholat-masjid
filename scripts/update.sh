@@ -35,6 +35,8 @@ rsync -a --chown="$SERVICE_USER":"$SERVICE_USER" \
     "$SCRIPT_DIR"/ "$INSTALL_DIR"/
 # File yang sudah dihapus dari repo (rsync di atas tidak menghapus).
 rm -f "$INSTALL_DIR"/public/admin/iqomah.php   # diganti sound.php (DECISIONS.md #23)
+# Foto kamera lama dibuat tanpa izin tulis grup; panel (www-data) perlu menimpanya saat menghapus.
+find "$INSTALL_DIR/storage/captures" -type f -name "*.jpg" -exec chmod 664 {} +
 
 echo "=== [2/3] Memperbarui unit systemd ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
