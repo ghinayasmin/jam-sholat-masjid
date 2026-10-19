@@ -82,9 +82,15 @@ if ($LASTEXITCODE -ne 0) { throw 'pip gagal memasang OpenCV.' }
 
 # --- Aplikasi ---------------------------------------------------------------
 $exclude = @('.git', '.github', 'tests', 'storage', 'packaging\debian', 'packaging\linux',
-             'public\uploads', 'public\assets\audio', 'config\config.php', '__pycache__')
-& robocopy $Repo "$Stage\app" /E /NFL /NDL /NJH /NJS /NP /XD ($exclude | ForEach-Object { Join-Path $Repo $_ }) /XF '.DS_Store' '.gitignore' 'config.php' | Out-Null
+             'public\uploads', 'public\assets\audio', '__pycache__')
+# Jangan pakai /XF config.php: Windows tidak membedakan huruf besar-kecil, sehingga
+# src\Config.php ikut terlewat. Konfigurasi lokal dihapus dari tempatnya saja.
+& robocopy $Repo "$Stage\app" /E /NFL /NDL /NJH /NJS /NP /XD ($exclude | ForEach-Object { Join-Path $Repo $_ }) /XF '.DS_Store' '.gitignore' | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy aplikasi gagal ($LASTEXITCODE)" }
+Remove-Item "$Stage\app\config\config.php", "$Stage\app\config\.env" -ErrorAction SilentlyContinue
+foreach ($f in 'bootstrap.php', 'src\Config.php', 'src\Db\Database.php', 'public\display.php', 'alarm_service\alarm_service.py') {
+    if (-not (Test-Path "$Stage\app\$f")) { throw "File aplikasi hilang dari staging: $f" }
+}
 & robocopy $AudioDir "$Stage\app\public\assets\audio" /E /NFL /NDL /NJH /NJS /NP /XF '*.wav' | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy audio gagal ($LASTEXITCODE)" }
 Copy-Item "$Repo\public\assets\audio\README.md" "$Stage\app\public\assets\audio\" -ErrorAction SilentlyContinue
