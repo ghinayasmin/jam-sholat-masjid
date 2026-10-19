@@ -73,17 +73,21 @@ require __DIR__ . '/_header.php';
 
     <section class="group" aria-labelledby="adzan-label">
         <div class="label" id="adzan-label">Suara adzan</div>
-        <div class="seg" role="radiogroup" aria-labelledby="adzan-label">
-            <label><input type="radio" name="adzan_sound_enabled" value="1"<?= $adzan ? ' checked' : '' ?>><span>Nyala</span></label>
-            <label><input type="radio" name="adzan_sound_enabled" value="0"<?= !$adzan ? ' checked' : '' ?>><span>Mati</span></label>
+        <div class="card">
+            <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+                <label class="k" for="adzan_sound_enabled">Putar suara adzan<small>Dari speaker saat waktu sholat tiba</small></label>
+                <span class="switch"><input type="checkbox" id="adzan_sound_enabled" name="adzan_sound_enabled" value="1"<?= $adzan ? ' checked' : '' ?>><span></span></span>
+            </div>
         </div>
     </section>
 
     <section class="group" aria-labelledby="iqomah-label">
         <div class="label" id="iqomah-label">Suara iqomah</div>
-        <div class="seg" role="radiogroup" aria-labelledby="iqomah-label">
-            <label><input type="radio" name="iqomah_sound_enabled" value="1"<?= $iqomah ? ' checked' : '' ?>><span>Nyala</span></label>
-            <label><input type="radio" name="iqomah_sound_enabled" value="0"<?= !$iqomah ? ' checked' : '' ?>><span>Mati</span></label>
+        <div class="card">
+            <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+                <label class="k" for="iqomah_sound_enabled">Putar suara iqomah<small>Setelah jeda di bawah ini</small></label>
+                <span class="switch"><input type="checkbox" id="iqomah_sound_enabled" name="iqomah_sound_enabled" value="1"<?= $iqomah ? ' checked' : '' ?>><span></span></span>
+            </div>
         </div>
         <div class="card" style="margin-top:8px">
             <?php foreach ($prayers as $key => $name): ?>

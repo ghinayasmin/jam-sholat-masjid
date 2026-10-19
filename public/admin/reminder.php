@@ -20,7 +20,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Csrf::requireValid($_POST['csrf_token'] ?? null);
 
-    $enabled = ($_POST['reminder_enabled'] ?? '1') === '1';
+    $enabled = ($_POST['reminder_enabled'] ?? '0') === '1';
     $minutes = filter_input(INPUT_POST, 'reminder_minutes', FILTER_VALIDATE_INT);
     $friday = filter_input(INPUT_POST, 'reminder_friday_minutes', FILTER_VALIDATE_INT);
     $message = trim((string) ($_POST['reminder_message'] ?? ''));
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $s = $settingsRepo->get();
 $v = [
-    'enabled' => $_SERVER['REQUEST_METHOD'] === 'POST' ? (($_POST['reminder_enabled'] ?? '1') === '1') : (int) $s['reminder_enabled'] === 1,
+    'enabled' => $_SERVER['REQUEST_METHOD'] === 'POST' ? (($_POST['reminder_enabled'] ?? '0') === '1') : (int) $s['reminder_enabled'] === 1,
     'minutes' => $_POST['reminder_minutes'] ?? $s['reminder_minutes'],
     'friday' => $_POST['reminder_friday_minutes'] ?? $s['reminder_friday_minutes'],
     'message' => $_POST['reminder_message'] ?? $s['reminder_message'],
@@ -71,10 +71,12 @@ require __DIR__ . '/_header.php';
 <form method="post" class="stack">
     <?= Csrf::field() ?>
 
-    <div class="seg" role="radiogroup" aria-label="Pengingat">
-        <label><input type="radio" name="reminder_enabled" value="1"<?= $v['enabled'] ? ' checked' : '' ?>><span>Nyala</span></label>
-        <label><input type="radio" name="reminder_enabled" value="0"<?= !$v['enabled'] ? ' checked' : '' ?>><span>Mati</span></label>
-    </div>
+    <div class="card">
+            <div class="row" style="grid-template-columns:minmax(0,1fr) auto">
+                <label class="k" for="reminder_enabled">Tampilkan pengingat<small>Layar penuh dengan hitung mundur sebelum adzan</small></label>
+                <span class="switch"><input type="checkbox" id="reminder_enabled" name="reminder_enabled" value="1"<?= $v['enabled'] ? ' checked' : '' ?>><span></span></span>
+            </div>
+        </div>
 
     <div class="card">
         <div class="row" style="grid-template-columns:minmax(0,1fr) auto">

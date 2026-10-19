@@ -57,7 +57,7 @@ require __DIR__ . '/_header.php';
     <div class="card"><div class="empty">Belum ada file murottal di perangkat. Lihat public/assets/audio/README.md.</div></div>
 <?php else: ?>
     <div class="card murottal-card" data-murottal-live>
-        <span class="k"><?= $on ? 'Menyala' : 'Dijeda' ?><small data-murottal-status><?= Format::e($on ? $status : 'Ketuk surat untuk memutar') ?></small></span>
+        <span class="k"><?= $on ? 'Murottal menyala' : 'Murottal berhenti' ?><small data-murottal-status><?= Format::e($on ? $status : 'Ketuk surat untuk memutar') ?></small></span>
         <?php if ($on): ?>
             <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="pause"><input type="hidden" name="back" value="list"><button type="submit" class="btn small ghost">Jeda</button></form>
         <?php endif; ?>

@@ -72,6 +72,23 @@ final class FinancialRepository
         return (int) Database::connection()->lastInsertId();
     }
 
+    public function find(int $id): ?array
+    {
+        $stmt = Database::connection()->prepare('SELECT * FROM financial_entries WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
+    }
+
+    /** Perbaiki catatan yang salah ketik (jenis masuk/keluar tidak berubah). */
+    public function update(int $id, string $entryDate, string $description, int $amount): void
+    {
+        $stmt = Database::connection()->prepare(
+            'UPDATE financial_entries SET entry_date = :d, description = :desc, amount = :a WHERE id = :id'
+        );
+        $stmt->execute(['d' => $entryDate, 'desc' => $description, 'a' => $amount, 'id' => $id]);
+    }
+
     public function delete(int $id): void
     {
         $stmt = Database::connection()->prepare('DELETE FROM financial_entries WHERE id = :id');

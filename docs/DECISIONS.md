@@ -548,3 +548,20 @@ waktu dibuat).
   jadwal". Kondisi sistem menambah "Jam perangkat" (tepat / sedang dicocokkan
   dengan jam HP) dan, bila belum ada, peringatan "Kode pemulihan belum dibuat".
 
+## 37. Konsistensi kecil panel: sakelar, murottal, ubah catatan kas (DIKONFIRMASI)
+
+- Lanjutan tinjauan UX (#36), poin P3 yang disetujui pengguna:
+- **Sakelar geser di semua pilihan nyala/mati.** Tombol "Nyala | Mati" di
+  Suara & jeda iqomah dan Pengingat sebelum adzan diganti sakelar yang sama
+  dengan di Pengaturan. Kotak centang yang tidak dicentang tidak terkirim,
+  jadi bawaan "mati" saat kolomnya tidak ada di POST.
+- **Kartu murottal:** "Murottal menyala / Murottal berhenti", dengan keterangan
+  "Ketuk Putar untuk memulai" (sebelumnya "Mati · Dijeda").
+- **Catatan kas bisa diubah.** Ketuk catatan di tab Kas → formulir yang sama
+  (`financial_add.php?id=`) berisi nilai lama, "Simpan perubahan", dan "Hapus
+  catatan ini". Jenis masuk/keluar tidak bisa diubah (hapus lalu catat ulang).
+  Keterangan "Jenis · catatan" dipecah kembali ke pilihan jenis; yang tidak
+  cocok masuk "Lainnya". Hitungan "saldo menjadi" berangkat dari saldo tanpa
+  catatan lama. Mode hapus terpisah ("Hapus catatan yang salah") dihilangkan.
+- Tautan panduan pengguna di panel ditunda ke Tahap D bersama isinya.
+

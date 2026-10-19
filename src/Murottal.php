@@ -41,7 +41,7 @@ final class Murottal
             return 'Belum ada file murottal di perangkat';
         }
         if ((int) $settings['murottal_enabled'] !== 1) {
-            return 'Dijeda';
+            return 'Ketuk Putar untuk memulai';
         }
         if ((string) $settings['murottal_now_playing'] !== '') {
             return 'Sedang diputar: ' . $settings['murottal_now_playing'];
