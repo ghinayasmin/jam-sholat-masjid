@@ -9,6 +9,7 @@ use App\Auth\AuthMiddleware;
 use App\Auth\Csrf;
 use App\Config;
 use App\LocalTime;
+use App\Media\UploadedImage;
 use App\Repository\PublicationRepository;
 use App\View\Format;
 use App\View\Icon;
@@ -19,8 +20,7 @@ AuthMiddleware::requireLogin($auth);
 $repo = new PublicationRepository();
 $today = LocalTime::today();
 $publicationsPath = (string) Config::get('publications_path');
-$maxBytes = (int) Config::get('publication_max_bytes', 5 * 1024 * 1024);
-$allowedMime = (array) Config::get('publication_allowed_mime', ['image/jpeg', 'image/png']);
+$maxBytes = UploadedImage::maxBytes((int) Config::get('publication_max_bytes', 20 * 1024 * 1024));
 $maxMb = round($maxBytes / 1024 / 1024, 1);
 
 $values = ['caption' => '', 'starts_on' => $today, 'ends_on' => ''];
@@ -47,23 +47,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $safeName = '';
     if ($errors === [] && $hasFile) {
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = 'Foto gagal diunggah. Coba lagi, atau pilih foto yang lebih kecil dari ' . $maxMb . ' MB.';
-        } elseif ($file['size'] > $maxBytes) {
-            $errors[] = 'Ukuran foto melebihi ' . $maxMb . ' MB.';
+        [$stored, $uploadError] = UploadedImage::store($file, $publicationsPath, 'pub', $maxBytes);
+        if ($uploadError !== null) {
+            $errors[] = $uploadError;
         } else {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
-            if (!in_array($mime, $allowedMime, true)) {
-                $errors[] = 'Format foto tidak didukung. Gunakan JPG atau PNG.';
-            } else {
-                $safeName = 'pub_' . bin2hex(random_bytes(8)) . ($mime === 'image/png' ? '.png' : '.jpg');
-                if (!move_uploaded_file($file['tmp_name'], $publicationsPath . '/' . $safeName)) {
-                    $errors[] = 'Foto gagal disimpan di perangkat.';
-                    $safeName = '';
-                }
-            }
+            $safeName = (string) $stored;
         }
     }
 

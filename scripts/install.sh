@@ -157,6 +157,12 @@ for uuid in $(nmcli -t -f UUID,TYPE connection show | awk -F: '$2 == "802-11-wir
     nmcli connection modify "$uuid" ipv6.method disabled || true
 done
 
+# Batas unggahan foto (bawaan PHP 2 MB terlalu kecil untuk foto HP).
+for d in /etc/php/*/apache2/conf.d; do
+    cp "$INSTALL_DIR"/config/php-jamsholat.ini "$d"/90-jamsholat.ini
+done
+systemctl reload apache2 || true
+
 echo "=== [10/10] Memasang & mengaktifkan systemd services ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
 rm -rf /usr/share/icons/jamsholat-blank   # lokasi lama, tidak dipakai lagi

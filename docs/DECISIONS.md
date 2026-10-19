@@ -408,3 +408,19 @@ waktu dibuat).
   `mosque_settings.mosque_photo`. Foto lama dihapus saat diganti.
 - Foto dipotong (`object-fit: cover`) agar memenuhi layar, jadi foto mendatar
   paling cocok. Foto ikut masuk file cadangan dan dipulihkan saat restore.
+
+## 29. Foto unggahan diperkecil otomatis, batas unggahan 20 MB (KOREKSI)
+
+- **Masalah:** saat uji di Pi, foto masjid PNG 3,3 MB ditolak dengan pesan
+  "lebih kecil dari 5 MB". Penyebabnya batas bawaan PHP di Debian
+  (`upload_max_filesize = 2M`), yang lebih kecil dari batas aplikasi. Poster
+  dari HP juga terkena.
+- `config/php-jamsholat.ini` (20 MB per foto) dipasang ke
+  `/etc/php/*/apache2/conf.d/90-jamsholat.ini` oleh `install.sh` dan
+  `update.sh`. Batas aplikasi `publication_max_bytes` naik dari 5 ke 20 MB.
+- `src/Media/UploadedImage.php` menyimpan ulang setiap poster dan foto masjid
+  sebagai JPEG kualitas 85 dengan sisi terpanjang maks 1920 px, diputar sesuai
+  EXIF. Foto HP 12 MP terlalu berat untuk didekode Chromium di Pi 3. Contoh:
+  PNG 3,3 MB menjadi JPEG 476 KB. Bila GD tidak ada, file asli disimpan.
+- Pesan error menyebut batas yang benar-benar berlaku (yang lebih kecil antara
+  pengaturan PHP dan aplikasi).

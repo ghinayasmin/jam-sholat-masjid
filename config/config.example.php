@@ -23,8 +23,10 @@ return [
     // Direktori session PHP (REQ-F-071).
     'session_path' => dirname(__DIR__) . '/storage/sessions',
 
-    // Batas ukuran upload poster publikasi, dalam byte. Default 5 MB.
-    'publication_max_bytes' => 5 * 1024 * 1024,
+    // Batas ukuran upload poster & foto masjid, dalam byte. Foto disimpan ulang
+    // sebagai JPEG maks 1920 px (DECISIONS.md #29), jadi foto HP besar tetap aman.
+    // Harus ≤ upload_max_filesize di config/php-jamsholat.ini.
+    'publication_max_bytes' => 20 * 1024 * 1024,
 
     // Format gambar publikasi yang diterima.
     'publication_allowed_mime' => ['image/jpeg', 'image/png'],

@@ -8,6 +8,7 @@ use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
 use App\Auth\Csrf;
 use App\Config;
+use App\Media\UploadedImage;
 use App\Repository\SettingsRepository;
 use App\View\Format;
 use App\View\Icon;
@@ -17,7 +18,7 @@ AuthMiddleware::requireLogin($auth);
 
 $settingsRepo = new SettingsRepository();
 $publicationsPath = (string) Config::get('publications_path');
-$maxBytes = (int) Config::get('publication_max_bytes', 5 * 1024 * 1024);
+$maxBytes = UploadedImage::maxBytes((int) Config::get('publication_max_bytes', 20 * 1024 * 1024));
 $maxMb = round($maxBytes / 1024 / 1024, 1);
 
 /** Hapus file foto masjid lama (bila ada). */
@@ -49,24 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Nama masjid tidak boleh kosong.';
     } elseif ($file !== null && $file['error'] !== UPLOAD_ERR_NO_FILE) {
         // Foto masjid tampil sebagai slide layar penuh (DECISIONS.md #28).
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            $error = 'Foto gagal diunggah. Coba lagi, atau pilih foto yang lebih kecil dari ' . $maxMb . ' MB.';
-        } elseif ($file['size'] > $maxBytes) {
-            $error = 'Ukuran foto melebihi ' . $maxMb . ' MB.';
-        } else {
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $file['tmp_name']);
-            finfo_close($finfo);
-            if (!in_array($mime, ['image/jpeg', 'image/png'], true)) {
-                $error = 'Format foto tidak didukung. Gunakan JPG atau PNG.';
-            } else {
-                $newPhoto = 'masjid_' . bin2hex(random_bytes(8)) . ($mime === 'image/png' ? '.png' : '.jpg');
-                if (!move_uploaded_file($file['tmp_name'], $publicationsPath . '/' . $newPhoto)) {
-                    $error = 'Foto gagal disimpan di perangkat.';
-                    $newPhoto = null;
-                }
-            }
-        }
+        [$newPhoto, $error] = UploadedImage::store($file, $publicationsPath, 'masjid', $maxBytes);
     }
 
     if ($error !== null) {
@@ -121,7 +105,7 @@ require __DIR__ . '/_header.php';
                 <?= Icon::svg('upload') ?>
                 <b>Pilih foto masjid</b>
             <?php endif; ?>
-            <small>Foto mendatar (landscape) paling bagus · JPG/PNG, maks <?= $maxMb ?> MB</small>
+            <small>Foto mendatar (landscape) paling bagus · JPG/PNG, maks <?= $maxMb ?> MB · diperkecil otomatis</small>
             <input type="file" name="mosque_photo" accept="image/jpeg,image/png">
         </label>
         <p class="hint">Tampil layar penuh di layar jamaah, bergantian dengan poster pengumuman.</p>

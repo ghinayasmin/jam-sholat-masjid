@@ -38,6 +38,14 @@ rm -f "$INSTALL_DIR"/public/admin/iqomah.php   # diganti sound.php (DECISIONS.md
 # Foto kamera lama dibuat tanpa izin tulis grup; panel (www-data) perlu menimpanya saat menghapus.
 find "$INSTALL_DIR/storage/captures" -type f -name "*.jpg" -exec chmod 664 {} +
 
+# Batas unggahan foto: pasang pengaturan PHP dan naikkan batas lama 5 MB di config.php.
+for d in /etc/php/*/apache2/conf.d; do
+    cp "$INSTALL_DIR"/config/php-jamsholat.ini "$d"/90-jamsholat.ini
+done
+sed -i "s/'publication_max_bytes' => 5 \* 1024 \* 1024/'publication_max_bytes' => 20 * 1024 * 1024/" \
+    "$INSTALL_DIR"/config/config.php
+systemctl reload apache2
+
 echo "=== [2/3] Memperbarui unit systemd ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
 rm -rf /usr/share/icons/jamsholat-blank   # lokasi lama, tidak dipakai lagi
