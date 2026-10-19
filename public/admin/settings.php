@@ -50,6 +50,10 @@ foreach ($adjustNames as $key => $name) {
         $adjustParts[] = $name . ' ' . ($m > 0 ? '+' : '−') . abs($m);
     }
 }
+$allShift = (int) $s['location_offset_minutes'];
+if ($allShift !== 0) {
+    array_unshift($adjustParts, 'Semua ' . ($allShift > 0 ? '+' : '−') . abs($allShift));
+}
 $adjustSummary = $adjustParts === [] ? 'Tidak ada' : implode(', ', $adjustParts);
 $backups = (new BackupRepository())->list();
 $lastBackup = $backups !== [] ? Format::shortDate(substr($backups[0]['created_at'], 0, 10)) : 'Belum pernah';
@@ -65,7 +69,7 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-masjid">
     <div class="label" id="g-masjid">Masjid</div>
     <div class="card">
-        <a class="row" href="/admin/mosque_profile.php"><span></span><span class="k">Profil masjid<small><?= Format::e($s['mosque_name']) ?><?= $s['mosque_photo'] !== '' ? ' · ada foto' : '' ?></small></span><?= $chev ?></a>
+        <a class="row" href="/admin/mosque_profile.php"><span></span><span class="k">Profil &amp; foto masjid<small><?= Format::e($s['mosque_name']) ?><?= $s['mosque_photo'] !== '' ? ' · ada foto' : ' · belum ada foto' ?></small></span><?= $chev ?></a>
     </div>
 </section>
 
@@ -73,10 +77,24 @@ require __DIR__ . '/_header.php';
     <div class="label" id="g-waktu">Waktu sholat</div>
     <div class="card">
         <a class="row" href="/admin/settings_location.php"><span></span><span class="k">Lokasi</span><span class="v"><?= Format::e($s['location_name'] !== '' ? $s['location_name'] : 'Atur lokasi') ?> <?= $chev ?></span></a>
-        <a class="row" href="/admin/sound.php"><span></span><span class="k">Suara adzan &amp; iqomah</span><span class="v">Adzan <?= (int) $s['adzan_sound_enabled'] === 1 ? 'nyala' : 'mati' ?> · Iqomah <?= (int) $s['iqomah_sound_enabled'] === 1 ? 'nyala, Subuh ' . (int) $s['iqomah_fajr_minutes'] . ' mnt' : 'mati' ?> <?= $chev ?></span></a>
-        <a class="row" href="/admin/schedule_adjust.php"><span></span><span class="k">Koreksi jadwal per sholat</span><span class="v"><?= Format::e($adjustSummary) ?> <?= $chev ?></span></a>
+        <a class="row" href="/admin/schedule_adjust.php"><span></span><span class="k">Koreksi jadwal</span><span class="v"><?= Format::e($adjustSummary) ?> <?= $chev ?></span></a>
         <a class="row" href="/admin/hijri.php"><span></span><span class="k">Tanggal Hijriah</span><span class="v"><?= Format::e($hijriToday) ?> <?= $chev ?></span></a>
-        <a class="row" href="/admin/reminder.php"><span></span><span class="k">Pengingat adzan</span><span class="v"><?= (int) $s['reminder_enabled'] === 1 ? (int) $s['reminder_minutes'] . ' menit' : 'Mati' ?> <?= $chev ?></span></a>
+    </div>
+</section>
+
+<section class="group" aria-labelledby="g-adzan">
+    <div class="label" id="g-adzan">Adzan &amp; iqomah</div>
+    <div class="card">
+        <a class="row" href="/admin/sound.php"><span></span><span class="k">Suara &amp; jeda iqomah<small>Adzan <?= (int) $s['adzan_sound_enabled'] === 1 ? 'nyala' : 'mati' ?> · iqomah <?= (int) $s['iqomah_sound_enabled'] === 1 ? 'nyala' : 'mati' ?></small></span><span class="v">Subuh <?= (int) $s['iqomah_fajr_minutes'] ?> mnt <?= $chev ?></span></a>
+        <a class="row" href="/admin/reminder.php"><span></span><span class="k">Pengingat sebelum adzan</span><span class="v"><?= (int) $s['reminder_enabled'] === 1 ? (int) $s['reminder_minutes'] . ' menit' : 'Mati' ?> <?= $chev ?></span></a>
+        <form method="post" class="row">
+            <?= Csrf::field() ?>
+            <input type="hidden" name="action" value="iqomah_countdown_toggle">
+            <span></span>
+            <label class="k" for="iqomah_countdown_enabled">Hitung mundur iqomah<small>Layar penuh setelah adzan sampai iqomah</small></label>
+            <span class="switch"><input type="checkbox" id="iqomah_countdown_enabled" name="iqomah_countdown_enabled" data-autosubmit<?= (int) $s['iqomah_countdown_enabled'] === 1 ? ' checked' : '' ?>><span></span></span>
+            <noscript><button type="submit" class="btn small">Simpan</button></noscript>
+        </form>
     </div>
 </section>
 
@@ -89,14 +107,6 @@ require __DIR__ . '/_header.php';
             <span></span>
             <label class="k" for="show_finance_on_display">Tampilkan saldo kas<small>Sebagai slide, bergantian dengan poster</small></label>
             <span class="switch"><input type="checkbox" id="show_finance_on_display" name="show_finance_on_display" data-autosubmit<?= (int) $s['show_finance_on_display'] === 1 ? ' checked' : '' ?>><span></span></span>
-            <noscript><button type="submit" class="btn small">Simpan</button></noscript>
-        </form>
-        <form method="post" class="row">
-            <?= Csrf::field() ?>
-            <input type="hidden" name="action" value="iqomah_countdown_toggle">
-            <span></span>
-            <label class="k" for="iqomah_countdown_enabled">Hitung mundur iqomah<small>Layar penuh setelah adzan sampai iqomah</small></label>
-            <span class="switch"><input type="checkbox" id="iqomah_countdown_enabled" name="iqomah_countdown_enabled" data-autosubmit<?= (int) $s['iqomah_countdown_enabled'] === 1 ? ' checked' : '' ?>><span></span></span>
             <noscript><button type="submit" class="btn small">Simpan</button></noscript>
         </form>
         <a class="row" href="/admin/slides.php"><span></span><span class="k">Pergantian slide<small>Poster, saldo kas, foto masjid</small></span><span class="v">Tampil <?= (int) $s['poster_show_seconds'] ?> dtk · jeda <?= (int) $s['poster_gap_seconds'] ?> dtk <?= $chev ?></span></a>

@@ -64,11 +64,12 @@ final class ScheduleEngine
     public const ADJUSTABLE = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
     /**
-     * Hasil hitungan sebelum koreksi per sholat, untuk halaman koreksi jadwal.
+     * Hasil hitungan sebelum koreksi per sholat. Tanpa $withGlobalOffset: murni hitungan,
+     * sebelum koreksi "semua sholat" juga (untuk halaman koreksi jadwal).
      *
      * @return array{fajr:string,sunrise:string,dhuhr:string,asr:string,maghrib:string,isha:string}
      */
-    public function calculatedFor(string $dateYmd): array
+    public function calculatedFor(string $dateYmd, bool $withGlobalOffset = true): array
     {
         $settings = $this->settingsRepo->get();
         [$y, $m, $d] = array_map('intval', explode('-', $dateYmd));
@@ -80,7 +81,7 @@ final class ScheduleEngine
             (float) $settings['longitude'],
             (float) $settings['timezone_offset_hours'],
             (string) $settings['madzhab'],
-            (int) $settings['location_offset_minutes']
+            $withGlobalOffset ? (int) $settings['location_offset_minutes'] : 0
         );
     }
 

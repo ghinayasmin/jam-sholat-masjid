@@ -10,7 +10,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-001 | Prayer Time Calculation | ✅ | `PrayerTimeCalculator.php` | `test_prayer_time_calculator.php` — divalidasi vs AlAdhan API |
 | REQ-F-002 | Madzhab Selection | ✅ | `PrayerTimeCalculator.php` (shadow factor), `settings_location.php` | ✅ Asr Hanafi > Syafii terverifikasi |
 | REQ-F-003 | Location Offset | ✅ | `PrayerTimeCalculator.php`, `settings_location.php` | ✅ offset +5 menit terverifikasi di 6 waktu |
-| REQ-F-004 | Online Schedule Sync | ⚠️ | `ScheduleSync.php` (AlAdhan API) | Kelas lengkap tapi **belum dipanggil** dari mana pun (ditemukan 14 Okt 2026), jadi jadwal selalu dari kalkulasi lokal. Tugas: panggil dari `compute_schedule_cli.php` dan buat test case |
+| REQ-F-004 | Online Schedule Sync | ⚠️ | `ScheduleSync.php` (AlAdhan API) | Kelas ada tapi tidak dipanggil; jadwal selalu dari kalkulasi lokal yang sudah cocok dengan Kemenag (DECISIONS #19). Sakelarnya dihapus dari panel agar tidak menyesatkan (DECISIONS #36) |
 | REQ-F-005 | Hijri Calendar Display | ✅ | `HijriConverter.php` | ✅ exact match vs referensi AlAdhan |
 | REQ-F-006 | Prayer Calculation Method | ✅ | Sudut Kemenag (Fajr 20°/Isha 18°), 100% lokal | ✅ |
 | REQ-F-007 | Hijri Date Rollover & Adjustment | ✅ | `display.js` (`hijriAfterMaghrib`), `ScheduleEngine::hijriFor()`, `admin/hijri.php` | ✅ **Diuji di Pi 3** (TC-JDW-005): tanggal berganti saat Maghrib, koreksi ±1 hari (DECISIONS #20) |

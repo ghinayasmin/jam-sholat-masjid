@@ -62,7 +62,14 @@ $murottalOn = (int) $settings['murottal_enabled'] === 1;
 $murottalReady = \App\Murottal::tracks() !== [];
 $murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes, $isFriday);
 
-$syncOk = $settings['last_sync_status'] === null || stripos((string) $settings['last_sync_status'], 'gagal') === false;
+// Kondisi sistem (DECISIONS.md #36): jam perangkat dan kode pemulihan akun ini.
+$clockOk = \App\SystemClock::isTrusted();
+$me = (new \App\Repository\AdminUserRepository())->findById((int) ($_SESSION['admin_id'] ?? 0));
+$hasRecovery = !empty($me['recovery_created_at']);
+$shifts = (int) $settings['location_offset_minutes'] !== 0;
+foreach (ScheduleEngine::ADJUSTABLE as $key) {
+    $shifts = $shifts || (int) $settings["adjust_{$key}_minutes"] !== 0;
+}
 
 $pageTitle = "Assalamu'alaikum";
 $pageSubtitle = $settings['mosque_name'] . ' · ' . Format::longDate($today);
@@ -116,7 +123,7 @@ require __DIR__ . '/_header.php';
     <div class="tiles">
         <a class="tile" href="/admin/publications_add.php"><?= Icon::svg('announce') ?><div><b>Pasang pengumuman</b><small><?= $showingCount ?> sedang tampil</small></div></a>
         <a class="tile" href="/admin/financial_add.php?type=masuk"><?= Icon::svg('cash') ?><div><b>Catat kas</b><small>Saldo <?= Format::e(Format::rupiahShort($balance)) ?></small></div></a>
-        <a class="tile" href="/admin/reminder.php"><?= Icon::svg('bell') ?><div><b>Pengingat adzan</b><small><?= (int) $settings['reminder_enabled'] === 1 ? (int) $settings['reminder_minutes'] . ' menit sebelum' : 'Dimatikan' ?></small></div></a>
+        <a class="tile" href="/admin/schedule_adjust.php"><?= Icon::svg('bell') ?><div><b>Koreksi jadwal</b><small><?= $shifts ? 'Ada koreksi menit' : 'Sesuai hitungan' ?></small></div></a>
         <a class="tile" href="/admin/camera.php?date=<?= $today ?>"><?= Icon::svg('camera') ?><div><b>Rekaman kamera</b><small><?= $motionToday ?> gerakan hari ini</small></div></a>
     </div>
 </section>
@@ -125,7 +132,11 @@ require __DIR__ . '/_header.php';
     <div class="label" id="sys-label">Kondisi sistem</div>
     <div class="card">
         <a class="row" href="/display.php" target="_blank" rel="noopener"><span class="dot"></span><span class="k">Layar jamaah<small>Ketuk untuk melihat tampilannya</small></span><span class="v ok">Buka</span></a>
-        <div class="row"><span class="dot<?= $syncOk ? '' : ' warn' ?>"></span><span class="k">Jadwal sholat<small><?= $schedule['source'] === 'online' ? 'Dicocokkan dengan jadwal online' : 'Dihitung di perangkat (offline)' ?></small></span><span class="v<?= $syncOk ? ' ok' : '' ?>"><?= $syncOk ? 'Normal' : 'Cek' ?></span></div>
+        <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
+        <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
+        <?php if (!$hasRecovery): ?>
+            <a class="row" href="/admin/account.php#kode-pemulihan"><span class="dot warn"></span><span class="k">Kode pemulihan<small>Belum dibuat. Perlu bila lupa kata sandi</small></span><span class="v">Buat</span></a>
+        <?php endif; ?>
     </div>
 </section>
 

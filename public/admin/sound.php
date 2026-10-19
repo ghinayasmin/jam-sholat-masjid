@@ -58,7 +58,7 @@ foreach ($prayers as $key => $name) {
 $adzan = $isPost ? ($_POST['adzan_sound_enabled'] ?? '0') === '1' : (int) $saved['adzan_sound_enabled'] === 1;
 $iqomah = $isPost ? ($_POST['iqomah_sound_enabled'] ?? '0') === '1' : (int) $saved['iqomah_sound_enabled'] === 1;
 
-$pageTitle = 'Suara adzan & iqomah';
+$pageTitle = 'Suara & jeda iqomah';
 $backHref = '/admin/settings.php';
 $backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';

@@ -530,3 +530,21 @@ waktu dibuat).
   Sekarang jadwal dibaca ulang tiap menit dari database; PHP hanya dijalankan
   bila jadwal hari ini belum ada.
 
+## 36. Penataan ulang panel setelah tinjauan UX (KOREKSI)
+
+- **Tinjauan alur 19 Okt 2026** (14 halaman di lebar HP + detector desain, 0
+  temuan teknis). Perubahan yang disetujui pengguna:
+- **Sakelar "Cocokkan dengan jadwal online" dihapus** dari Lokasi. Sakelar itu
+  menyala tetapi `ScheduleSync` tidak pernah dipanggil, sehingga menyesatkan.
+  Kolom `online_sync_enabled` tetap ada di database.
+- **Koreksi menit disatukan.** "Koreksi menit" semua sholat pindah dari Lokasi
+  ke baris "Semua sholat" di Koreksi jadwal; hasilnya dijumlahkan dengan
+  koreksi per sholat dan pratinjau jamnya ikut keduanya. Batas −30..+30.
+- **Pengaturan dikelompokkan ulang:** Masjid (Profil & foto) · Waktu sholat
+  (Lokasi, Koreksi jadwal, Tanggal Hijriah) · Adzan & iqomah (Suara & jeda
+  iqomah, Pengingat sebelum adzan, Hitung mundur iqomah) · Layar jamaah (Saldo
+  kas, Pergantian slide) · Sistem.
+- **Beranda:** pintasan "Pengingat adzan" (jarang diubah) diganti "Koreksi
+  jadwal". Kondisi sistem menambah "Jam perangkat" (tepat / sedang dicocokkan
+  dengan jam HP) dan, bila belum ada, peringatan "Kode pemulihan belum dibuat".
+

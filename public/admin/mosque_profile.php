@@ -77,7 +77,7 @@ $photoUrl = $settings['mosque_photo'] !== ''
     ? '/uploads/publications/' . rawurlencode(basename($settings['mosque_photo']))
     : null;
 
-$pageTitle = 'Profil masjid';
+$pageTitle = 'Profil & foto masjid';
 $backHref = '/admin/settings.php';
 $backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';

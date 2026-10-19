@@ -58,7 +58,7 @@ $v = [
     'message' => $_POST['reminder_message'] ?? $s['reminder_message'],
 ];
 
-$pageTitle = 'Pengingat adzan';
+$pageTitle = 'Pengingat sebelum adzan';
 $backHref = '/admin/settings.php';
 $backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';
