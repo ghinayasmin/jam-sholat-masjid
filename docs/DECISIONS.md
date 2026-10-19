@@ -167,8 +167,10 @@ tanpa rincian transaksi.
 **Pembaruan 19 Okt 2026 (revisi dosen):** saat menyala, kas tidak lagi tampil
 sebagai baris kecil di pojok kanan bawah, tetapi sebagai slide seukuran poster
 (lihat #27). API kini juga memuat total pemasukan dan pengeluaran bulan
-berjalan serta tanggal transaksi terakhir. Rincian transaksi tetap internal dan
-sakelar bawaannya tetap mati.
+berjalan serta tanggal transaksi terakhir. Rincian transaksi tetap internal.
+Untuk **instalasi baru, sakelar bawaannya kini nyala** (`schema.sql` DEFAULT 1)
+sesuai permintaan dosen agar kas tampil. Database lama tidak diubah: masjid yang
+sudah memasang tetap memakai pilihannya sendiri.
 
 ## 15. Desain ulang layar jamaah & pengingat sebelum adzan (DIKONFIRMASI)
 

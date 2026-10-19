@@ -16,7 +16,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-007 | Hijri Date Rollover & Adjustment | ✅ | `display.js` (`hijriAfterMaghrib`), `ScheduleEngine::hijriFor()`, `admin/hijri.php` | ✅ **Diuji di Pi 3** (TC-JDW-005): tanggal berganti saat Maghrib, koreksi ±1 hari (DECISIONS #20) |
 | REQ-F-010 | Fullscreen Display | ✅ | `display.php` + kiosk service (cage) | ✅ **Diuji di Pi 3 (12 Okt 2026):** tampil fullscreen di TV lewat HDMI, tanpa bingkai browser, ter-update otomatis setelah `update.sh` |
 | REQ-F-011 | Publication Slideshow | ✅ | `display.js`, `api/publications.php`, `admin/slides.php` | ✅ upload→tampil di API teruji end-to-end; jeda & lama tampil diatur takmir (DECISIONS.md #27), foto masjid ikut rotasi (#28) |
-| REQ-F-012 | Financial Report Display | ⚠️ | `display.js`, `api/financial.php`, sakelar `show_finance_on_display` | Tampil sebagai slide seukuran poster (saldo + total bulan ini), tapi **bawaan mati** atas permintaan pengguna (data kas internal). Lihat DECISIONS.md #14, #27 |
+| REQ-F-012 | Financial Report Display | ✅ | `display.js`, `api/financial.php`, sakelar `show_finance_on_display` | Tampil sebagai slide seukuran poster (saldo + total bulan ini), bawaan nyala untuk instalasi baru; takmir bisa menyembunyikannya. Lihat DECISIONS.md #14, #27 |
 | REQ-F-013 | Sunnah Fasting Info | ✅ | `ScheduleEngine::getFastingInfo()` | ✅ Ayyamul Bidh (13/14/15) & Senin-Kamis teruji |
 | REQ-F-014 | Pre-Adzan Reminder | ✅ | `display.js` (`computeView`), `admin/reminder.php` | ✅ `test_display_logic.js` (TC-DISP-003): 10 menit, Jumat 30 menit |
 | REQ-F-015 | Landscape Poster Display | ✅ | `display.js` (`renderPoster`, `WIDE_POSTER_RATIO`) | ✅ **Diuji di Pi 3** (TC-DISP-004), DECISIONS #21 |
@@ -66,7 +66,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 ## Ringkasan
 
-- **36 Functional Requirements (SRS v0.2)**: 33 ✅, 3 ⚠️. REQ-F-004 sinkronisasi online belum dipanggil, REQ-F-012 kas bawaan tidak tampil atas permintaan pengguna, REQ-F-033 deviasi arsitektur terdokumentasi. REQ-F-025/031 (iqomah) dihapus dari SRS.
+- **36 Functional Requirements (SRS v0.2)**: 34 ✅, 2 ⚠️. REQ-F-004 sinkronisasi online belum dipanggil, REQ-F-033 deviasi arsitektur terdokumentasi. REQ-F-025/031 (iqomah) dihapus dari SRS.
 - **13/13 Non-Functional Requirements**: diimplementasikan. REQ-NF-100 terverifikasi di Raspberry Pi 3: 469 MB dari batas 700 MB.
 - **Tidak ada placeholder/dummy implementation** — setiap fitur yang diberi status ✅ punya kode kerja nyata dan sudah lolos test otomatis (58 assertion PHP+Python total, lihat `tests/`).
 - **Uji di perangkat asli (12 Okt 2026)**: Raspberry Pi 3 Model B v1.2, Raspberry Pi OS Lite 13 (Trixie) 32-bit, TV lewat HDMI (layar + speaker), Raspberry Pi Camera V2 NoIR (CSI). Login admin & 5 tab, ubah jam, speaker HDMI, adzan/murottal, kamera, dan RAM sudah diuji langsung. Belum diuji di perangkat: kotak masjid tanpa internet (sinkron jadwal offline) dan pemakaian berhari-hari.

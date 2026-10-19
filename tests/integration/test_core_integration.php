@@ -119,10 +119,11 @@ check('Restore: file publikasi tetap ada', is_file($tmpDir . '/publications/p1.j
 $s = $settingsRepo->get();
 check('Settings: pengingat bawaan nyala 10 menit, Jumat 30', (int) $s['reminder_enabled'] === 1
     && (int) $s['reminder_minutes'] === 10 && (int) $s['reminder_friday_minutes'] === 30);
-check('Settings: kas bawaan TIDAK tampil di layar jamaah', (int) $s['show_finance_on_display'] === 0);
-$settingsRepo->update(['reminder_minutes' => 15, 'show_finance_on_display' => 1]);
+check('Settings: kas bawaan tampil di layar jamaah (instalasi baru)', (int) $s['show_finance_on_display'] === 1);
+check('Settings: slide bawaan tampil 15 dtk, jeda 15 dtk', (int) $s['poster_show_seconds'] === 15 && (int) $s['poster_gap_seconds'] === 15);
+$settingsRepo->update(['reminder_minutes' => 15, 'show_finance_on_display' => 0]);
 $s = $settingsRepo->get();
-check('Settings: pengingat & kas bisa diubah', (int) $s['reminder_minutes'] === 15 && (int) $s['show_finance_on_display'] === 1);
+check('Settings: pengingat & kas bisa diubah', (int) $s['reminder_minutes'] === 15 && (int) $s['show_finance_on_display'] === 0);
 
 // --- Puasa sunnah: hari terlarang & Ramadhan tidak ditandai ---
 $hijriConv = new App\Schedule\HijriConverter();
