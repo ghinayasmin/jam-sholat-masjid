@@ -67,6 +67,23 @@ $Db = Join-Path $Data 'storage\jamsholat.db'
 & $Php (Join-Path $Root 'app\scripts\init_db_cli.php') $Db
 if ($LASTEXITCODE -ne 0) { throw 'Database gagal dibuat.' }
 
+# --- Port ---------------------------------------------------------------------
+# Port 80 bisa sudah dipakai Windows (IIS / http.sys, PID 4) atau program lain. Pakai
+# 80 bila kosong, selain itu 8080 dst. Port tersimpan di port.txt untuk kiosk & pintasan.
+if (Get-Service $Service -ErrorAction SilentlyContinue) { Stop-Service $Service -Force -ErrorAction SilentlyContinue }
+function Test-PortFree([int]$p) {
+    -not (Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue)
+}
+$Port = (@(80) + (8080..8099) | Where-Object { Test-PortFree $_ } | Select-Object -First 1)
+if (-not $Port) { throw 'Tidak ada port kosong (80, 8080-8099).' }
+if ($Port -ne 80) {
+    foreach ($c in (Get-NetTCPConnection -LocalPort 80 -State Listen -ErrorAction SilentlyContinue)) {
+        Write-Warning "Port 80 dipakai PID $($c.OwningProcess) $((Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue).ProcessName); memakai port $Port."
+    }
+}
+Set-Content -Encoding ASCII (Join-Path $Data 'port.txt') $Port
+$Base = if ($Port -eq 80) { 'http://localhost' } else { "http://localhost:$Port" }
+
 # --- Apache -------------------------------------------------------------------
 # Layanan Windows tidak mencari DLL di folder PHP (PATH layanan baru berubah setelah
 # restart), jadi DLL pendukung ekstensi (libsqlite3, libcrypto, ...) dimuat eksplisit.
@@ -79,8 +96,8 @@ $allow = 'Require ip 127.0.0.1 ::1 192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 fe80:
 # Dibuat oleh installer Windows Jam Sholat Masjid (packaging/windows/setup.ps1).
 Define SRVROOT "$R/apache"
 ServerRoot "`${SRVROOT}"
-Listen 80
-ServerName localhost
+Listen $Port
+ServerName localhost:$Port
 LoadModule access_compat_module modules/mod_access_compat.so
 LoadModule alias_module modules/mod_alias.so
 LoadModule authz_core_module modules/mod_authz_core.so
@@ -122,13 +139,6 @@ Alias /uploads/publications "$D/uploads/publications"
 </Directory>
 "@ | Set-Content -Encoding ASCII (Join-Path $Root 'apache\conf\httpd.conf')
 
-# Port 80 dipakai program lain (IIS, http.sys, Skype lama)? Catat supaya mudah dicari.
-$busy = Get-NetTCPConnection -LocalPort 80 -State Listen -ErrorAction SilentlyContinue
-foreach ($c in $busy) {
-    $proc = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
-    Write-Warning "Port 80 sudah dipakai: PID $($c.OwningProcess) $($proc.ProcessName) ($($c.LocalAddress))"
-}
-
 $Httpd = Join-Path $Root 'apache\bin\httpd.exe'
 & $Httpd -t
 if ($LASTEXITCODE -ne 0) { throw 'Konfigurasi Apache tidak valid.' }
@@ -143,11 +153,15 @@ if ((Get-Service $Service).Status -ne 'Running') {
 
 # HP pengurus membuka panel lewat WiFi: izinkan port 80 (Apache tetap membatasi ke LAN).
 & netsh advfirewall firewall delete rule name="Jam Sholat Masjid (HTTP)" | Out-Null
-& netsh advfirewall firewall add rule name="Jam Sholat Masjid (HTTP)" dir=in action=allow protocol=TCP localport=80 | Out-Null
+& netsh advfirewall firewall add rule name="Jam Sholat Masjid (HTTP)" dir=in action=allow protocol=TCP localport=$Port | Out-Null
+
+# Pintasan Start Menu "Panel Takmir" dan "Layar Jamaah (browser)" mengikuti port yang dipakai.
+"[InternetShortcut]`r`nURL=$Base/admin/" | Set-Content -Encoding ASCII (Join-Path $Root 'panel.url')
+"[InternetShortcut]`r`nURL=$Base/display.php" | Set-Content -Encoding ASCII (Join-Path $Root 'display.url')
 
 # Hitung jadwal hari ini & jalankan migrasi database sekarang.
 try {
-    Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost/api/schedule.php' -TimeoutSec 30 | Out-Null
+    Invoke-WebRequest -UseBasicParsing -Uri "$Base/api/schedule.php" -TimeoutSec 30 | Out-Null
 } catch {
     Write-Warning "API belum merespons: $($_.Exception.Message). Cek $D/logs/apache-error.log"
 }

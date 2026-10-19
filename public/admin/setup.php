@@ -80,7 +80,7 @@ unset($_SESSION['setup_code']); // kode hanya ditampilkan sekali
     <div style="display:grid;gap:20px;width:100%;max-width:380px">
         <div class="brand">
             <h1>Belum ada akun takmir</h1>
-            <p>Akun pertama dibuat dari komputer masjid itu sendiri: buka <b>http://localhost/admin/</b> di komputer tersebut.</p>
+            <p>Akun pertama dibuat dari komputer masjid itu sendiri: buka <b>http://localhost<?= in_array((string) ($_SERVER['SERVER_PORT'] ?? '80'), ['80', ''], true) ? '' : ':' . (int) $_SERVER['SERVER_PORT'] ?>/admin/</b> di komputer tersebut.</p>
         </div>
     </div>
 <?php else: ?>

@@ -22,7 +22,18 @@ APP = Path(__file__).resolve().parents[2]          # ...\JamSholat\app
 ROOT = APP.parent                                    # ...\JamSholat
 DATA = Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "JamSholat"
 LOGS = DATA / "logs"
-URL = "http://localhost/display.php"
+
+
+def display_url() -> str:
+    """Port dipilih installer (80, atau 8080 dst. bila 80 terpakai): lihat setup.ps1."""
+    try:
+        port = int((DATA / "port.txt").read_text().strip())
+    except (OSError, ValueError):
+        port = 80
+    return "http://localhost/display.php" if port == 80 else f"http://localhost:{port}/display.php"
+
+
+URL = display_url()
 EDGE_PATHS = [
     Path(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)")) / "Microsoft/Edge/Application/msedge.exe",
     Path(os.environ.get("PROGRAMFILES", r"C:\Program Files")) / "Microsoft/Edge/Application/msedge.exe",

@@ -19,6 +19,11 @@ $Data = "$env:ProgramData\JamSholat"
 $p = Start-Process -FilePath $Installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$env:TEMP\jamsholat-setup.log" -Wait -PassThru
 if ($p.ExitCode -eq 0) { Pass 'installer selesai tanpa error' } else { Fail "installer exit $($p.ExitCode)"; Get-Content "$env:TEMP\jamsholat-setup.log" -Tail 40 }
 
+$Port = (Get-Content "$Data\port.txt" -ErrorAction SilentlyContinue | Select-Object -First 1)
+if (-not $Port) { $Port = 80 }
+$B = if ($Port -eq '80') { 'http://localhost' } else { "http://localhost:$Port" }
+Write-Host "  · Apache memakai port $Port"
+
 if ((Get-Service JamSholatApache -ErrorAction SilentlyContinue).Status -eq 'Running') { Pass 'layanan Apache berjalan' } else {
     Fail 'layanan Apache tidak berjalan'
     Get-Content "$Data\logs\setup.log" -Tail 40 -ErrorAction SilentlyContinue
@@ -29,35 +34,35 @@ if ((Get-Service JamSholatApache -ErrorAction SilentlyContinue).Status -eq 'Runn
 }
 
 try {
-    $api = Invoke-RestMethod -Uri 'http://localhost/api/schedule.php' -TimeoutSec 30
+    $api = Invoke-RestMethod -Uri "$B/api/schedule.php" -TimeoutSec 30
     if ($api.success) { Pass "API jadwal: Subuh $($api.fajr) · Maghrib $($api.maghrib)" } else { Fail 'API jadwal success=false' }
 } catch { Fail "API jadwal: $($_.Exception.Message)"; Get-Content "$Data\logs\apache-error.log" -Tail 20 -ErrorAction SilentlyContinue; Get-Content "$Data\logs\php-error.log" -Tail 20 -ErrorAction SilentlyContinue }
 
-$r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost/display.php'
+$r = Invoke-WebRequest -UseBasicParsing -Uri "$B/display.php"
 if ($r.StatusCode -eq 200) { Pass 'layar jamaah HTTP 200' } else { Fail "layar jamaah HTTP $($r.StatusCode)" }
 
 # Akun pertama lewat halaman setup (dari localhost).
 $s = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-$page = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri 'http://localhost/admin/'
+$page = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/"
 if ($page.BaseResponse.ResponseUri -match 'setup\.php' -or $page.Content -match 'Buat akun takmir') { Pass 'panel mengarah ke pembuatan akun pertama' } else { Fail 'panel tidak ke setup' }
 $token = [regex]::Match($page.Content, 'name="csrf_token" value="([^"]+)"').Groups[1].Value
 $form = @{ csrf_token = $token; username = 'takmir'; password = 'rahasia123'; confirm_password = 'rahasia123' }
-$done = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri 'http://localhost/admin/setup.php' -Method Post -Body $form
+$done = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/setup.php" -Method Post -Body $form
 if ($done.Content -match 'recovery-code') { Pass 'akun takmir dibuat + kode pemulihan tampil' } else { Fail 'setup akun gagal' }
-$dash = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri 'http://localhost/admin/dashboard.php'
+$dash = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/dashboard.php"
 if ($dash.Content -match "Assalamu") { Pass 'panel takmir terbuka setelah login' } else { Fail 'panel tidak terbuka' }
 
 # Unggah foto (GD + batas 20 MB) lewat profil masjid.
 Add-Type -AssemblyName System.Drawing
 $bmp = New-Object System.Drawing.Bitmap 2400, 1350
 $img = "$env:TEMP\masjid-test.jpg"; $bmp.Save($img, [System.Drawing.Imaging.ImageFormat]::Jpeg); $bmp.Dispose()
-$prof = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri 'http://localhost/admin/mosque_profile.php'
+$prof = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/mosque_profile.php"
 $token = [regex]::Match($prof.Content, 'name="csrf_token" value="([^"]+)"').Groups[1].Value
-$res = & curl.exe -s -o NUL -w '%{http_code}' -b "jamsholat_admin=$($s.Cookies.GetCookies('http://localhost')['jamsholat_admin'].Value)" `
-    -F "csrf_token=$token" -F 'mosque_name=Masjid Uji' -F 'mosque_address=' -F "mosque_photo=@$img;type=image/jpeg" http://localhost/admin/mosque_profile.php
+$res = & curl.exe -s -o NUL -w '%{http_code}' -b "jamsholat_admin=$($s.Cookies.GetCookies($B)['jamsholat_admin'].Value)" `
+    -F "csrf_token=$token" -F 'mosque_name=Masjid Uji' -F 'mosque_address=' -F "mosque_photo=@$img;type=image/jpeg" "$B/admin/mosque_profile.php"
 $photo = Get-ChildItem "$Data\uploads\publications" -Filter 'masjid_*.jpg' -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($res -eq '302' -and $photo) { Pass "unggah foto masjid tersimpan ($([math]::Round($photo.Length / 1KB)) KB)" } else { Fail "unggah foto (HTTP $res)" }
-$u = Invoke-WebRequest -UseBasicParsing -Uri "http://localhost/uploads/publications/$($photo.Name)"
+$u = Invoke-WebRequest -UseBasicParsing -Uri "$B/uploads/publications/$($photo.Name)"
 if ($u.StatusCode -eq 200) { Pass 'foto bisa dibuka layar jamaah (/uploads)' } else { Fail 'alias /uploads' }
 
 # Perintah teknisi & audio.
