@@ -241,8 +241,8 @@
             $('kasOutLabel').textContent = 'Pengeluaran ' + data.bulan;
             $('kasIn').textContent = '+ Rp ' + formatRupiah(data.masuk_bulan_ini);
             $('kasOut').textContent = '− Rp ' + formatRupiah(data.keluar_bulan_ini);
-            // Dua kolom berdampingan: angka ≥ Rp 100 juta diperkecil agar tidak bertabrakan.
-            const longRow = $('kasIn').textContent.length > 15 || $('kasOut').textContent.length > 15;
+            // Angka ≥ Rp 1 miliar diperkecil agar tidak menabrak labelnya.
+            const longRow = $('kasIn').textContent.length > 17 || $('kasOut').textContent.length > 17;
             $('kasIn').classList.toggle('long', longRow);
             $('kasOut').classList.toggle('long', longRow);
             let updated = 'Belum ada transaksi';

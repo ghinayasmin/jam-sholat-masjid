@@ -394,10 +394,12 @@ waktu dibuat).
   detik, tampil 5–120 detik. Slide tidak muncul saat pengingat dan layar adzan.
 - Slide kas menempati panel kiri seperti poster portrait, jadi jadwal sholat
   tetap terlihat. Angka ≥ Rp 100 juta diperkecil otomatis agar muat.
-- Gaya slide kas dipilih pengguna dari mockup (opsi K3): latar zamrud dengan
-  motif batik kawung (sama dengan latar layar jam), bingkai ganda kuningan, label "Baitul Maal بيت المال",
-  dan isi dikumpulkan di tengah kotak dengan rata tengah. Tanpa efek blur
-  karena Chromium di Pi 3 merender lewat CPU.
+- Gaya slide kas dipilih pengguna dari mockup (opsi G1, setelah motif kawung
+  dan bintang delapan terlihat kurang pas di monitor): gradasi zamrud diagonal
+  tanpa motif, bingkai kuningan tipis, label "Baitul Maal بيت المال", isi di
+  tengah kotak, tulisan besar dan tebal. Pemasukan dan pengeluaran bertumpuk
+  dua baris supaya angkanya bisa lebih besar. Tanpa efek blur karena Chromium
+  di Pi 3 merender lewat CPU.
 - Karena slide kini berganti tiap 30 detik, zona abaikan kamera (#25) wajib
   menutupi layar TV bila layar terlihat oleh kamera.
 
