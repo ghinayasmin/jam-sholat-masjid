@@ -501,3 +501,14 @@ waktu dibuat).
 - install.sh membuat akun pertama lewat PHP (prepared statement) dan langsung
   menampilkan kode pemulihan pertama.
 
+## 34. Menu Tentang aplikasi (DIKONFIRMASI)
+
+- **Revisi dosen 19 Okt 2026:** Pengaturan → Sistem → Tentang aplikasi
+  (`admin/about.php`): nama dan versi aplikasi, tim pengembang (Azhar Maulana,
+  Rahmanda Putri Setiawati, Ghina Yasmin Azizah, Muhammad Dhiwaul Akbar), dosen
+  pembimbing (Faizal Makhrus), Program Studi Ilmu Komputer UGM, serta sumber dan
+  lisensi (kriteria Kemenag, audio adzan/iqomah/murottal, huruf). Atribusi
+  murottal CC BY-SA 4.0 sekaligus terpenuhi di sini.
+- Hanya di panel takmir, tidak di layar jamaah, supaya layar tetap fokus pada
+  jadwal sholat.
+

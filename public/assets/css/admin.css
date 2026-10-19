@@ -308,3 +308,10 @@ button.row { width: 100%; background: none; border: 0; font: inherit; text-align
     user-select: all; word-break: break-all;
 }
 .recovery .hint { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* Tentang aplikasi */
+.about-hero { display: grid; gap: 4px; padding: 20px; background: var(--night); color: #ECE6D8; border-radius: var(--radius); }
+.about-name { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--brass); }
+.about-ver { font-size: 14px; color: #B7BFB9; }
+.about-hero p { margin: 8px 0 0; font-size: 14px; color: #C7CCC6; }
+.about-list .k small { white-space: normal; overflow: visible; text-overflow: clip; }
