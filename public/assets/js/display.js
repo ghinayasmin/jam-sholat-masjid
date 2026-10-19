@@ -9,6 +9,7 @@
     const WIDE_POSTER_RATIO = 1.3;           // lebar/tinggi ≥ ini = landscape → layar penuh
     const ADZAN_SCREEN_S = 180;              // layar adzan tampil 3 menit sejak waktu adzan
     const IQOMAH_NOW_S = 60;                 // "Luruskan dan rapatkan shaf" tampil 1 menit saat iqomah
+    const ADZAN_SCREEN_MAX_S = 600;          // batas atas bila rekaman adzan lebih panjang dari 3 menit
 
     const ADZAN_KEYS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
     const ROW_KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
@@ -32,8 +33,9 @@
      * Inti logika layar (tanpa DOM, diuji di tests/unit/test_display_logic.js).
      * now: Date lokal. today/tomorrow: jadwal dari /api/schedule.php. reminder: pengaturan pengingat.
      * iqomah: { countdown: bool, minutes: { fajr: 20, ... } } — hitung mundur iqomah (DECISIONS.md #31).
+     * adzanPlaying: waktu sholat yang rekaman adzannya masih diputar ('maghrib'), atau null (#32).
      */
-    function computeView(now, today, tomorrow, reminder, iqomah) {
+    function computeView(now, today, tomorrow, reminder, iqomah, adzanPlaying) {
         const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
         const isFriday = now.getDay() === 5;
 
@@ -50,7 +52,9 @@
         let iqomahView = null;
         for (const key of ADZAN_KEYS) {
             const at = toSeconds(today[key]);
-            if (sec >= at && sec < at + ADZAN_SCREEN_S) adzan = { key, time: today[key] };
+            // Layar adzan 3 menit, diperpanjang selama rekaman adzan masih berbunyi.
+            const screenEnd = at + (adzanPlaying === key ? ADZAN_SCREEN_MAX_S : ADZAN_SCREEN_S);
+            if (sec >= at && sec < screenEnd) adzan = { key, time: today[key] };
             // Hitung mundur iqomah setelah layar adzan. Jumat siang tidak: iqomah setelah khutbah.
             const minutes = iqomah && iqomah.countdown && iqomah.minutes ? Number(iqomah.minutes[key]) : 0;
             if (minutes > 0 && !(key === 'dhuhr' && isFriday)) {
@@ -164,6 +168,7 @@
         tomorrow: null,
         reminder: { enabled: false, minutes: 10, friday_minutes: 30, message: '' },
         iqomah: { countdown: false, minutes: {} },
+        adzanPlaying: null,      // dari /api/murottal.php: rekaman adzan yang sedang diputar
         showFinance: false,
         finance: null,           // data slide kas; null bila disembunyikan takmir
         mosquePhoto: null,       // URL foto masjid; null bila belum diunggah
@@ -237,6 +242,8 @@
         try {
             const data = await fetchJson('/api/murottal.php');
             const title = data.success ? data.now_playing : null;
+            const alarm = data.success && data.alarm_playing ? data.alarm_playing.split('|') : [];
+            state.adzanPlaying = alarm[0] === 'adzan' ? alarm[1] : null;
             $('infoMurottal').hidden = !title;
             if (title) $('murottalTitle').textContent = /^surah\b/i.test(title) ? title : 'Surah ' + title;
         } catch (e) {
@@ -293,7 +300,7 @@
         }
         if (!state.today) return;
 
-        const view = computeView(now, state.today, state.tomorrow, state.reminder, state.iqomah);
+        const view = computeView(now, state.today, state.tomorrow, state.reminder, state.iqomah, state.adzanPlaying);
         // Hari dalam kalender Hijriah dimulai saat Maghrib.
         const hijriAfterMaghrib = state.tomorrow && now.getHours() * 3600 + now.getMinutes() * 60 >= toSeconds(state.today.maghrib);
         $('hijriDate').textContent = hijriAfterMaghrib ? state.tomorrow.hijri_date : state.today.hijri_date;

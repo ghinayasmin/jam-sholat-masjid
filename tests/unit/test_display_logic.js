@@ -71,6 +71,12 @@ v = computeView(at('2026-10-02', '11:33:00'), tomorrow, null, reminder, iq);
 check('Jumat siang tanpa hitung mundur iqomah', v.mode === 'normal');
 v = computeView(at('2026-10-01', '17:34:00'), today, tomorrow, reminder, iq);
 check('layar adzan tetap didahulukan', v.mode === 'adzan');
+v = computeView(at('2026-10-01', '17:36:10'), today, tomorrow, reminder, iq, 'maghrib');
+check('rekaman adzan 3:23 masih berbunyi: layar adzan bertahan', v.mode === 'adzan');
+v = computeView(at('2026-10-01', '17:36:10'), today, tomorrow, reminder, iq, null);
+check('rekaman selesai: lanjut hitung mundur iqomah', v.mode === 'iqomah' && v.iqomah.remaining === 410);
+v = computeView(at('2026-10-01', '17:43:30'), today, tomorrow, reminder, iq, 'maghrib');
+check('sinyal macet: layar adzan paling lama 10 menit', v.mode !== 'adzan');
 
 console.log('computeView — setelah Isya & dini hari');
 v = computeView(at('2026-10-01', '21:00:00'), today, tomorrow, reminder);

@@ -466,3 +466,16 @@ waktu dibuat).
   bergantung pada sakelar suara iqomah: masjid yang iqomahnya dikumandangkan
   muadzin tetap bisa memakai hitung mundurnya.
 
+## 32. Layar adzan bertahan sampai rekaman adzan selesai (KOREKSI)
+
+- **Masalah (uji Maghrib di Pi, 19 Okt 2026):** layar adzan dipatok 3 menit,
+  tetapi rekaman adzan 3:23 (Subuh 3:07). Hitung mundur iqomah muncul saat suara
+  adzan masih berbunyi.
+- Layanan alarm menulis `mosque_settings.alarm_now_playing` ("adzan|maghrib")
+  selama rekaman diputar dan mengosongkannya sesudahnya (juga saat start, untuk
+  sisa layanan yang berhenti di tengah adzan). `api/murottal.php`, yang sudah
+  dibaca layar tiap 5 detik, ikut mengirim nilai ini.
+- Layar adzan tetap minimal 3 menit, diperpanjang selama rekaman berbunyi,
+  paling lama 10 menit bila sinyal tertinggal. Bila suara adzan dimatikan,
+  layar adzan tetap 3 menit.
+

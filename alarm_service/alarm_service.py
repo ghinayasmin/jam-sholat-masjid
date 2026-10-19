@@ -308,6 +308,19 @@ class MurottalState:
             return ""
         return (row[0] or "") if row else ""
 
+    def set_alarm_playing(self, value: str) -> None:
+        """Catat adzan/iqomah yang sedang diputar ("adzan|maghrib", '' = tidak ada), supaya
+        layar adzan bertahan sampai rekaman selesai (DECISIONS.md #32)."""
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                conn.execute("UPDATE mosque_settings SET alarm_now_playing = ? WHERE id = 1", (value,))
+                conn.commit()
+            finally:
+                conn.close()
+        except sqlite3.Error as exc:
+            logger.error("Gagal mencatat adzan yang diputar: %s", exc)
+
     def set_now_playing(self, title: str) -> None:
         if title == self._written:
             return
@@ -342,6 +355,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
     murottal_playing = False  # True selama proses murottal yang kita mulai masih dipantau
     state = MurottalState(db_path)
     state.set_now_playing("")
+    state.set_alarm_playing("")  # sisa dari layanan yang berhenti di tengah adzan
     # Setelah restart (mis. update.sh), lanjut dari surat terakhir yang dipilih takmir.
     last_request = state.request()
     chosen = last_request.split("|", 1)[0]
@@ -385,7 +399,11 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 audio_file = alarm_audio_file(kind, prayer)
                 logger.info("Memutar %s untuk %s (%s)", kind, prayer, audio_file)
                 if os.path.isfile(audio_file):
-                    player.play_blocking(audio_file)
+                    state.set_alarm_playing(f"{kind}|{prayer}")
+                    try:
+                        player.play_blocking(audio_file)
+                    finally:
+                        state.set_alarm_playing("")
                 else:
                     logger.warning("File audio tidak ditemukan: %s", audio_file)
 

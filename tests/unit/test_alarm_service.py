@@ -226,8 +226,22 @@ class TestMurottal(unittest.TestCase):
             sqlite3.connect(db).execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY)").connection.commit()
             self.assertFalse(MurottalState(db).enabled())
 
-
-
+    def test_state_records_playing_adzan_for_display(self):
+        import sqlite3
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            db = os.path.join(d, "t.db")
+            conn = sqlite3.connect(db)
+            conn.execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY, alarm_now_playing TEXT)")
+            conn.execute("INSERT INTO mosque_settings VALUES (1, '')")
+            conn.commit()
+            state = MurottalState(db)
+            state.set_alarm_playing("adzan|maghrib")
+            self.assertEqual(conn.execute("SELECT alarm_now_playing FROM mosque_settings").fetchone()[0], "adzan|maghrib")
+            state.set_alarm_playing("")
+            self.assertEqual(conn.execute("SELECT alarm_now_playing FROM mosque_settings").fetchone()[0], "")
+            conn.close()
+            MurottalState(os.path.join(d, "kosong.db")).set_alarm_playing("x")  # tanpa tabel: tidak crash
 
 
 class TestLoadIqomahMinutes(unittest.TestCase):

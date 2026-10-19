@@ -15,7 +15,14 @@ header('Cache-Control: no-store');
 try {
     $s = (new SettingsRepository())->get();
     $title = (int) $s['murottal_enabled'] === 1 ? (string) $s['murottal_now_playing'] : '';
-    echo json_encode(['success' => true, 'now_playing' => $title !== '' ? $title : null], JSON_UNESCAPED_UNICODE);
+    // Adzan/iqomah yang sedang diputar layanan alarm ("adzan|maghrib"): layar adzan
+    // bertahan sampai rekaman selesai (DECISIONS.md #32).
+    $alarm = (string) ($s['alarm_now_playing'] ?? '');
+    echo json_encode([
+        'success' => true,
+        'now_playing' => $title !== '' ? $title : null,
+        'alarm_playing' => $alarm !== '' ? $alarm : null,
+    ], JSON_UNESCAPED_UNICODE);
 } catch (\Throwable $e) {
     error_log('[api/murottal] ' . $e->getMessage());
     http_response_code(500);
