@@ -26,7 +26,7 @@ require __DIR__ . '/_header.php';
 <div class="about-hero">
     <div class="about-name">Jam Sholat Masjid</div>
     <div class="about-ver">Versi <?= APP_VERSION ?> · <?= APP_RELEASE ?></div>
-    <p>Jadwal sholat, pengingat adzan dan iqomah, pengumuman, kas, murottal, dan kamera untuk masjid. Berjalan di jaringan lokal masjid tanpa perlu internet.</p>
+    <p>Jadwal sholat, pengingat adzan dan iqomah, pengumuman, kas, murottal, dan kamera untuk masjid. Cukup tersambung ke WiFi masjid; tidak butuh koneksi internet atau kuota setelah terpasang.</p>
 </div>
 
 <section class="group" aria-labelledby="g-tim">
