@@ -87,7 +87,8 @@ require __DIR__ . '/_header.php';
     <div class="card">
         <?php foreach ($backups as $b): ?>
             <a class="row ctl" href="?download=<?= (int) $b['id'] ?>">
-                <span class="k"><?= htmlspecialchars(\App\View\Format::shortDate(substr($b['created_at'], 0, 10))) ?>, <?= htmlspecialchars(substr($b['created_at'], 11, 5)) ?> UTC
+                <span class="k"><?php $local = (int) strtotime($b['created_at'] . ' UTC') + \App\LocalTime::offsetSeconds(); // created_at disimpan UTC ?>
+                    <?= htmlspecialchars(\App\View\Format::shortDate(gmdate('Y-m-d', $local))) ?>, <?= gmdate('H:i', $local) ?>
                     <small><?= $b['type'] === 'manual' ? 'Dibuat manual' : 'Otomatis' ?> · <?= round((int) $b['size_bytes'] / 1024, 1) ?> KB</small></span>
                 <span class="v ok">Unduh</span>
             </a>
