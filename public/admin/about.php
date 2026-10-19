@@ -41,7 +41,7 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-dosen">
     <div class="label" id="g-dosen">Dosen pembimbing</div>
     <div class="card">
-        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Faizal Makhrus</span></div>
+        <div class="row" style="grid-template-columns:minmax(0,1fr)"><span class="k">Faizal Makhrus, S.Kom., M.Sc., Ph.D.</span></div>
     </div>
 </section>
 
