@@ -28,7 +28,7 @@
         <!-- Slide saldo kas seukuran poster (DECISIONS.md #27). -->
         <div class="kas" id="kasSlide" hidden>
             <div>
-                <div class="kas-eyebrow">Kas Masjid</div>
+                <div class="kas-eyebrow">Baitul Maal <span class="ar">بيت المال</span></div>
                 <div class="kas-label">Saldo saat ini</div>
                 <div class="kas-total"><span>Rp</span><b id="kasTotal">-</b></div>
             </div>

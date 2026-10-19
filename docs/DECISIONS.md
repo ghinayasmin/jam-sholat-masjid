@@ -394,6 +394,10 @@ waktu dibuat).
   detik, tampil 5–120 detik. Slide tidak muncul saat pengingat dan layar adzan.
 - Slide kas menempati panel kiri seperti poster portrait, jadi jadwal sholat
   tetap terlihat. Angka ≥ Rp 100 juta diperkecil otomatis agar muat.
+- Gaya slide kas dipilih pengguna dari mockup (opsi K3): latar zamrud dengan
+  pola bintang delapan, bingkai ganda kuningan, label "Baitul Maal بيت المال",
+  dan isi dikumpulkan di tengah kotak dengan rata tengah. Tanpa efek blur
+  karena Chromium di Pi 3 merender lewat CPU.
 - Karena slide kini berganti tiap 30 detik, zona abaikan kamera (#25) wajib
   menutupi layar TV bila layar terlihat oleh kamera.
 
@@ -407,7 +411,8 @@ waktu dibuat).
   poster). Disimpan di folder poster dengan nama `masjid_<acak>`; nama file di
   `mosque_settings.mosque_photo`. Foto lama dihapus saat diganti.
 - Foto dipotong (`object-fit: cover`) agar memenuhi layar, jadi foto mendatar
-  paling cocok. Foto ikut masuk file cadangan dan dipulihkan saat restore.
+  paling cocok. Pojok kiri atas digelapkan pekat (gradasi radial + gradasi atas,
+  opsi "A++" dari mockup) supaya nama masjid tetap terbaca di foto yang cerah. Foto ikut masuk file cadangan dan dipulihkan saat restore.
 
 ## 29. Foto unggahan diperkecil otomatis, batas unggahan 20 MB (KOREKSI)
 

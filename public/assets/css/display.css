@@ -132,42 +132,63 @@ html, body {
 
 /* Foto masjid: memenuhi area gambar (dipotong seperlunya), nama masjid di kiri atas. */
 .photo-full .poster-full-img img { object-fit: cover; }
+/* Pojok kiri atas digelapkan pekat agar nama masjid terbaca di foto cerah (DECISIONS.md #28). */
 .photo-full .poster-full-img::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(15, 25, 21, .75) 0%, rgba(15, 25, 21, 0) 32%);
+    background:
+        radial-gradient(ellipse 95% 110% at 0% 0%, rgba(10, 18, 15, .97) 0%, rgba(10, 18, 15, .88) 40%, rgba(10, 18, 15, 0) 82%),
+        linear-gradient(180deg, rgba(10, 18, 15, .45) 0%, rgba(10, 18, 15, 0) 35%);
 }
-.photo-title { position: absolute; z-index: 1; left: calc(var(--u) * 3.6); top: calc(var(--u) * 3); }
+.photo-title { position: absolute; z-index: 1; left: calc(var(--u) * 3.6); top: calc(var(--u) * 3); text-shadow: 0 calc(var(--u) * .15) calc(var(--u) * 1) rgba(0, 0, 0, .7); }
 .photo-title small { display: block; font-size: calc(var(--u) * 1.6); color: var(--ink-2); font-weight: 500; }
 .photo-title strong { display: block; font-size: calc(var(--u) * 4.2); color: var(--brass); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
 
-/* Slide saldo kas seukuran poster, menutupi panel kiri seperti poster portrait. */
+/* Slide saldo kas seukuran poster, menutupi panel kiri seperti poster portrait.
+   Zamrud dengan pola bintang delapan dan bingkai ganda, isi rata tengah (DECISIONS.md #27). */
 .kas {
     position: absolute;
     inset: calc(var(--u) * 2);
-    background: var(--panel);
+    background: radial-gradient(ellipse 120% 90% at 100% 0%, #1F4D44 0%, #12302A 50%, #0B1F1B 100%);
     border-radius: calc(var(--u) * 1);
-    box-shadow: inset 0 0 0 calc(var(--u) * .1) rgba(217, 183, 122, .35);
+    box-shadow:
+        inset 0 0 0 calc(var(--u) * .1) rgba(217, 183, 122, .55),
+        inset 0 0 0 calc(var(--u) * .6) transparent,
+        inset 0 0 0 calc(var(--u) * .7) rgba(217, 183, 122, .25);
     padding: calc(var(--u) * 3) calc(var(--u) * 3.2);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
+    gap: calc(var(--u) * 4);
+    text-align: center;
+    overflow: hidden;
+    isolation: isolate;
 }
-.kas-eyebrow { font-size: calc(var(--u) * 1.4); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
-.kas-label { font-size: calc(var(--u) * 1.8); color: var(--ink-2); margin-top: calc(var(--u) * 2.4); }
-.kas-total { display: flex; align-items: flex-start; gap: calc(var(--u) * .6); margin-top: calc(var(--u) * .6); white-space: nowrap; }
+.kas::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: .1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23E7C98F' stroke-width='1.2'%3E%3Crect x='17' y='17' width='26' height='26'/%3E%3Crect x='17' y='17' width='26' height='26' transform='rotate(45 30 30)'/%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3Cpath d='M0 0 L8 8 M60 0 L52 8 M0 60 L8 52 M60 60 L52 52'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: calc(var(--u) * 5.5) calc(var(--u) * 5.5);
+}
+.kas-eyebrow { display: flex; justify-content: center; align-items: baseline; gap: calc(var(--u) * 1.2); font-size: calc(var(--u) * 1.4); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
+.kas-eyebrow .ar { font-family: var(--kufi); font-size: calc(var(--u) * 1.9); letter-spacing: 0; text-transform: none; font-weight: 600; opacity: .85; }
+.kas-label { font-size: calc(var(--u) * 1.8); color: var(--ink-2); margin-top: calc(var(--u) * 1.8); }
+.kas-total { display: flex; justify-content: center; align-items: flex-start; gap: calc(var(--u) * .6); margin-top: calc(var(--u) * .6); white-space: nowrap; }
 .kas-total span { font-size: calc(var(--u) * 3.2); font-weight: 700; color: var(--ink-2); margin-top: calc(var(--u) * .9); }
 .kas-total b { font-size: calc(var(--u) * 7); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
 .kas-total b.long { font-size: calc(var(--u) * 5.2); }
-.kas-rows { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 2); border-top: calc(var(--u) * .1) solid var(--line); padding-top: calc(var(--u) * 2); }
-.kas-rows div { display: flex; flex-direction: column; gap: calc(var(--u) * .4); min-width: 0; }
+.kas-rows { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 2); border-top: calc(var(--u) * .1) solid rgba(217, 183, 122, .3); padding-top: calc(var(--u) * 2); }
+.kas-rows div { display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * .4); min-width: 0; }
 .kas-rows small { font-size: calc(var(--u) * 1.35); color: var(--muted); }
 .kas-rows b { font-size: calc(var(--u) * 2.4); font-weight: 800; white-space: nowrap; }
 .kas-rows b.long { font-size: calc(var(--u) * 1.8); }
 .kas-rows .in { color: var(--in); }
 .kas-rows .out { color: var(--out); }
-.kas-updated { font-size: calc(var(--u) * 1.25); color: var(--muted); margin-top: calc(var(--u) * 1.6); }
+.kas-updated { font-size: calc(var(--u) * 1.25); color: var(--muted); margin-top: calc(var(--u) * 1.4); }
 
 /* ---------- Kanan: hari ini ---------- */
 .today {
