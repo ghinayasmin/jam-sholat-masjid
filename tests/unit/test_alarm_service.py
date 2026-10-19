@@ -11,7 +11,8 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'alarm_service'))
 from alarm_service import (  # noqa: E402
-    AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, load_iqomah_minutes, murottal_title,
+    AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, load_iqomah_minutes, mpg123_output_args,
+    murottal_title,
 )
 
 
@@ -242,6 +243,28 @@ class TestMurottal(unittest.TestCase):
             self.assertEqual(conn.execute("SELECT alarm_now_playing FROM mosque_settings").fetchone()[0], "")
             conn.close()
             MurottalState(os.path.join(d, "kosong.db")).set_alarm_playing("x")  # tanpa tabel: tidak crash
+
+
+class TestMpg123Output(unittest.TestCase):
+    def setUp(self):
+        self.saved = os.environ.pop("JAMSHOLAT_MPG123_OUTPUT", None)
+
+    def tearDown(self):
+        os.environ.pop("JAMSHOLAT_MPG123_OUTPUT", None)
+        if self.saved is not None:
+            os.environ["JAMSHOLAT_MPG123_OUTPUT"] = self.saved
+
+    def test_linux_defaults_to_alsa(self):
+        self.assertEqual(mpg123_output_args("linux"), ["-o", "alsa"])
+
+    def test_windows_uses_mpg123_default(self):
+        self.assertEqual(mpg123_output_args("win32"), [])
+
+    def test_desktop_package_can_choose_pulse_or_default(self):
+        os.environ["JAMSHOLAT_MPG123_OUTPUT"] = "pulse"
+        self.assertEqual(mpg123_output_args("linux"), ["-o", "pulse"])
+        os.environ["JAMSHOLAT_MPG123_OUTPUT"] = ""
+        self.assertEqual(mpg123_output_args("linux"), [])
 
 
 class TestLoadIqomahMinutes(unittest.TestCase):

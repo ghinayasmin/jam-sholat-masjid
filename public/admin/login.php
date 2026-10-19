@@ -15,6 +15,10 @@ if ($auth->isLoggedIn()) {
     header('Location: /admin/dashboard.php');
     exit;
 }
+if ((new \App\Repository\AdminUserRepository())->count() === 0) {
+    header('Location: /admin/setup.php');
+    exit;
+}
 
 $error = null;
 

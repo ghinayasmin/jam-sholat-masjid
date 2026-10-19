@@ -14,7 +14,9 @@ final class AuthMiddleware
     {
         $auth->startSession();
         if (!$auth->isLoggedIn()) {
-            header('Location: /admin/login.php');
+            // Instalasi baru tanpa akun: arahkan ke pembuatan akun pertama (DECISIONS.md #39).
+            $setupNeeded = (new \App\Repository\AdminUserRepository())->count() === 0;
+            header('Location: ' . ($setupNeeded ? '/admin/setup.php' : '/admin/login.php'));
             exit;
         }
     }

@@ -22,9 +22,20 @@ final class SystemClock
     /** Selisih di bawah ini dianggap sudah cocok (latensi jaringan + pembulatan detik). */
     public const TOLERANCE_SECONDS = 60;
 
+    /**
+     * Jam hanya bisa diatur dari panel di Linux (sudo date, lihat install.sh). Di Windows
+     * jam diatur oleh Windows sendiri (DECISIONS.md #39).
+     */
+    public static function canSet(): bool
+    {
+        return PHP_OS_FAMILY === 'Linux';
+    }
+
     public static function isTrusted(): bool
     {
-        if (file_exists(self::NTP_SYNCED_FLAG)) {
+        // Komputer biasa (Windows, atau Linux dengan RTC berbaterai /dev/rtc0) tetap
+        // ingat jamnya saat listrik padam. Hanya Raspberry Pi tanpa RTC yang perlu dicocokkan.
+        if (!self::canSet() || file_exists(self::NTP_SYNCED_FLAG) || file_exists('/dev/rtc0')) {
             return true;
         }
         $markedAt = @filemtime(self::markerPath());
@@ -37,6 +48,9 @@ final class SystemClock
      */
     public static function set(int $epoch): bool
     {
+        if (!self::canSet()) {
+            return false;
+        }
         exec('sudo /usr/bin/date -s ' . escapeshellarg('@' . $epoch) . ' 2>&1', $output, $exitCode);
         if ($exitCode !== 0) {
             error_log('[SystemClock] ' . implode(' ', $output));

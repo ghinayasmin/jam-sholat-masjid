@@ -262,12 +262,23 @@ def picamera_available() -> bool:
     return len(Picamera2.global_camera_info()) > 0
 
 
+def webcam_backend(platform: str | None = None) -> int:
+    """V4L2 di Linux, DirectShow di Windows (lebih cepat membuka webcam daripada MSMF),
+    selain itu biarkan OpenCV memilih (DECISIONS.md #39)."""
+    platform = platform or sys.platform
+    if platform.startswith("linux"):
+        return cv2.CAP_V4L2
+    if platform == "win32":
+        return cv2.CAP_DSHOW
+    return cv2.CAP_ANY
+
+
 def open_camera(camera_type: str, camera_index: int):
     if camera_type == "picamera" or (camera_type == "auto" and picamera_available()):
         logger.info("Membuka Raspberry Pi Camera Module (Picamera2)...")
         return PiCamera(CAMERA_ROTATION, CAMERA_TUNING)
     logger.info("Membuka webcam USB index %d...", camera_index)
-    cap = cv2.VideoCapture(camera_index, cv2.CAP_V4L2)
+    cap = cv2.VideoCapture(camera_index, webcam_backend())
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, FRAME_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
     return cap

@@ -133,6 +133,17 @@ class AlarmScheduler:
         self._fired.clear()
 
 
+def mpg123_output_args(platform: str | None = None) -> list[str]:
+    """Modul keluaran mpg123. Di Raspberry Pi OS Lite harus ALSA langsung (tanpa -o
+    mpg123 mencoba JACK lebih dulu dan segfault). Di desktop Linux sesi pengguna
+    memakai PulseAudio/PipeWire, dan di Windows modul bawaan sudah benar, jadi
+    paket untuk komputer biasa mengatur JAMSHOLAT_MPG123_OUTPUT ("" = bawaan)."""
+    platform = platform or sys.platform
+    default = "alsa" if platform.startswith("linux") else ""
+    module = os.environ.get("JAMSHOLAT_MPG123_OUTPUT", default)
+    return ["-o", module] if module else []
+
+
 class AudioPlayer:
     """Wrapper pemutaran audio via player command-line. Player dipilih
     otomatis (mpg123 untuk mp3, aplay untuk wav) — bisa di-mock di test
@@ -150,10 +161,13 @@ class AudioPlayer:
     def _player_for(self, path: str) -> list[str] | None:
         ext = os.path.splitext(path)[1].lower()
         if ext == ".mp3" and shutil.which("mpg123"):
-            # -o alsa: tanpa ini mpg123 di Pi OS mencoba JACK lebih dulu dan segfault.
-            return ["mpg123", "-q", "-o", "alsa", path]
+            return ["mpg123", "-q", *mpg123_output_args(), path]
         if ext == ".wav" and shutil.which("aplay"):
             return ["aplay", "-q", path]
+        if ext == ".wav" and sys.platform == "win32":
+            # Windows tidak punya aplay; pemutar WAV bawaan .NET (DECISIONS.md #39).
+            return ["powershell", "-NoProfile", "-Command",
+                    f"(New-Object Media.SoundPlayer '{path}').PlaySync()"]
         if shutil.which("ffplay"):  # fallback universal
             return ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", path]
         return None

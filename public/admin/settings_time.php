@@ -25,7 +25,9 @@ AuthMiddleware::requireLogin($auth);
 $errors = [];
 $success = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+$canSet = \App\SystemClock::canSet();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canSet) {
     Csrf::requireValid($_POST['csrf_token'] ?? null);
 
     $dateStr = trim((string) ($_POST['date'] ?? ''));
@@ -73,6 +75,9 @@ require __DIR__ . '/_header.php';
     <div class="s" style="padding-top:12px;box-shadow:inset 0 1px 0 var(--line)"><?= htmlspecialchars(\App\View\Format::longDate(gmdate('Y-m-d', $localNow))) ?></div>
 </div>
 
+<?php if (!$canSet): ?>
+<div class="note">Jam mengikuti jam komputer ini. Untuk mengubahnya, buka pengaturan Date &amp; time di Windows pada komputer masjid.</div>
+<?php else: ?>
 <div class="note">Saat ada internet, jam diperbaiki otomatis. Halaman ini hanya untuk koreksi bila perangkat lama offline dan jamnya meleset.</div>
 
 <form method="post" class="stack">
@@ -89,5 +94,6 @@ require __DIR__ . '/_header.php';
     </div>
     <div class="foot"><button type="submit" class="btn">Atur jam perangkat</button></div>
 </form>
+<?php endif; ?>
 
 <?php require __DIR__ . '/_footer.php'; ?>
