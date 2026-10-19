@@ -42,6 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $s = $settingsRepo->get();
 $me = (new \App\Repository\AdminUserRepository())->findById((int) ($_SESSION['admin_id'] ?? 0));
 $hasRecovery = !empty($me['recovery_created_at']);
+$adjustNames = ['fajr' => 'Subuh', 'dhuhr' => 'Dzuhur', 'asr' => 'Ashar', 'maghrib' => 'Maghrib', 'isha' => 'Isya'];
+$adjustParts = [];
+foreach ($adjustNames as $key => $name) {
+    $m = (int) ($s["adjust_{$key}_minutes"] ?? 0);
+    if ($m !== 0) {
+        $adjustParts[] = $name . ' ' . ($m > 0 ? '+' : '−') . abs($m);
+    }
+}
+$adjustSummary = $adjustParts === [] ? 'Tidak ada' : implode(', ', $adjustParts);
 $backups = (new BackupRepository())->list();
 $lastBackup = $backups !== [] ? Format::shortDate(substr($backups[0]['created_at'], 0, 10)) : 'Belum pernah';
 $chev = Icon::svg('chevron', 'icon chev');
@@ -65,6 +74,7 @@ require __DIR__ . '/_header.php';
     <div class="card">
         <a class="row" href="/admin/settings_location.php"><span></span><span class="k">Lokasi</span><span class="v"><?= Format::e($s['location_name'] !== '' ? $s['location_name'] : 'Atur lokasi') ?> <?= $chev ?></span></a>
         <a class="row" href="/admin/sound.php"><span></span><span class="k">Suara adzan &amp; iqomah</span><span class="v">Adzan <?= (int) $s['adzan_sound_enabled'] === 1 ? 'nyala' : 'mati' ?> · Iqomah <?= (int) $s['iqomah_sound_enabled'] === 1 ? 'nyala, Subuh ' . (int) $s['iqomah_fajr_minutes'] . ' mnt' : 'mati' ?> <?= $chev ?></span></a>
+        <a class="row" href="/admin/schedule_adjust.php"><span></span><span class="k">Koreksi jadwal per sholat</span><span class="v"><?= Format::e($adjustSummary) ?> <?= $chev ?></span></a>
         <a class="row" href="/admin/hijri.php"><span></span><span class="k">Tanggal Hijriah</span><span class="v"><?= Format::e($hijriToday) ?> <?= $chev ?></span></a>
         <a class="row" href="/admin/reminder.php"><span></span><span class="k">Pengingat adzan</span><span class="v"><?= (int) $s['reminder_enabled'] === 1 ? (int) $s['reminder_minutes'] . ' menit' : 'Mati' ?> <?= $chev ?></span></a>
     </div>

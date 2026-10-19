@@ -47,6 +47,8 @@ final class SettingsRepository
             'hijri_offset_days', 'poster_gap_seconds', 'poster_show_seconds', 'mosque_photo',
             'iqomah_fajr_minutes', 'iqomah_dhuhr_minutes', 'iqomah_asr_minutes',
             'iqomah_maghrib_minutes', 'iqomah_isha_minutes', 'iqomah_countdown_enabled',
+            'adjust_fajr_minutes', 'adjust_dhuhr_minutes', 'adjust_asr_minutes',
+            'adjust_maghrib_minutes', 'adjust_isha_minutes',
         ];
         $set = [];
         $params = [];

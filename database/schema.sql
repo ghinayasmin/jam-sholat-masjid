@@ -21,6 +21,12 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     iqomah_maghrib_minutes          INTEGER NOT NULL DEFAULT 10,
     iqomah_isha_minutes             INTEGER NOT NULL DEFAULT 10,
     iqomah_countdown_enabled        INTEGER NOT NULL DEFAULT 1 CHECK (iqomah_countdown_enabled IN (0,1)),  -- layar, #31
+    -- Koreksi menit per waktu sholat dari takmir, di atas hasil hitungan (DECISIONS.md #35).
+    adjust_fajr_minutes             INTEGER NOT NULL DEFAULT 0,
+    adjust_dhuhr_minutes            INTEGER NOT NULL DEFAULT 0,
+    adjust_asr_minutes              INTEGER NOT NULL DEFAULT 0,
+    adjust_maghrib_minutes          INTEGER NOT NULL DEFAULT 0,
+    adjust_isha_minutes             INTEGER NOT NULL DEFAULT 0,
     image_retention_days            INTEGER NOT NULL DEFAULT 7,    -- 3/7/14/30, diatur di tab Kamera
     image_retention_storage_pct     INTEGER NOT NULL DEFAULT 80,
     online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),

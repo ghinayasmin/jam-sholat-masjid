@@ -60,12 +60,19 @@ final class ScheduleEngine
         return $row === false ? null : $row;
     }
 
-    private function computeAndStore(string $dateYmd): array
+    /** Waktu sholat yang dikoreksi takmir per sholat (DECISIONS.md #35). Terbit tidak. */
+    public const ADJUSTABLE = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+    /**
+     * Hasil hitungan sebelum koreksi per sholat, untuk halaman koreksi jadwal.
+     *
+     * @return array{fajr:string,sunrise:string,dhuhr:string,asr:string,maghrib:string,isha:string}
+     */
+    public function calculatedFor(string $dateYmd): array
     {
         $settings = $this->settingsRepo->get();
         [$y, $m, $d] = array_map('intval', explode('-', $dateYmd));
-
-        $times = $this->calculator->calculate(
+        return $this->calculator->calculate(
             $y,
             $m,
             $d,
@@ -75,6 +82,23 @@ final class ScheduleEngine
             (string) $settings['madzhab'],
             (int) $settings['location_offset_minutes']
         );
+    }
+
+    /** "11:27" + 3 menit → "11:30" (tetap di dalam hari yang sama). */
+    public static function shiftTime(string $hhmm, int $minutes): string
+    {
+        [$h, $m] = array_map('intval', explode(':', $hhmm));
+        $total = min(23 * 60 + 59, max(0, $h * 60 + $m + $minutes));
+        return sprintf('%02d:%02d', intdiv($total, 60), $total % 60);
+    }
+
+    private function computeAndStore(string $dateYmd): array
+    {
+        $settings = $this->settingsRepo->get();
+        $times = $this->calculatedFor($dateYmd);
+        foreach (self::ADJUSTABLE as $key) {
+            $times[$key] = self::shiftTime($times[$key], (int) ($settings["adjust_{$key}_minutes"] ?? 0));
+        }
 
         $hijri = $this->hijriFor($dateYmd);
 

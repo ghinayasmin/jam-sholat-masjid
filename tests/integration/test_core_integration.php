@@ -132,6 +132,19 @@ check('Batas percobaan: perangkat lain tidak terkena', $throttle->waitSeconds('1
 $throttle->clear('10.0.0.9');
 check('Batas percobaan: dihapus setelah berhasil', $throttle->waitSeconds('10.0.0.9') === 0);
 
+// --- Koreksi jadwal per sholat (DECISIONS.md #35) ---
+$engine = new App\Schedule\ScheduleEngine();
+$base = $engine->calculatedFor('2026-10-19');
+(new SettingsRepository())->update(['adjust_dhuhr_minutes' => 3, 'adjust_fajr_minutes' => -2]);
+$engine->invalidateCache();
+$adj = $engine->getScheduleForDate('2026-10-19');
+check('Koreksi: Dzuhur +3 menit', $adj['dhuhr'] === App\Schedule\ScheduleEngine::shiftTime($base['dhuhr'], 3));
+check('Koreksi: Subuh -2 menit', $adj['fajr'] === App\Schedule\ScheduleEngine::shiftTime($base['fajr'], -2));
+check('Koreksi: Ashar tidak berubah', $adj['asr'] === $base['asr']);
+check('Koreksi: tidak melewati tengah malam', App\Schedule\ScheduleEngine::shiftTime('23:50', 30) === '23:59');
+(new SettingsRepository())->update(['adjust_dhuhr_minutes' => 0, 'adjust_fajr_minutes' => 0]);
+$engine->invalidateCache();
+
 // --- Pengaturan layar jamaah (pengingat adzan, visibilitas kas) ---
 $s = $settingsRepo->get();
 check('Settings: pengingat bawaan nyala 10 menit, Jumat 30', (int) $s['reminder_enabled'] === 1

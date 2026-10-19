@@ -213,20 +213,28 @@ def load_iqomah_minutes(db_path: str) -> dict:
     return minutes
 
 
-def load_today_schedule(db_path: str) -> tuple[dict, dict]:
-    """Baca jadwal hari ini + jeda iqomah dari DB. Kalau belum ada, panggil
-    compute_schedule_cli.php dulu (lihat docstring modul)."""
-    ensure_schedule_computed()
-
-    conn = sqlite3.connect(db_path, timeout=5)
-    conn.row_factory = sqlite3.Row
+def _read_schedule_row(db_path: str):
     try:
-        today = datetime.date.today().strftime("%Y-%m-%d")
-        row = conn.execute(
-            "SELECT * FROM prayer_schedules WHERE schedule_date = ?", (today,)
-        ).fetchone()
-    finally:
-        conn.close()
+        conn = sqlite3.connect(db_path, timeout=5)
+        conn.row_factory = sqlite3.Row
+        try:
+            today = datetime.date.today().strftime("%Y-%m-%d")
+            return conn.execute("SELECT * FROM prayer_schedules WHERE schedule_date = ?", (today,)).fetchone()
+        finally:
+            conn.close()
+    except sqlite3.Error as exc:
+        logger.error("Gagal membaca jadwal: %s", exc)
+        return None
+
+
+def load_today_schedule(db_path: str) -> tuple[dict, dict]:
+    """Baca jadwal hari ini + jeda iqomah dari DB. Jadwal yang belum ada (hari baru,
+    atau baru dihapus karena takmir mengubah lokasi/koreksi) dihitung dulu lewat
+    compute_schedule_cli.php (lihat docstring modul)."""
+    row = _read_schedule_row(db_path)
+    if row is None:
+        ensure_schedule_computed()
+        row = _read_schedule_row(db_path)
 
     minutes = load_iqomah_minutes(db_path)
     if row is None:
@@ -383,9 +391,13 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 murottal_index = 0
                 stop_murottal()
 
-            # Jeda iqomah yang diubah takmir di panel berlaku dalam 1 menit, tanpa restart.
+            # Jadwal (koreksi per sholat, lokasi) dan jeda iqomah yang diubah takmir di panel
+            # berlaku dalam 1 menit, tanpa restart. Adzan yang sudah berbunyi tidak diulang.
             if time.monotonic() - settings_loaded >= 60:
-                scheduler.set_iqomah_minutes(load_iqomah_minutes(db_path))
+                fresh_schedule, iqomah_minutes = load_today_schedule(db_path)
+                if fresh_schedule:
+                    scheduler.schedule = fresh_schedule
+                scheduler.set_iqomah_minutes(iqomah_minutes)
                 settings_loaded = time.monotonic()
 
             for kind, prayer in scheduler.check(now):

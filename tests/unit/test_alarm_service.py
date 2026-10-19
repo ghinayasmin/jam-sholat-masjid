@@ -263,6 +263,24 @@ class TestLoadIqomahMinutes(unittest.TestCase):
         self.assertEqual(minutes["isha"], 12)
         self.assertEqual(minutes["dhuhr"], 10)  # kolom belum ada: bawaan
 
+    def test_schedule_read_without_recomputing_when_cached(self):
+        import alarm_service
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        conn = self.sqlite3.connect(self.db)
+        conn.execute("CREATE TABLE prayer_schedules (schedule_date TEXT, fajr TEXT, sunrise TEXT, dhuhr TEXT, asr TEXT, maghrib TEXT, isha TEXT)")
+        conn.execute("INSERT INTO prayer_schedules VALUES (?, '04:00', '05:15', '11:30', '14:40', '17:35', '18:45')", (today,))
+        conn.commit()
+        conn.close()
+        calls = []
+        original = alarm_service.ensure_schedule_computed
+        alarm_service.ensure_schedule_computed = lambda: calls.append(1)
+        try:
+            schedule, _ = alarm_service.load_today_schedule(self.db)
+        finally:
+            alarm_service.ensure_schedule_computed = original
+        self.assertEqual(schedule["dhuhr"], "11:30")
+        self.assertEqual(calls, [])  # tidak menjalankan PHP tiap menit
+
     def test_missing_table_gives_defaults(self):
         self.assertEqual(load_iqomah_minutes(self.db)["fajr"], 20)
 

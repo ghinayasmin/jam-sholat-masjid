@@ -115,6 +115,9 @@ final class BackupManager
                     iqomah_fajr_minutes=:iqomah_fajr_minutes, iqomah_dhuhr_minutes=:iqomah_dhuhr_minutes,
                     iqomah_asr_minutes=:iqomah_asr_minutes, iqomah_maghrib_minutes=:iqomah_maghrib_minutes,
                     iqomah_isha_minutes=:iqomah_isha_minutes, iqomah_countdown_enabled=:iqomah_countdown_enabled,
+                    adjust_fajr_minutes=:adjust_fajr_minutes, adjust_dhuhr_minutes=:adjust_dhuhr_minutes,
+                    adjust_asr_minutes=:adjust_asr_minutes, adjust_maghrib_minutes=:adjust_maghrib_minutes,
+                    adjust_isha_minutes=:adjust_isha_minutes,
                     updated_at=CURRENT_TIMESTAMP
                  WHERE id = 1'
             );
@@ -146,6 +149,11 @@ final class BackupManager
                 'iqomah_maghrib_minutes' => $s['iqomah_maghrib_minutes'] ?? 10,
                 'iqomah_isha_minutes' => $s['iqomah_isha_minutes'] ?? 10,
                 'iqomah_countdown_enabled' => $s['iqomah_countdown_enabled'] ?? 1,
+                'adjust_fajr_minutes' => $s['adjust_fajr_minutes'] ?? 0,
+                'adjust_dhuhr_minutes' => $s['adjust_dhuhr_minutes'] ?? 0,
+                'adjust_asr_minutes' => $s['adjust_asr_minutes'] ?? 0,
+                'adjust_maghrib_minutes' => $s['adjust_maghrib_minutes'] ?? 0,
+                'adjust_isha_minutes' => $s['adjust_isha_minutes'] ?? 0,
             ]);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten

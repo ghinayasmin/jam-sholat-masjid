@@ -512,3 +512,21 @@ waktu dibuat).
 - Hanya di panel takmir, tidak di layar jamaah, supaya layar tetap fokus pada
   jadwal sholat.
 
+## 35. Koreksi jadwal per waktu sholat (DIKONFIRMASI)
+
+- Atas permintaan pengguna: Pengaturan → Waktu sholat → Koreksi jadwal per
+  sholat (`admin/schedule_adjust.php`). Lima kolom `adjust_<sholat>_minutes`,
+  −30 sampai +30 menit, bawaan 0. Terbit tidak ikut (bukan waktu adzan).
+- Berupa geseran menit, bukan jam tetap, supaya jadwal tetap mengikuti
+  perubahan harian matahari. Halaman menampilkan jam hasil hitungan dan jam
+  yang akan tampil untuk hari ini, berubah langsung saat angka diubah.
+  `location_offset_minutes` (Pengaturan → Lokasi) tetap ada untuk geseran yang
+  sama ke semua sholat; keduanya dijumlahkan.
+- Koreksi disimpan ke `prayer_schedules` saat jadwal dihitung, jadi layar,
+  API, dan layanan alarm memakai jam yang sama. Cache jadwal dihapus saat
+  disimpan.
+- **Perbaikan ikutan:** layanan alarm dulu membaca jadwal hanya saat start dan
+  ganti hari, sehingga koreksi (atau perubahan lokasi) baru berlaku besok.
+  Sekarang jadwal dibaca ulang tiap menit dari database; PHP hanya dijalankan
+  bila jadwal hari ini belum ada.
+
