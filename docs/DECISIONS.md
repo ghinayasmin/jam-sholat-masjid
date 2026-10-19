@@ -335,6 +335,8 @@ waktu dibuat).
   sholat agar tidak bertabrakan dengan adzan muadzin.
 - Iqomah (dulu REQ-F-025/031) dihapus dari SRS v0.2 karena iqomah sebaiknya
   dikumandangkan langsung. Kodenya dipertahankan sebagai fitur opsional.
+  **Diperbarui di #30:** dikembalikan atas revisi dosen, bawaan nyala untuk
+  instalasi baru.
 - Baris "Murottal" di layar hanya tampil selama sakelar Putar menyala dan
   layanan alarm sedang memutar surat. Layanan mengosongkan judul saat dihentikan
   (SIGTERM dari `systemctl stop`/`update.sh`), jadi judul tidak tertinggal.
@@ -432,3 +434,21 @@ waktu dibuat).
   PNG 3,3 MB menjadi JPEG 476 KB. Bila GD tidak ada, file asli disimpan.
 - Pesan error menyebut batas yang benar-benar berlaku (yang lebih kecil antara
   pengaturan PHP dan aplikasi).
+
+## 30. Jeda iqomah per waktu sholat, Subuh 20 menit (DIKONFIRMASI)
+
+- **Revisi dosen 19 Okt 2026:** jeda adzan ke iqomah bisa diatur khusus Subuh
+  (20 menit). Iqomah (REQ-F-025/031) kembali masuk lingkup.
+- Lima kolom `iqomah_<sholat>_minutes` (bawaan Subuh 20, lainnya 10)
+  menggantikan `azan_iqomah_interval_minutes` yang dulu berlaku untuk semua.
+  Diatur di Pengaturan → Suara adzan & iqomah, batas 5–60 menit (suara adzan
+  sendiri 3–5 menit). Instalasi baru: suara iqomah bawaan **nyala**.
+- Layanan alarm membaca ulang jeda tiap menit, jadi perubahan di panel berlaku
+  tanpa restart (sebelumnya baru berlaku besok).
+- **Jumat:** iqomah Dzuhur tidak dibunyikan otomatis karena dikumandangkan
+  setelah khutbah, yang lamanya tidak tetap.
+- Bila menit iqomah terlewat karena rekaman adzan masih diputar, iqomah tetap
+  dibunyikan sampai 3 menit sesudahnya, satu kali.
+- Murottal tetap diam sampai 15 menit setelah iqomah (perkiraan sholat
+  berjamaah). Sebelumnya jendela diam tetap 20 menit setelah adzan, sehingga
+  dengan jeda Subuh 20 menit murottal bisa menyala saat sholat.

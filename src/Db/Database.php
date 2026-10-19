@@ -70,6 +70,11 @@ final class Database
             'poster_gap_seconds' => 'INTEGER NOT NULL DEFAULT 15',
             'poster_show_seconds' => 'INTEGER NOT NULL DEFAULT 15',
             'mosque_photo' => "TEXT NOT NULL DEFAULT ''",
+            'iqomah_fajr_minutes' => 'INTEGER NOT NULL DEFAULT 20',
+            'iqomah_dhuhr_minutes' => 'INTEGER NOT NULL DEFAULT 10',
+            'iqomah_asr_minutes' => 'INTEGER NOT NULL DEFAULT 10',
+            'iqomah_maghrib_minutes' => 'INTEGER NOT NULL DEFAULT 10',
+            'iqomah_isha_minutes' => 'INTEGER NOT NULL DEFAULT 10',
         ],
         'publications' => [
             'starts_on' => 'TEXT',

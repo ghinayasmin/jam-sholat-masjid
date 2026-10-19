@@ -112,6 +112,9 @@ final class BackupManager
                     hijri_offset_days=:hijri_offset_days,
                     poster_gap_seconds=:poster_gap_seconds, poster_show_seconds=:poster_show_seconds,
                     mosque_photo=:mosque_photo,
+                    iqomah_fajr_minutes=:iqomah_fajr_minutes, iqomah_dhuhr_minutes=:iqomah_dhuhr_minutes,
+                    iqomah_asr_minutes=:iqomah_asr_minutes, iqomah_maghrib_minutes=:iqomah_maghrib_minutes,
+                    iqomah_isha_minutes=:iqomah_isha_minutes,
                     updated_at=CURRENT_TIMESTAMP
                  WHERE id = 1'
             );
@@ -137,6 +140,11 @@ final class BackupManager
                 'poster_gap_seconds' => $s['poster_gap_seconds'] ?? 15,
                 'poster_show_seconds' => $s['poster_show_seconds'] ?? 15,
                 'mosque_photo' => basename((string) ($s['mosque_photo'] ?? '')),
+                'iqomah_fajr_minutes' => $s['iqomah_fajr_minutes'] ?? 20,
+                'iqomah_dhuhr_minutes' => $s['iqomah_dhuhr_minutes'] ?? 10,
+                'iqomah_asr_minutes' => $s['iqomah_asr_minutes'] ?? 10,
+                'iqomah_maghrib_minutes' => $s['iqomah_maghrib_minutes'] ?? 10,
+                'iqomah_isha_minutes' => $s['iqomah_isha_minutes'] ?? 10,
             ]);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten

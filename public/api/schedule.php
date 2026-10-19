@@ -38,7 +38,14 @@ try {
         'maghrib' => $schedule['maghrib'],
         'isha' => $schedule['isha'],
         'source' => $schedule['source'],
-        'azan_iqomah_interval_minutes' => (int) $settings['azan_iqomah_interval_minutes'],
+        // Jeda adzan→iqomah per waktu sholat, dalam menit (DECISIONS.md #30).
+        'iqomah_minutes' => [
+            'fajr' => (int) $settings['iqomah_fajr_minutes'],
+            'dhuhr' => (int) $settings['iqomah_dhuhr_minutes'],
+            'asr' => (int) $settings['iqomah_asr_minutes'],
+            'maghrib' => (int) $settings['iqomah_maghrib_minutes'],
+            'isha' => (int) $settings['iqomah_isha_minutes'],
+        ],
         'is_senin_kamis' => $fastingInfo['is_senin_kamis'],
         'is_ayyamul_bidh' => $fastingInfo['is_ayyamul_bidh'],
         'upcoming_fasting' => $engine->getUpcomingFasting($date),

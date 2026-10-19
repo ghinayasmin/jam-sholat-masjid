@@ -10,7 +10,9 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'alarm_service'))
-from alarm_service import AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, murottal_title  # noqa: E402
+from alarm_service import (  # noqa: E402
+    AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, load_iqomah_minutes, murottal_title,
+)
 
 
 SCHEDULE = {
@@ -21,7 +23,7 @@ SCHEDULE = {
 
 class TestAlarmScheduler(unittest.TestCase):
     def setUp(self):
-        self.scheduler = AlarmScheduler(SCHEDULE, iqomah_interval_minutes=10)
+        self.scheduler = AlarmScheduler(SCHEDULE, iqomah_minutes=10)
 
     def test_no_action_before_prayer_time(self):
         t = datetime.datetime(2026, 9, 21, 4, 10, 0)
@@ -41,6 +43,36 @@ class TestAlarmScheduler(unittest.TestCase):
         self.scheduler.check(t_adzan)
         t_iqomah = datetime.datetime(2026, 9, 21, 4, 21, 0)  # +10 menit
         self.assertEqual(self.scheduler.check(t_iqomah), [("iqomah", "fajr")])
+
+    def test_iqomah_per_prayer_subuh_20_minutes(self):
+        scheduler = AlarmScheduler(SCHEDULE, {"fajr": 20, "dhuhr": 10, "asr": 10, "maghrib": 10, "isha": 10})
+        self.assertEqual(scheduler.check(datetime.datetime(2026, 9, 21, 4, 21, 0)), [])  # +10: belum
+        self.assertEqual(scheduler.check(datetime.datetime(2026, 9, 21, 4, 31, 0)), [("iqomah", "fajr")])
+        self.assertEqual(scheduler.check(datetime.datetime(2026, 9, 21, 17, 45, 0)), [("iqomah", "maghrib")])
+
+    def test_iqomah_still_fires_when_adzan_audio_ran_over(self):
+        # Adzan diputar sampai lewat menit iqomah: iqomah tetap dibunyikan, sekali saja.
+        late = datetime.datetime(2026, 9, 21, 4, 22, 30)
+        self.assertEqual(self.scheduler.check(late), [("iqomah", "fajr")])
+        self.assertEqual(self.scheduler.check(late + datetime.timedelta(seconds=20)), [])
+        self.assertEqual(self.scheduler.check(datetime.datetime(2026, 9, 21, 14, 59, 0)), [])  # Ashar +14: terlalu telat
+
+    def test_no_iqomah_for_friday_dhuhr(self):
+        jumat = datetime.datetime(2026, 9, 25, 11, 42, 0)  # Jumat, Dzuhur 11:32 + 10
+        self.assertEqual(self.scheduler.check(jumat), [])
+        kamis = datetime.datetime(2026, 9, 24, 11, 42, 0)
+        self.assertEqual(self.scheduler.check(kamis), [("iqomah", "dhuhr")])
+
+    def test_iqomah_minutes_can_change_without_restart(self):
+        self.scheduler.set_iqomah_minutes({"fajr": 25})
+        self.assertEqual(self.scheduler.check(datetime.datetime(2026, 9, 21, 4, 36, 0)), [("iqomah", "fajr")])
+
+    def test_quiet_window_lasts_until_after_long_iqomah(self):
+        scheduler = AlarmScheduler(SCHEDULE, {"fajr": 20})
+        adzan = datetime.datetime(2026, 9, 21, 4, 11, 0)
+        # Subuh: iqomah +20, lalu sholat ±15 menit: murottal tetap diam sampai +35.
+        self.assertTrue(scheduler.in_quiet_window(adzan + datetime.timedelta(minutes=30)))
+        self.assertFalse(scheduler.in_quiet_window(adzan + datetime.timedelta(minutes=36)))
 
     def test_quiet_window_around_prayer_time(self):
         t_near = datetime.datetime(2026, 9, 21, 4, 12, 0)
@@ -66,7 +98,7 @@ class TestAlarmScheduler(unittest.TestCase):
         self.assertEqual(self.scheduler.check(t_day2), [("adzan", "fajr")])
 
     def test_all_five_daily_prayers_trigger_adzan(self):
-        scheduler = AlarmScheduler(SCHEDULE, iqomah_interval_minutes=10)
+        scheduler = AlarmScheduler(SCHEDULE, iqomah_minutes=10)
         triggered = []
         for prayer, hhmm in SCHEDULE.items():
             if prayer == "sunrise":
@@ -193,6 +225,32 @@ class TestMurottal(unittest.TestCase):
             db = os.path.join(d, "t.db")
             sqlite3.connect(db).execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY)").connection.commit()
             self.assertFalse(MurottalState(db).enabled())
+
+
+
+
+
+class TestLoadIqomahMinutes(unittest.TestCase):
+    def setUp(self):
+        import sqlite3
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.db = os.path.join(self.tmp, "t.db")
+        self.sqlite3 = sqlite3
+
+    def test_reads_columns_and_falls_back_to_defaults(self):
+        conn = self.sqlite3.connect(self.db)
+        conn.execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY, iqomah_fajr_minutes INTEGER, iqomah_isha_minutes INTEGER)")
+        conn.execute("INSERT INTO mosque_settings VALUES (1, 25, 12)")
+        conn.commit()
+        conn.close()
+        minutes = load_iqomah_minutes(self.db)
+        self.assertEqual(minutes["fajr"], 25)
+        self.assertEqual(minutes["isha"], 12)
+        self.assertEqual(minutes["dhuhr"], 10)  # kolom belum ada: bawaan
+
+    def test_missing_table_gives_defaults(self):
+        self.assertEqual(load_iqomah_minutes(self.db)["fajr"], 20)
 
 
 if __name__ == '__main__':

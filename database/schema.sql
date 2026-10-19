@@ -13,7 +13,13 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     timezone_offset_hours           REAL NOT NULL DEFAULT 7.0,   -- WIB = UTC+7
     madzhab                         TEXT NOT NULL DEFAULT 'syafii' CHECK (madzhab IN ('syafii','hanafi')),
     location_offset_minutes         INTEGER NOT NULL DEFAULT 0,
-    azan_iqomah_interval_minutes    INTEGER NOT NULL DEFAULT 10,
+    azan_iqomah_interval_minutes    INTEGER NOT NULL DEFAULT 10,  -- lama, diganti iqomah_<sholat>_minutes
+    -- Jeda adzan→iqomah per waktu sholat (DECISIONS.md #30). Subuh lebih panjang.
+    iqomah_fajr_minutes             INTEGER NOT NULL DEFAULT 20,
+    iqomah_dhuhr_minutes            INTEGER NOT NULL DEFAULT 10,
+    iqomah_asr_minutes              INTEGER NOT NULL DEFAULT 10,
+    iqomah_maghrib_minutes          INTEGER NOT NULL DEFAULT 10,
+    iqomah_isha_minutes             INTEGER NOT NULL DEFAULT 10,
     image_retention_days            INTEGER NOT NULL DEFAULT 7,    -- 3/7/14/30, diatur di tab Kamera
     image_retention_storage_pct     INTEGER NOT NULL DEFAULT 80,
     online_sync_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (online_sync_enabled IN (0,1)),
@@ -30,9 +36,9 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
     murottal_request                TEXT NOT NULL DEFAULT '',   -- "file|cap waktu": surat yang dipilih takmir
     -- Suara adzan/iqomah dari speaker. Bisa dimatikan bila dikumandangkan langsung oleh muadzin;
-    -- iqomah bawaan mati karena di kebanyakan masjid dikumandangkan langsung.
+    -- Instalasi baru: iqomah bawaan nyala (revisi dosen, DECISIONS.md #30).
     adzan_sound_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1)),
-    iqomah_sound_enabled            INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1)),
+    iqomah_sound_enabled            INTEGER NOT NULL DEFAULT 1 CHECK (iqomah_sound_enabled IN (0,1)),
     -- Koreksi tanggal Hijriah agar sama dengan keputusan isbat (−1, 0, +1 hari).
     hijri_offset_days               INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2),
     -- Slide di layar jamaah (poster, kas, foto masjid): jeda layar jam lalu lama slide tampil (DECISIONS.md #27).

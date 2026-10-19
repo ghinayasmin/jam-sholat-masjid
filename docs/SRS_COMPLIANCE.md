@@ -25,10 +25,10 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-022 | Publication Upload | ✅ | `publications.php`, `publications_add.php` (poster atau teks, tanggal mulai/selesai) | ✅ teruji: JPEG valid diterima, file non-image ditolak; pengumuman teks & terjadwal teruji via HTTP |
 | REQ-F-023 | Camera Footage Access | ✅ | `camera.php`, `capture.php`, `api/motion_events.php` | ✅ **Diuji di Pi 3:** foto gerakan tampil di tab Kamera (HP), bisa dihapus per foto atau per tanggal |
 | REQ-F-024 | Financial Report Update | ✅ | `financial.php`, `financial_add.php` | ✅ teruji end-to-end via HTTP (simpan, validasi, hapus) |
-| ~~REQ-F-025~~ | Adzan-Iqomah Interval Setting | — | Dihapus di SRS v0.2. Tetap ada sebagai pengaturan opsional di `sound.php` (DECISIONS #23) | — |
+| REQ-F-025 | Adzan-Iqomah Interval Setting | ✅ | `sound.php`: jeda per waktu sholat `iqomah_<sholat>_minutes`, Subuh bawaan 20 menit (DECISIONS #30) | ✅ unit test `test_alarm_service.py`; dikembalikan atas revisi dosen 19 Okt 2026 |
 | REQ-F-026 | Mosque Profile Setting | ✅ | `mosque_profile.php` | Syntax teruji |
 | REQ-F-030 | Adzan Alarm | ✅ | `alarm_service.py` (`AlarmScheduler`), `adzan_subuh.*` khusus Subuh, sakelar `adzan_sound_enabled` di `sound.php` (DECISIONS #23) | ✅ unit test; **di Pi 3:** adzan Isya terpicu tepat 18:43 (log journal); speaker HDMI lewat `set_audio_output.sh` |
-| ~~REQ-F-031~~ | Iqomah Alarm | — | Dihapus di SRS v0.2. Tetap ada sebagai fitur opsional, bawaan mati (`iqomah_sound_enabled`, DECISIONS #23) | — |
+| REQ-F-031 | Iqomah Alarm | ✅ | `alarm_service.py`, `iqomah.wav` (CC0). Bawaan nyala untuk instalasi baru; Jumat Dzuhur dilewati (khutbah) (DECISIONS #30) | ✅ unit test; uji dengar di Pi menyusul |
 | REQ-F-032 | Murottal Playback | ✅ | `alarm_service.py` (`AudioPlayer`, quiet window), Putar/Jeda & Pilih surat di panel | ✅ unit test + simulasi loop; **di Pi 3:** murottal bunyi lewat TV, pindah surat dari HP, nama surat tampil di layar (DECISIONS #18) |
 | REQ-F-033 | Background Alarm Service | ⚠️ | `jamsholat-alarm.service` (bukan `.timer`, lihat `docs/DECISIONS.md` #7) | Deviasi terdokumentasi & beralasan |
 | REQ-F-034 | Subuh Adzan | ✅ | `alarm_service.py` (`alarm_audio_file`) | ✅ `test_alarm_service.py` (TC-ALM-004) |
@@ -66,7 +66,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 ## Ringkasan
 
-- **36 Functional Requirements (SRS v0.2)**: 34 ✅, 2 ⚠️. REQ-F-004 sinkronisasi online belum dipanggil, REQ-F-033 deviasi arsitektur terdokumentasi. REQ-F-025/031 (iqomah) dihapus dari SRS.
+- **36 Functional Requirements (SRS v0.2)**: 34 ✅, 2 ⚠️, ditambah REQ-F-025/031 (iqomah) yang dikembalikan atas revisi dosen. REQ-F-004 sinkronisasi online belum dipanggil, REQ-F-033 deviasi arsitektur terdokumentasi.
 - **13/13 Non-Functional Requirements**: diimplementasikan. REQ-NF-100 terverifikasi di Raspberry Pi 3: 469 MB dari batas 700 MB.
 - **Tidak ada placeholder/dummy implementation** — setiap fitur yang diberi status ✅ punya kode kerja nyata dan sudah lolos test otomatis (58 assertion PHP+Python total, lihat `tests/`).
 - **Uji di perangkat asli (12 Okt 2026)**: Raspberry Pi 3 Model B v1.2, Raspberry Pi OS Lite 13 (Trixie) 32-bit, TV lewat HDMI (layar + speaker), Raspberry Pi Camera V2 NoIR (CSI). Login admin & 5 tab, ubah jam, speaker HDMI, adzan/murottal, kamera, dan RAM sudah diuji langsung. Belum diuji di perangkat: kotak masjid tanpa internet (sinkron jadwal offline) dan pemakaian berhari-hari.

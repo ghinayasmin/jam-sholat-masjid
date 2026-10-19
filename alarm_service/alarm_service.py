@@ -43,6 +43,13 @@ ADZAN_PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
 # dengan adzan/iqomah — beri jeda "diam" di sekitar tiap waktu sholat.
 QUIET_WINDOW_BEFORE_MIN = 2
 QUIET_WINDOW_AFTER_MIN = 20  # cukup untuk adzan + iqomah + sholat singkat
+# Setelah iqomah masih ada sholat berjamaah: murottal baru boleh lagi sesudahnya.
+QUIET_AFTER_IQOMAH_MIN = 15
+# Iqomah tetap dibunyikan bila menitnya terlewat karena adzan masih diputar.
+IQOMAH_LATE_TOLERANCE_MIN = 3
+
+# Jeda adzan→iqomah bawaan per waktu sholat (DECISIONS.md #30). Subuh lebih panjang.
+DEFAULT_IQOMAH_MINUTES = {"fajr": 20, "dhuhr": 10, "asr": 10, "maghrib": 10, "isha": 10}
 # Jumat: khutbah + sholat Jumat jauh lebih lama; murottal jangan menyela khutbah.
 QUIET_WINDOW_AFTER_FRIDAY_DHUHR_MIN = 60
 
@@ -57,10 +64,16 @@ class AlarmScheduler:
     """Logika murni: kapan adzan/iqomah harus dibunyikan, berdasar jadwal
     hari ini + jarak iqomah. Tidak menyentuh file/audio/DB — mudah diuji."""
 
-    def __init__(self, schedule: dict, iqomah_interval_minutes: int) -> None:
+    def __init__(self, schedule: dict, iqomah_minutes: dict | int) -> None:
         self.schedule = schedule  # {'fajr': '04:11', 'dhuhr': '11:32', ...}
-        self.iqomah_interval_minutes = iqomah_interval_minutes
+        self.set_iqomah_minutes(iqomah_minutes)
         self._fired: set[str] = set()  # kunci: "2026-09-21-fajr-adzan"
+
+    def set_iqomah_minutes(self, iqomah_minutes: dict | int) -> None:
+        """Jeda per waktu sholat ({'fajr': 20, ...}); angka tunggal = sama untuk semua."""
+        if isinstance(iqomah_minutes, int):
+            iqomah_minutes = {p: iqomah_minutes for p in ADZAN_PRAYERS}
+        self.iqomah_minutes = {p: int(iqomah_minutes.get(p, DEFAULT_IQOMAH_MINUTES[p])) for p in ADZAN_PRAYERS}
 
     @staticmethod
     def _parse_hhmm(value: str) -> tuple[int, int]:
@@ -85,11 +98,16 @@ class AlarmScheduler:
                 self._fired.add(adzan_key)
                 actions.append(("adzan", prayer))
 
-            # Iqomah: adzan_time + interval menit.
+            # Iqomah: adzan_time + jeda waktu sholat itu. Jumat siang dilewati:
+            # iqomah Jumat dikumandangkan setelah khutbah, yang lamanya tidak tetap.
+            if prayer == "dhuhr" and now.weekday() == 4:
+                continue
             iqomah_dt = now.replace(hour=h, minute=m, second=0, microsecond=0) \
-                + datetime.timedelta(minutes=self.iqomah_interval_minutes)
+                + datetime.timedelta(minutes=self.iqomah_minutes[prayer])
             iqomah_key = self._time_key(now, prayer, "iqomah")
-            if now.hour == iqomah_dt.hour and now.minute == iqomah_dt.minute and iqomah_key not in self._fired:
+            late = now - iqomah_dt
+            if datetime.timedelta(0) <= late < datetime.timedelta(minutes=IQOMAH_LATE_TOLERANCE_MIN) \
+                    and iqomah_key not in self._fired:
                 self._fired.add(iqomah_key)
                 actions.append(("iqomah", prayer))
 
@@ -105,7 +123,7 @@ class AlarmScheduler:
             prayer_dt = now.replace(hour=h, minute=m, second=0, microsecond=0)
             window_start = prayer_dt - datetime.timedelta(minutes=QUIET_WINDOW_BEFORE_MIN)
             after = QUIET_WINDOW_AFTER_FRIDAY_DHUHR_MIN if prayer == "dhuhr" and now.weekday() == 4 \
-                else QUIET_WINDOW_AFTER_MIN
+                else max(QUIET_WINDOW_AFTER_MIN, self.iqomah_minutes[prayer] + QUIET_AFTER_IQOMAH_MIN)
             window_end = prayer_dt + datetime.timedelta(minutes=after)
             if window_start <= now <= window_end:
                 return True
@@ -174,8 +192,29 @@ class AudioPlayer:
         return self._current_process is not None and self._current_process.poll() is None
 
 
-def load_today_schedule(db_path: str) -> tuple[dict, int]:
-    """Baca jadwal hari ini + jarak iqomah dari DB. Kalau belum ada, panggil
+def load_iqomah_minutes(db_path: str) -> dict:
+    """Jeda adzan→iqomah per waktu sholat dari panel takmir (kolom iqomah_<sholat>_minutes)."""
+    minutes = dict(DEFAULT_IQOMAH_MINUTES)
+    try:
+        conn = sqlite3.connect(db_path, timeout=5)
+        conn.row_factory = sqlite3.Row
+        try:
+            row = conn.execute("SELECT * FROM mosque_settings WHERE id = 1").fetchone()
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return minutes
+    if row is None:
+        return minutes
+    for prayer in ADZAN_PRAYERS:
+        column = f"iqomah_{prayer}_minutes"
+        if column in row.keys() and row[column] is not None:
+            minutes[prayer] = int(row[column])
+    return minutes
+
+
+def load_today_schedule(db_path: str) -> tuple[dict, dict]:
+    """Baca jadwal hari ini + jeda iqomah dari DB. Kalau belum ada, panggil
     compute_schedule_cli.php dulu (lihat docstring modul)."""
     ensure_schedule_computed()
 
@@ -186,18 +225,13 @@ def load_today_schedule(db_path: str) -> tuple[dict, int]:
         row = conn.execute(
             "SELECT * FROM prayer_schedules WHERE schedule_date = ?", (today,)
         ).fetchone()
-        settings = conn.execute(
-            "SELECT azan_iqomah_interval_minutes FROM mosque_settings WHERE id = 1"
-        ).fetchone()
-
-        interval = settings["azan_iqomah_interval_minutes"] if settings else 10
-        if row is None:
-            return {}, interval
-
-        schedule = {k: row[k] for k in ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"]}
-        return schedule, interval
     finally:
         conn.close()
+
+    minutes = load_iqomah_minutes(db_path)
+    if row is None:
+        return {}, minutes
+    return {k: row[k] for k in ["fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"]}, minutes
 
 
 def ensure_schedule_computed() -> None:
@@ -298,9 +332,10 @@ def murottal_files() -> list[str]:
 
 def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
     player = AudioPlayer()
-    schedule, interval = load_today_schedule(db_path)
-    scheduler = AlarmScheduler(schedule, interval)
+    schedule, iqomah_minutes = load_today_schedule(db_path)
+    scheduler = AlarmScheduler(schedule, iqomah_minutes)
     current_day = datetime.date.today()
+    settings_loaded = time.monotonic()
 
     murottal_queue = murottal_files()
     murottal_index = 0
@@ -328,11 +363,16 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
             if now.date() != current_day:
                 logger.info("Hari berganti, memuat ulang jadwal.")
                 current_day = now.date()
-                schedule, interval = load_today_schedule(db_path)
-                scheduler = AlarmScheduler(schedule, interval)
+                schedule, iqomah_minutes = load_today_schedule(db_path)
+                scheduler = AlarmScheduler(schedule, iqomah_minutes)
                 murottal_queue = murottal_files()
                 murottal_index = 0
                 stop_murottal()
+
+            # Jeda iqomah yang diubah takmir di panel berlaku dalam 1 menit, tanpa restart.
+            if time.monotonic() - settings_loaded >= 60:
+                scheduler.set_iqomah_minutes(load_iqomah_minutes(db_path))
+                settings_loaded = time.monotonic()
 
             for kind, prayer in scheduler.check(now):
                 # Dimatikan takmir bila adzan/iqomah dikumandangkan langsung oleh muadzin.
