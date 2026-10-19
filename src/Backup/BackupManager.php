@@ -45,12 +45,19 @@ final class BackupManager
         }
         unset($pub);
 
+        // Foto masjid ikut dicadangkan (DECISIONS.md #28).
+        $photoPath = $publicationsPath . '/' . basename((string) ($settings['mosque_photo'] ?? ''));
+        $photoBase64 = ($settings['mosque_photo'] ?? '') !== '' && is_file($photoPath)
+            ? base64_encode((string) file_get_contents($photoPath))
+            : null;
+
         $payload = [
             'backup_version' => 1,
             'created_at' => gmdate('c'),
             'mosque_settings' => $settings,
             'financial_entries' => $financial,
             'publications' => $publications,
+            'mosque_photo_base64' => $photoBase64,
         ];
 
         $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -103,6 +110,8 @@ final class BackupManager
                     show_finance_on_display=:show_finance_on_display, location_name=:location_name,
                     adzan_sound_enabled=:adzan_sound_enabled, iqomah_sound_enabled=:iqomah_sound_enabled,
                     hijri_offset_days=:hijri_offset_days,
+                    poster_gap_seconds=:poster_gap_seconds, poster_show_seconds=:poster_show_seconds,
+                    mosque_photo=:mosque_photo,
                     updated_at=CURRENT_TIMESTAMP
                  WHERE id = 1'
             );
@@ -125,6 +134,9 @@ final class BackupManager
                 'adzan_sound_enabled' => $s['adzan_sound_enabled'] ?? 1,
                 'iqomah_sound_enabled' => $s['iqomah_sound_enabled'] ?? 0,
                 'hijri_offset_days' => $s['hijri_offset_days'] ?? 0,
+                'poster_gap_seconds' => $s['poster_gap_seconds'] ?? 15,
+                'poster_show_seconds' => $s['poster_show_seconds'] ?? 15,
+                'mosque_photo' => basename((string) ($s['mosque_photo'] ?? '')),
             ]);
 
             // financial_entries: replace seluruhnya supaya restore idempotent & konsisten
@@ -161,6 +173,13 @@ final class BackupManager
                     $target = $publicationsPath . '/' . basename($p['file_path']);
                     file_put_contents($target, base64_decode($p['file_base64']));
                 }
+            }
+
+            $photo = basename((string) ($s['mosque_photo'] ?? ''));
+            if ($photo !== '' && !empty($data['mosque_photo_base64'])) {
+                file_put_contents($publicationsPath . '/' . $photo, base64_decode($data['mosque_photo_base64']));
+            } elseif ($photo !== '' && !is_file($publicationsPath . '/' . $photo)) {
+                $pdo->exec("UPDATE mosque_settings SET mosque_photo = '' WHERE id = 1");
             }
 
             $pdo->commit();

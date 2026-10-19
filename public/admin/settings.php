@@ -46,7 +46,7 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-masjid">
     <div class="label" id="g-masjid">Masjid</div>
     <div class="card">
-        <a class="row" href="/admin/mosque_profile.php"><span></span><span class="k">Profil masjid<small><?= Format::e($s['mosque_name']) ?></small></span><?= $chev ?></a>
+        <a class="row" href="/admin/mosque_profile.php"><span></span><span class="k">Profil masjid<small><?= Format::e($s['mosque_name']) ?><?= $s['mosque_photo'] !== '' ? ' · ada foto' : '' ?></small></span><?= $chev ?></a>
     </div>
 </section>
 
@@ -67,10 +67,11 @@ require __DIR__ . '/_header.php';
             <?= Csrf::field() ?>
             <input type="hidden" name="action" value="finance_toggle">
             <span></span>
-            <label class="k" for="show_finance_on_display">Tampilkan saldo kas<small>Bawaan: tidak ditampilkan</small></label>
+            <label class="k" for="show_finance_on_display">Tampilkan saldo kas<small>Sebagai slide, bergantian dengan poster</small></label>
             <span class="switch"><input type="checkbox" id="show_finance_on_display" name="show_finance_on_display" data-autosubmit<?= (int) $s['show_finance_on_display'] === 1 ? ' checked' : '' ?>><span></span></span>
             <noscript><button type="submit" class="btn small">Simpan</button></noscript>
         </form>
+        <a class="row" href="/admin/slides.php"><span></span><span class="k">Pergantian slide<small>Poster, saldo kas, foto masjid</small></span><span class="v">Tampil <?= (int) $s['poster_show_seconds'] ?> dtk · jeda <?= (int) $s['poster_gap_seconds'] ?> dtk <?= $chev ?></span></a>
     </div>
 </section>
 

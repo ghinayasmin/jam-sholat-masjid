@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../bootstrap.php';
 
+use App\LocalTime;
 use App\Repository\FinancialRepository;
 use App\Repository\SettingsRepository;
+use App\View\Format;
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -18,11 +20,18 @@ try {
         exit;
     }
 
-    // Layar jamaah hanya menampilkan saldo; rincian transaksi tetap internal.
+    // Layar jamaah menampilkan saldo dan total bulan ini; rincian transaksi tetap internal.
+    $repo = new FinancialRepository();
+    $month = substr(LocalTime::today(), 0, 7);
+    $totals = $repo->monthTotals($month);
     echo json_encode([
         'success' => true,
         'enabled' => true,
-        'saldo_berjalan' => (new FinancialRepository())->currentBalance(),
+        'saldo_berjalan' => $repo->currentBalance(),
+        'bulan' => Format::monthName($month),
+        'masuk_bulan_ini' => $totals['masuk'],
+        'keluar_bulan_ini' => $totals['keluar'],
+        'diperbarui' => $repo->lastEntryDate(),
     ], JSON_UNESCAPED_UNICODE);
 } catch (\Throwable $e) {
     error_log('[api/financial] ' . $e->getMessage());

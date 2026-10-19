@@ -67,6 +67,9 @@ final class Database
             'adzan_sound_enabled' => 'INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1))',
             'iqomah_sound_enabled' => 'INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1))',
             'hijri_offset_days' => 'INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2)',
+            'poster_gap_seconds' => 'INTEGER NOT NULL DEFAULT 15',
+            'poster_show_seconds' => 'INTEGER NOT NULL DEFAULT 15',
+            'mosque_photo' => "TEXT NOT NULL DEFAULT ''",
         ],
         'publications' => [
             'starts_on' => 'TEXT',

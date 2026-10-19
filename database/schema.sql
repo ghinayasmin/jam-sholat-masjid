@@ -35,6 +35,10 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     iqomah_sound_enabled            INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1)),
     -- Koreksi tanggal Hijriah agar sama dengan keputusan isbat (−1, 0, +1 hari).
     hijri_offset_days               INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2),
+    -- Slide di layar jamaah (poster, kas, foto masjid): jeda layar jam lalu lama slide tampil (DECISIONS.md #27).
+    poster_gap_seconds              INTEGER NOT NULL DEFAULT 15,
+    poster_show_seconds             INTEGER NOT NULL DEFAULT 15,
+    mosque_photo                    TEXT NOT NULL DEFAULT '',   -- nama file di uploads/publications, '' = tanpa foto
     last_sync_at                    DATETIME,
     last_sync_status                TEXT,
     updated_at                      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP

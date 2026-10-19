@@ -15,8 +15,8 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-006 | Prayer Calculation Method | ✅ | Sudut Kemenag (Fajr 20°/Isha 18°), 100% lokal | ✅ |
 | REQ-F-007 | Hijri Date Rollover & Adjustment | ✅ | `display.js` (`hijriAfterMaghrib`), `ScheduleEngine::hijriFor()`, `admin/hijri.php` | ✅ **Diuji di Pi 3** (TC-JDW-005): tanggal berganti saat Maghrib, koreksi ±1 hari (DECISIONS #20) |
 | REQ-F-010 | Fullscreen Display | ✅ | `display.php` + kiosk service (cage) | ✅ **Diuji di Pi 3 (12 Okt 2026):** tampil fullscreen di TV lewat HDMI, tanpa bingkai browser, ter-update otomatis setelah `update.sh` |
-| REQ-F-011 | Publication Slideshow | ✅ | `display.js`, `api/publications.php` | ✅ upload→tampil di API teruji end-to-end |
-| REQ-F-012 | Financial Report Display | ⚠️ | `display.js`, `api/financial.php`, sakelar `show_finance_on_display` | Fitur ada, tapi **bawaan mati** atas permintaan pengguna (data kas internal). Lihat DECISIONS.md #14 |
+| REQ-F-011 | Publication Slideshow | ✅ | `display.js`, `api/publications.php`, `admin/slides.php` | ✅ upload→tampil di API teruji end-to-end; jeda & lama tampil diatur takmir (DECISIONS.md #27), foto masjid ikut rotasi (#28) |
+| REQ-F-012 | Financial Report Display | ⚠️ | `display.js`, `api/financial.php`, sakelar `show_finance_on_display` | Tampil sebagai slide seukuran poster (saldo + total bulan ini), tapi **bawaan mati** atas permintaan pengguna (data kas internal). Lihat DECISIONS.md #14, #27 |
 | REQ-F-013 | Sunnah Fasting Info | ✅ | `ScheduleEngine::getFastingInfo()` | ✅ Ayyamul Bidh (13/14/15) & Senin-Kamis teruji |
 | REQ-F-014 | Pre-Adzan Reminder | ✅ | `display.js` (`computeView`), `admin/reminder.php` | ✅ `test_display_logic.js` (TC-DISP-003): 10 menit, Jumat 30 menit |
 | REQ-F-015 | Landscape Poster Display | ✅ | `display.js` (`renderPoster`, `WIDE_POSTER_RATIO`) | ✅ **Diuji di Pi 3** (TC-DISP-004), DECISIONS #21 |

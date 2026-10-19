@@ -25,6 +25,21 @@
             <span class="countdown-text" id="countdownText"></span>
         </div>
         <div class="poster" id="poster" hidden><img id="posterImg" alt=""></div>
+        <!-- Slide saldo kas seukuran poster (DECISIONS.md #27). -->
+        <div class="kas" id="kasSlide" hidden>
+            <div>
+                <div class="kas-eyebrow">Kas Masjid</div>
+                <div class="kas-label">Saldo saat ini</div>
+                <div class="kas-total"><span>Rp</span><b id="kasTotal">-</b></div>
+            </div>
+            <div>
+                <div class="kas-rows">
+                    <div><small id="kasInLabel">Pemasukan</small><b class="in" id="kasIn">-</b></div>
+                    <div><small id="kasOutLabel">Pengeluaran</small><b class="out" id="kasOut">-</b></div>
+                </div>
+                <div class="kas-updated" id="kasUpdated"></div>
+            </div>
+        </div>
     </section>
 
     <aside class="today" aria-label="Jadwal sholat hari ini">
@@ -41,7 +56,6 @@
             <div id="infoAnnouncement" hidden><dt>Pengumuman</dt><dd id="announcementText"></dd></div>
             <div id="infoMurottal" hidden><dt>Murottal</dt><dd id="murottalTitle"></dd></div>
             <div id="infoFasting" hidden><dt id="fastingWhen">Puasa sunnah hari ini</dt><dd id="fastingLabel"></dd></div>
-            <div id="infoFinance" hidden><dt>Kas masjid</dt><dd id="financeBalance"></dd></div>
         </dl>
     </aside>
 </div>
@@ -50,9 +64,22 @@
 <div class="poster-full" id="posterFull" hidden>
     <div class="poster-full-img"><img id="posterFullImg" alt=""></div>
     <div class="strip">
-        <span class="strip-clock" id="stripClock">--:--</span>
-        <span class="strip-date" id="stripDate"></span>
-        <span class="strip-next" id="stripNext"></span>
+        <span class="strip-clock">--:--</span>
+        <span class="strip-date"></span>
+        <span class="strip-next"></span>
+    </div>
+</div>
+
+<!-- Foto masjid sebagai slide layar penuh (DECISIONS.md #28). -->
+<div class="poster-full photo-full" id="photoFull" hidden>
+    <div class="poster-full-img">
+        <img id="photoFullImg" alt="Foto masjid">
+        <div class="photo-title"><small>Selamat datang di</small><strong id="photoName">Masjid</strong></div>
+    </div>
+    <div class="strip">
+        <span class="strip-clock">--:--</span>
+        <span class="strip-date"></span>
+        <span class="strip-next"></span>
     </div>
 </div>
 

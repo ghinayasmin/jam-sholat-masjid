@@ -51,6 +51,14 @@ try {
             'message' => $settings['reminder_message'],
         ],
         'show_finance' => (int) $settings['show_finance_on_display'] === 1,
+        // Rotasi slide (poster, kas, foto masjid) — DECISIONS.md #27, #28.
+        'slides' => [
+            'gap_seconds' => (int) $settings['poster_gap_seconds'],
+            'show_seconds' => (int) $settings['poster_show_seconds'],
+        ],
+        'mosque_photo' => $settings['mosque_photo'] !== ''
+            ? '/uploads/publications/' . rawurlencode(basename($settings['mosque_photo']))
+            : null,
     ], JSON_UNESCAPED_UNICODE);
 } catch (\Throwable $e) {
     error_log('[api/schedule] ' . $e->getMessage());

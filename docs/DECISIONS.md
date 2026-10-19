@@ -164,6 +164,12 @@ dibaca dari jaringan lewat API. Takmir bisa menyalakannya bila masjid memang
 ingin transparan ke jamaah; saat menyala, layar dan API hanya memuat saldo,
 tanpa rincian transaksi.
 
+**Pembaruan 19 Okt 2026 (revisi dosen):** saat menyala, kas tidak lagi tampil
+sebagai baris kecil di pojok kanan bawah, tetapi sebagai slide seukuran poster
+(lihat #27). API kini juga memuat total pemasukan dan pengeluaran bulan
+berjalan serta tanggal transaksi terakhir. Rincian transaksi tetap internal dan
+sakelar bawaannya tetap mati.
+
 ## 15. Desain ulang layar jamaah & pengingat sebelum adzan (DIKONFIRMASI)
 
 **Keputusan:** arah desain "Malam teduh" (latar gelap, tekstur batik kawung
@@ -373,3 +379,30 @@ waktu dibuat).
 - 7 hari disarankan: pencurian kotak amal sering baru ketahuan saat kotak dibuka
   Jumat berikutnya, jadi 3 hari berisiko bukti sudah terhapus. Satu foto ±185 KB;
   7 hari pada 300 foto/hari ±400 MB.
+
+## 27. Slide bergantian di layar jamaah, waktunya diatur takmir (DIKONFIRMASI)
+
+- **Revisi dosen 19 Okt 2026:** poster tampil lebih lama dan lebih sering, saldo
+  kas tampil seukuran poster, dan waktunya bisa diatur dari panel.
+- Poster pengumuman, slide kas (#14), dan foto masjid (#28) masuk satu rotasi
+  dengan urutan itu. Layar jam tampil `poster_gap_seconds` detik, lalu satu
+  slide tampil `poster_show_seconds` detik, berulang. Bawaan 15 dan 15
+  (sebelumnya tertanam di kode: tiap 60 detik, tampil 12 detik).
+- Diatur di Pengaturan → Layar jamaah → Pergantian slide. Batas: jeda 5–600
+  detik, tampil 5–120 detik. Slide tidak muncul saat pengingat dan layar adzan.
+- Slide kas menempati panel kiri seperti poster portrait, jadi jadwal sholat
+  tetap terlihat. Angka ≥ Rp 100 juta diperkecil otomatis agar muat.
+- Karena slide kini berganti tiap 30 detik, zona abaikan kamera (#25) wajib
+  menutupi layar TV bila layar terlihat oleh kamera.
+
+## 28. Foto masjid sebagai slide layar penuh (DIKONFIRMASI)
+
+- Dari tiga mockup (latar panel jam, foto kecil di samping nama, slide layar
+  penuh), pengguna memilih **slide layar penuh**: foto memenuhi layar dengan
+  "Selamat datang di <nama masjid>" di kiri atas dan strip jam + sholat
+  berikutnya di bawah, sama seperti poster landscape (#21).
+- Diunggah di Pengaturan → Profil masjid (JPG/PNG, batas ukuran sama dengan
+  poster). Disimpan di folder poster dengan nama `masjid_<acak>`; nama file di
+  `mosque_settings.mosque_photo`. Foto lama dihapus saat diganti.
+- Foto dipotong (`object-fit: cover`) agar memenuhi layar, jadi foto mendatar
+  paling cocok. Foto ikut masuk file cadangan dan dipulihkan saat restore.

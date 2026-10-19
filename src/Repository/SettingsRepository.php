@@ -44,7 +44,7 @@ final class SettingsRepository
             'reminder_enabled', 'reminder_minutes', 'reminder_friday_minutes',
             'reminder_message', 'show_finance_on_display', 'location_name',
             'murottal_enabled', 'murottal_request', 'adzan_sound_enabled', 'iqomah_sound_enabled',
-            'hijri_offset_days',
+            'hijri_offset_days', 'poster_gap_seconds', 'poster_show_seconds', 'mosque_photo',
         ];
         $set = [];
         $params = [];

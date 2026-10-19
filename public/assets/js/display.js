@@ -6,8 +6,6 @@
     const CONTENT_POLL_MS = 60 * 1000;       // pengumuman & kas
     const MUROTTAL_POLL_MS = 5 * 1000;       // surat berganti tiap beberapa menit, Putar/Jeda harus cepat terlihat
     const ANNOUNCEMENT_ROTATE_MS = 10 * 1000;
-    const POSTER_EVERY_S = 60;               // poster muncul tiap 60 detik...
-    const POSTER_SHOW_S = 12;                // ...selama 12 detik
     const WIDE_POSTER_RATIO = 1.3;           // lebar/tinggi ≥ ini = landscape → layar penuh
     const ADZAN_SCREEN_S = 180;              // layar adzan tampil 3 menit sejak waktu adzan
 
@@ -111,8 +109,24 @@
         };
     }
 
+    /**
+     * Slide (poster, kas, foto masjid) bergantian dengan layar jam: jam tampil gapS detik,
+     * lalu slide tampil showS detik, berulang. Diatur takmir di admin (DECISIONS.md #27).
+     */
+    function slideVisible(epochSeconds, gapS, showS) {
+        const gap = Math.max(1, Number(gapS) || 15);
+        const show = Math.max(1, Number(showS) || 15);
+        return epochSeconds % (gap + show) >= gap;
+    }
+
+    /** "12.450.000" (tanpa "Rp"); angka negatif diberi tanda minus. */
+    function formatRupiah(amount) {
+        const n = Number(amount) || 0;
+        return (n < 0 ? '−' : '') + Math.abs(n).toLocaleString('id-ID');
+    }
+
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { computeView, formatDuration, formatCountdown, fastingRow };
+        module.exports = { computeView, formatDuration, formatCountdown, fastingRow, slideVisible, formatRupiah };
         return;
     }
 
@@ -136,10 +150,13 @@
         tomorrow: null,
         reminder: { enabled: false, minutes: 10, friday_minutes: 30, message: '' },
         showFinance: false,
+        finance: null,           // data slide kas; null bila disembunyikan takmir
+        mosquePhoto: null,       // URL foto masjid; null bila belum diunggah
+        slideTiming: { gap_seconds: 15, show_seconds: 15 },
         posters: [],
         captions: [],
-        posterIndex: 0,
-        currentPoster: null,     // poster yang sedang tampil (portrait di panel kiri, landscape layar penuh)
+        slideIndex: 0,
+        currentSlide: null,      // { kind: 'poster'|'finance'|'photo', item? } yang sedang tampil
         captionIndex: 0,
     };
 
@@ -166,7 +183,14 @@
             state.showFinance = Boolean(today.show_finance);
             if (state.showFinance !== financeWasOn) loadFinance();
 
+            state.slideTiming = today.slides || state.slideTiming;
+            if (today.mosque_photo !== state.mosquePhoto) {
+                state.mosquePhoto = today.mosque_photo || null;
+                if (state.mosquePhoto) new Image().src = state.mosquePhoto; // muat lebih dulu
+            }
+
             $('mosqueName').textContent = today.mosque_name || 'Masjid';
+            $('photoName').textContent = today.mosque_name || 'Masjid';
             $('mosqueAddress').textContent = today.mosque_address || '';
             render();
         } catch (e) {
@@ -205,13 +229,28 @@
     }
 
     async function loadFinance() {
-        const row = $('infoFinance');
-        if (!state.showFinance) { row.hidden = true; return; }
+        if (!state.showFinance) { state.finance = null; return; }
         try {
             const data = await fetchJson('/api/financial.php');
-            if (!data.success || !data.enabled) { row.hidden = true; return; }
-            $('financeBalance').textContent = 'Rp ' + Number(data.saldo_berjalan).toLocaleString('id-ID');
-            row.hidden = false;
+            if (!data.success || !data.enabled) { state.finance = null; return; }
+            state.finance = data;
+            const total = formatRupiah(data.saldo_berjalan);
+            $('kasTotal').textContent = total;
+            $('kasTotal').classList.toggle('long', total.length > 10); // ≥ Rp 100 juta: perkecil agar muat
+            $('kasInLabel').textContent = 'Pemasukan ' + data.bulan;
+            $('kasOutLabel').textContent = 'Pengeluaran ' + data.bulan;
+            $('kasIn').textContent = '+ Rp ' + formatRupiah(data.masuk_bulan_ini);
+            $('kasOut').textContent = '− Rp ' + formatRupiah(data.keluar_bulan_ini);
+            // Dua kolom berdampingan: angka ≥ Rp 100 juta diperkecil agar tidak bertabrakan.
+            const longRow = $('kasIn').textContent.length > 15 || $('kasOut').textContent.length > 15;
+            $('kasIn').classList.toggle('long', longRow);
+            $('kasOut').classList.toggle('long', longRow);
+            let updated = 'Belum ada transaksi';
+            if (data.diperbarui) {
+                const [y, m, d] = data.diperbarui.split('-').map(Number);
+                updated = 'Diperbarui ' + d + ' ' + MONTH_NAMES[m - 1] + ' ' + y;
+            }
+            $('kasUpdated').textContent = updated;
         } catch (e) {
             console.error('Gagal memuat kas:', e);
         }
@@ -286,32 +325,57 @@
         }
 
         if (view.next) {
-            $('stripClock').textContent = $('clock').textContent;
-            $('stripDate').textContent = $('gregorianDate').textContent;
-            $('stripNext').textContent = prayerName(view.next.key, view.fridayDhuhr) + ' ' + view.next.time +
+            const next = prayerName(view.next.key, view.fridayDhuhr) + ' ' + view.next.time +
                 ' · ' + formatDuration(view.remaining) + ' lagi';
+            document.querySelectorAll('.strip').forEach((strip) => {
+                strip.querySelector('.strip-clock').textContent = $('clock').textContent;
+                strip.querySelector('.strip-date').textContent = $('gregorianDate').textContent;
+                strip.querySelector('.strip-next').textContent = next;
+            });
         }
 
-        renderPoster(now, view.mode);
+        renderSlide(now, view.mode);
     }
 
-    function renderPoster(now, mode) {
+    /** Urutan slide: poster pengumuman, lalu saldo kas, lalu foto masjid. */
+    function slideList() {
+        const slides = state.posters.map((item) => ({ kind: 'poster', item }));
+        if (state.finance) slides.push({ kind: 'finance' });
+        if (state.mosquePhoto) slides.push({ kind: 'photo', item: { url: state.mosquePhoto } });
+        return slides;
+    }
+
+    function renderSlide(now, mode) {
+        const slides = slideList();
         const sinceEpoch = Math.floor(now.getTime() / 1000);
-        const show = mode === 'normal' && state.posters.length > 0 && sinceEpoch % POSTER_EVERY_S < POSTER_SHOW_S;
-        if (show && !state.currentPoster) {
-            const item = state.posters[state.posterIndex % state.posters.length];
-            state.posterIndex++;
-            state.currentPoster = item;
-            // Portrait/persegi di panel kiri; landscape memenuhi layar.
-            const img = item.wide ? $('posterFullImg') : $('posterImg');
-            img.onerror = () => { state.posters = state.posters.filter((p) => p !== item); state.currentPoster = null; };
-            img.src = item.url;
-            img.alt = item.caption || 'Pengumuman';
+        const show = mode === 'normal' && slides.length > 0 &&
+            slideVisible(sinceEpoch, state.slideTiming.gap_seconds, state.slideTiming.show_seconds);
+        if (show && !state.currentSlide) {
+            const slide = slides[state.slideIndex % slides.length];
+            state.slideIndex++;
+            state.currentSlide = slide;
+            if (slide.kind === 'poster') {
+                // Portrait/persegi di panel kiri; landscape memenuhi layar.
+                const item = slide.item;
+                const img = item.wide ? $('posterFullImg') : $('posterImg');
+                img.onerror = () => { state.posters = state.posters.filter((p) => p !== item); state.currentSlide = null; };
+                img.src = item.url;
+                img.alt = item.caption || 'Pengumuman';
+            } else if (slide.kind === 'photo') {
+                const img = $('photoFullImg');
+                img.onerror = () => { state.mosquePhoto = null; state.currentSlide = null; };
+                if (img.getAttribute('src') !== slide.item.url) img.src = slide.item.url;
+            }
         }
-        if (!show) state.currentPoster = null;
-        const item = state.currentPoster;
-        $('poster').hidden = !(item && !item.wide);
-        $('posterFull').hidden = !(item && item.wide);
+        // Slide kas berhenti seketika bila takmir menyembunyikannya.
+        if (!show || (state.currentSlide && state.currentSlide.kind === 'finance' && !state.finance)) {
+            state.currentSlide = null;
+        }
+        const c = state.currentSlide;
+        $('poster').hidden = !(c && c.kind === 'poster' && !c.item.wide);
+        $('posterFull').hidden = !(c && c.kind === 'poster' && c.item.wide);
+        $('kasSlide').hidden = !(c && c.kind === 'finance');
+        $('photoFull').hidden = !(c && c.kind === 'photo');
     }
 
     render();

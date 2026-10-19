@@ -3,7 +3,7 @@
 'use strict';
 
 const path = require('path');
-const { computeView, formatDuration, formatCountdown, fastingRow } =
+const { computeView, formatDuration, formatCountdown, fastingRow, slideVisible, formatRupiah } =
     require(path.join(__dirname, '../../public/assets/js/display.js'));
 
 let total = 0;
@@ -91,6 +91,19 @@ check('Ayyamul Bidh terdekat ditandai', r.value === 'Rabu, 4 November · Ayyamul
 r = fastingRow([{ date: '2026-10-05', is_senin_kamis: true, is_ayyamul_bidh: true }], '2026-10-05', '2026-10-06', false);
 check('gabungan Senin & Ayyamul Bidh', r.value === 'Puasa Senin & Ayyamul Bidh');
 check('daftar kosong (mis. Ramadhan) = baris disembunyikan', fastingRow([], '2027-02-10', '2027-02-11', false) === null);
+
+console.log('slideVisible — jam 15 detik, lalu slide 15 detik');
+const shown = [];
+for (let t = 0; t < 30; t++) if (slideVisible(t, 15, 15)) shown.push(t);
+check('detik 0–14 jam, 15–29 slide', shown.length === 15 && shown[0] === 15 && shown[14] === 29);
+check('siklus berulang (detik 45 = slide)', slideVisible(45, 15, 15) && !slideVisible(30, 15, 15));
+check('jeda 60, tampil 10: detik 65 slide, 59 jam', slideVisible(65, 60, 10) && !slideVisible(59, 60, 10));
+check('nilai kosong memakai bawaan 15/15', slideVisible(20, undefined, null) && !slideVisible(5, 0, 0));
+
+console.log('formatRupiah');
+check('ribuan bertitik', formatRupiah(12450000) === '12.450.000');
+check('saldo minus diberi tanda', formatRupiah(-250000) === '−250.000');
+check('nol', formatRupiah(0) === '0');
 
 console.log('\n' + (total - failures) + '/' + total + ' assertion lolos');
 process.exit(failures === 0 ? 0 : 1);

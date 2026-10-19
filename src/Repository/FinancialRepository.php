@@ -53,6 +53,13 @@ final class FinancialRepository
         return ['masuk' => (int) $row['masuk'], 'keluar' => (int) $row['keluar']];
     }
 
+    /** Tanggal transaksi terakhir ('YYYY-MM-DD'), null bila belum ada transaksi. */
+    public function lastEntryDate(): ?string
+    {
+        $date = Database::connection()->query('SELECT MAX(entry_date) FROM financial_entries')->fetchColumn();
+        return $date === false || $date === null ? null : (string) $date;
+    }
+
     public function create(string $entryDate, string $description, string $type, int $amount, ?int $createdBy): int
     {
         $stmt = Database::connection()->prepare(
