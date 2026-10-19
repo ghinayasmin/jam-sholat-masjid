@@ -50,10 +50,12 @@ if ($names === []) {
 
 $username = $args[0] ?? '';
 if ($username === '') {
-    echo 'Akun takmir: ' . implode(', ', $names) . PHP_EOL;
-    $username = count($names) === 1 ? $names[0] : trim(ask('Akun yang direset: '));
     if (count($names) === 1) {
-        echo "Akun: $username" . PHP_EOL;
+        $username = $names[0];
+        echo "Hanya ada satu akun takmir, jadi akun \"$username\" yang direset." . PHP_EOL;
+    } else {
+        echo 'Akun takmir: ' . implode(', ', $names) . PHP_EOL;
+        $username = trim(ask('Akun yang direset: '));
     }
 }
 $user = $users->findByUsername($username);
@@ -63,6 +65,7 @@ if ($user === null) {
 }
 
 if (!$codeOnly) {
+    echo 'Huruf yang diketik tidak tampil di layar. Tekan Ctrl+C untuk batal.' . PHP_EOL;
     $new = ask('Kata sandi baru (min. 8 karakter): ', true);
     $confirm = ask('Ulangi kata sandi baru: ', true);
     if ($new !== $confirm) {
