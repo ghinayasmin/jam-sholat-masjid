@@ -392,8 +392,10 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 # Dimatikan takmir bila adzan/iqomah dikumandangkan langsung oleh muadzin.
                 # Murottal tetap berhenti di jendela diam sekitar waktu sholat.
                 if kind == "adzan" and not state.adzan_enabled():
+                    logger.info("Waktu adzan %s: suara adzan dimatikan di panel, tidak diputar.", prayer)
                     continue
                 if kind == "iqomah" and not state.iqomah_enabled():
+                    logger.info("Waktu iqomah %s: suara iqomah dimatikan di panel, tidak diputar.", prayer)
                     continue
                 stop_murottal()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
                 audio_file = alarm_audio_file(kind, prayer)
