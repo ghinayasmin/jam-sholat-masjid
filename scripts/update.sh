@@ -46,6 +46,9 @@ sed -i "s/'publication_max_bytes' => 5 \* 1024 \* 1024/'publication_max_bytes' =
     "$INSTALL_DIR"/config/config.php
 systemctl reload apache2
 
+# Perintah reset kata sandi untuk teknisi (DECISIONS.md #33).
+install -m 755 "$INSTALL_DIR"/scripts/jamsholat-reset-password /usr/local/sbin/jamsholat-reset-password
+
 echo "=== [2/3] Memperbarui unit systemd ==="
 # Tema kursor transparan untuk kiosk (dipakai jamsholat-kiosk.service lewat XCURSOR_PATH).
 rm -rf /usr/share/icons/jamsholat-blank   # lokasi lama, tidak dipakai lagi

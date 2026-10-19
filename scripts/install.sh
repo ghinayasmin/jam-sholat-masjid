@@ -88,17 +88,25 @@ fi
 chmod 664 "$INSTALL_DIR/storage/jamsholat.db"
 
 echo "=== [6/10] Membuat akun admin pertama (REQ-F-070) ==="
+# Perintah reset kata sandi untuk teknisi, bisa dijalankan dari folder mana pun (DECISIONS.md #33).
+install -m 755 "$INSTALL_DIR"/scripts/jamsholat-reset-password /usr/local/sbin/jamsholat-reset-password
 ADMIN_COUNT=$(sqlite3 "$INSTALL_DIR/storage/jamsholat.db" "SELECT COUNT(*) FROM admin_users;")
 if [ "$ADMIN_COUNT" -eq 0 ]; then
     read -rp "Username admin takmir: " ADMIN_USER
     read -rsp "Password admin takmir: " ADMIN_PASS
     echo
-    HASH=$(php -r 'echo password_hash($argv[1], PASSWORD_BCRYPT);' "$ADMIN_PASS")
-    sqlite3 "$INSTALL_DIR/storage/jamsholat.db" \
-        "INSERT INTO admin_users (username, password_hash) VALUES ('$ADMIN_USER', '$HASH');"
+    # Lewat PHP (prepared statement), bukan SQL yang dirangkai dari input.
+    sudo -u "$SERVICE_USER" php -r '
+        require $argv[1] . "/bootstrap.php";
+        (new App\Repository\AdminUserRepository())->create($argv[2], password_hash($argv[3], PASSWORD_BCRYPT));
+    ' "$INSTALL_DIR" "$ADMIN_USER" "$ADMIN_PASS"
+    unset ADMIN_PASS
     echo "Admin '$ADMIN_USER' berhasil dibuat."
+    # Kode pemulihan pertama: takmir bisa mengganti kata sandi sendiri bila lupa.
+    jamsholat-reset-password --kode "$ADMIN_USER"
+    read -rp "Catat kode pemulihan di atas, lalu tekan Enter untuk melanjutkan... " _
 else
-    echo "Akun admin sudah ada, dilewati. Gunakan scripts/reset_admin_password.sh untuk reset."
+    echo "Akun admin sudah ada, dilewati. Untuk reset kata sandi: sudo jamsholat-reset-password"
 fi
 
 echo "=== [7/10] Instalasi dependency Python (butuh internet, sekali saja) ==="

@@ -40,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $s = $settingsRepo->get();
+$me = (new \App\Repository\AdminUserRepository())->findById((int) ($_SESSION['admin_id'] ?? 0));
+$hasRecovery = !empty($me['recovery_created_at']);
 $backups = (new BackupRepository())->list();
 $lastBackup = $backups !== [] ? Format::shortDate(substr($backups[0]['created_at'], 0, 10)) : 'Belum pernah';
 $chev = Icon::svg('chevron', 'icon chev');
@@ -94,7 +96,7 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-sistem">
     <div class="label" id="g-sistem">Sistem</div>
     <div class="card">
-        <a class="row" href="/admin/account.php"><span></span><span class="k">Akun takmir</span><span class="v">Ganti kata sandi <?= $chev ?></span></a>
+        <a class="row" href="/admin/account.php"><span></span><span class="k">Akun takmir<?= $hasRecovery ? '' : '<small>Belum ada kode pemulihan</small>' ?></span><span class="v">Kata sandi <?= $chev ?></span></a>
         <a class="row" href="/admin/settings_time.php"><span></span><span class="k">Jam &amp; tanggal</span><span class="v">Koreksi manual <?= $chev ?></span></a>
         <a class="row" href="/admin/backup.php"><span></span><span class="k">Cadangan data</span><span class="v"><?= Format::e($lastBackup) ?> <?= $chev ?></span></a>
     </div>

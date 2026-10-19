@@ -115,6 +115,23 @@ check('Restore: saldo pulih ke 70000', $finRepo->currentBalance() === 70000);
 check('Restore: mosque_name pulih (bukan "BERUBAH")', $settingsRepo->get()['mosque_name'] !== 'BERUBAH');
 check('Restore: file publikasi tetap ada', is_file($tmpDir . '/publications/p1.jpg'));
 
+// --- Kode pemulihan & batas percobaan (DECISIONS.md #33) ---
+$code = App\Auth\RecoveryCode::generate();
+check('Pemulihan: format kode XXXX-XXXX-XXXX-XXXX', (bool) preg_match('/^[A-Z2-9]{4}(-[A-Z2-9]{4}){3}$/', $code));
+$hash = App\Auth\RecoveryCode::hash($code);
+check('Pemulihan: cocok walau diketik huruf kecil tanpa tanda hubung',
+    App\Auth\RecoveryCode::verify(strtolower(str_replace('-', '', $code)), $hash));
+check('Pemulihan: kode lain ditolak', !App\Auth\RecoveryCode::verify(App\Auth\RecoveryCode::generate(), $hash));
+check('Pemulihan: akun tanpa kode ditolak', !App\Auth\RecoveryCode::verify($code, null));
+$throttle = new App\Auth\Throttle('recover', 3);
+for ($i = 0; $i < 3; $i++) {
+    $throttle->recordFailure('10.0.0.9');
+}
+check('Batas percobaan: ke-4 harus menunggu', $throttle->waitSeconds('10.0.0.9') > 0);
+check('Batas percobaan: perangkat lain tidak terkena', $throttle->waitSeconds('10.0.0.8') === 0);
+$throttle->clear('10.0.0.9');
+check('Batas percobaan: dihapus setelah berhasil', $throttle->waitSeconds('10.0.0.9') === 0);
+
 // --- Pengaturan layar jamaah (pengingat adzan, visibilitas kas) ---
 $s = $settingsRepo->get();
 check('Settings: pengingat bawaan nyala 10 menit, Jumat 30', (int) $s['reminder_enabled'] === 1

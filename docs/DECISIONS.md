@@ -479,3 +479,25 @@ waktu dibuat).
   paling lama 10 menit bila sinyal tertinggal. Bila suara adzan dimatikan,
   layar adzan tetap 3 menit.
 
+## 33. Reset kata sandi: kode pemulihan + perintah teknisi (KOREKSI)
+
+- **Masalah (revisi dosen 19 Okt 2026):** satu-satunya cara reset adalah
+  `scripts/reset_admin_password.sh`, yang harus dicari di dalam `/opt` dan
+  memakai database di folder tempat skrip itu berada: bila dijalankan dari
+  salinan repo, yang direset database lain. Username juga dirangkai langsung
+  ke SQL.
+- **Takmir:** di Akun takmir dibuat kode pemulihan 16 karakter
+  (`K7QM-3HXT-9PWA-RD4N`, tanpa 0/O/1/I/L), wajib memasukkan kata sandi saat
+  ini. Hanya hash bcrypt yang disimpan (`admin_users.recovery_hash`). Halaman
+  masuk punya tautan "Lupa kata sandi?" (`admin/forgot.php`): username + kode +
+  kata sandi baru. Kode sekali pakai; setelah dipakai langsung diganti kode
+  baru yang ditampilkan sekali. Tanpa email/internet, cocok untuk masjid.
+- **Teknisi:** `sudo jamsholat-reset-password` (dipasang ke `/usr/local/sbin`
+  oleh install.sh dan update.sh) selalu memakai `/opt/jamsholat`, berjalan
+  sebagai user layanan, dan mencetak kode pemulihan baru. Nama lama
+  `reset_admin_password.sh` tetap ada sebagai pengalih.
+- **Batas percobaan** (tabel `auth_failures`): pemulihan 5 kali salah dan login
+  10 kali salah dalam 15 menit per alamat IP, sebelumnya tidak dibatasi.
+- install.sh membuat akun pertama lewat PHP (prepared statement) dan langsung
+  menampilkan kode pemulihan pertama.
+

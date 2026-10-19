@@ -44,7 +44,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-061 | Offline Time Accuracy | ✅ | `fake-hwclock` (DECISIONS.md #9) + jam dicocokkan otomatis dengan jam HP saat panel dibuka (`SystemClock`, `clock_sync.php`, DECISIONS.md #24) | Diuji di Pi 3 (TC-SYNC-002) |
 | REQ-F-070 | Admin Authentication | ✅ | `AuthManager.php` | ✅ unit test; **di Pi 3:** login salah ditolak, login benar masuk ke Beranda (HP) |
 | REQ-F-071 | Restricted Settings Access | ✅ | `AuthMiddleware.php` | ✅ redirect ke login saat belum auth, teruji |
-| REQ-F-072 | Offline Admin Password Recovery | ✅ | `scripts/reset_admin_password.sh` | Syntax teruji; CLI-only by design (tidak butuh internet) |
+| REQ-F-072 | Offline Admin Password Recovery | ✅ | `admin/forgot.php` + kode pemulihan (`RecoveryCode`), perintah teknisi `sudo jamsholat-reset-password` (`scripts/reset_password_cli.php`) (DECISIONS #33) | ✅ uji integrasi + uji alur web lokal; tanpa internet |
 
 ## Non-Functional Requirements
 

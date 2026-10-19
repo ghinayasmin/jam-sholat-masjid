@@ -47,6 +47,21 @@ final class AdminUserRepository
         $stmt->execute(['p' => $passwordHash, 'id' => $id]);
     }
 
+    /** Simpan hash kode pemulihan baru (kode lama otomatis tidak berlaku). */
+    public function setRecoveryHash(int $id, string $hash): void
+    {
+        $stmt = Database::connection()->prepare(
+            'UPDATE admin_users SET recovery_hash = :h, recovery_created_at = CURRENT_TIMESTAMP WHERE id = :id'
+        );
+        $stmt->execute(['h' => $hash, 'id' => $id]);
+    }
+
+    /** @return list<string> */
+    public function usernames(): array
+    {
+        return Database::connection()->query('SELECT username FROM admin_users ORDER BY id')->fetchAll(\PDO::FETCH_COLUMN);
+    }
+
     public function touchLogin(int $id): void
     {
         $stmt = Database::connection()->prepare(

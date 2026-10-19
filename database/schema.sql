@@ -58,8 +58,18 @@ CREATE TABLE IF NOT EXISTS admin_users (
     username      TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_login_at DATETIME
+    last_login_at DATETIME,
+    recovery_hash TEXT,             -- hash kode pemulihan sekali pakai (DECISIONS.md #33)
+    recovery_created_at DATETIME
 );
+
+-- Percobaan login/pemulihan yang gagal, untuk membatasi tebak-tebakan (DECISIONS.md #33).
+CREATE TABLE IF NOT EXISTS auth_failures (
+    action    TEXT NOT NULL,        -- 'login' | 'recover'
+    ip        TEXT NOT NULL,
+    failed_at INTEGER NOT NULL      -- detik Unix
+);
+CREATE INDEX IF NOT EXISTS idx_auth_failures ON auth_failures(action, ip, failed_at);
 
 -- REQ-F-001 s/d REQ-F-006
 CREATE TABLE IF NOT EXISTS prayer_schedules (

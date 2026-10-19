@@ -299,3 +299,12 @@ button.row { width: 100%; background: none; border: 0; font: inherit; text-align
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
 }
+
+/* Kode pemulihan kata sandi (akun takmir & lupa kata sandi) */
+.recovery { display: grid; gap: 8px; padding: 16px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 0 0 1px var(--line); }
+.recovery-code {
+    display: block; padding: 14px 12px; border-radius: 10px; background: #F2F3EF; text-align: center;
+    font: 700 22px/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .06em; color: var(--ink, #1B2420);
+    user-select: all; word-break: break-all;
+}
+.recovery .hint { margin: 0; font-size: 13px; color: var(--muted); }

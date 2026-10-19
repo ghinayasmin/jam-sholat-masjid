@@ -82,10 +82,23 @@ final class Database
             'starts_on' => 'TEXT',
             'ends_on' => 'TEXT',
         ],
+        'admin_users' => [
+            'recovery_hash' => 'TEXT',
+            'recovery_created_at' => 'DATETIME',
+        ],
+    ];
+
+    /** Tabel baru untuk database lama (sama dengan schema.sql). */
+    private const ADDED_TABLES = [
+        'CREATE TABLE IF NOT EXISTS auth_failures (action TEXT NOT NULL, ip TEXT NOT NULL, failed_at INTEGER NOT NULL)',
+        'CREATE INDEX IF NOT EXISTS idx_auth_failures ON auth_failures(action, ip, failed_at)',
     ];
 
     private static function migrate(PDO $pdo): void
     {
+        foreach (self::ADDED_TABLES as $sql) {
+            $pdo->exec($sql);
+        }
         foreach (self::ADDED_COLUMNS as $table => $columns) {
             $existing = array_column($pdo->query("PRAGMA table_info($table)")->fetchAll(), 'name');
             if ($existing === []) {

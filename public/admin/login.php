@@ -6,6 +6,7 @@ require __DIR__ . '/../../bootstrap.php';
 
 use App\Auth\AuthManager;
 use App\Auth\Csrf;
+use App\Auth\Throttle;
 
 $auth = new AuthManager();
 $auth->startSession();
@@ -22,13 +23,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username = trim((string) ($_POST['username'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
+    // 10 kali salah dalam 15 menit dari satu perangkat: tunggu dulu (DECISIONS.md #33).
+    $throttle = new Throttle('login', 10);
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    $wait = $throttle->waitSeconds($ip);
 
-    if ($username === '' || $password === '') {
+    if ($wait > 0) {
+        $error = 'Terlalu banyak percobaan masuk. Coba lagi dalam ' . Throttle::minutesLabel($wait) . '.';
+    } elseif ($username === '' || $password === '') {
         $error = 'Nama pengguna dan kata sandi wajib diisi.';
     } elseif ($auth->attempt($username, $password)) {
+        $throttle->clear($ip);
         header('Location: /admin/dashboard.php');
         exit;
     } else {
+        $throttle->recordFailure($ip);
         $error = 'Nama pengguna atau kata sandi salah.';
     }
 }
@@ -61,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="password" name="password" required autocomplete="current-password">
         </label>
         <button type="submit" class="btn">Masuk</button>
-        <p class="muted" style="margin:0;font-size:14px">Lupa kata sandi? Minta teknisi menjalankan <code>reset_admin_password.sh</code> di perangkat.</p>
+        <p class="muted" style="margin:0;font-size:14px"><a href="/admin/forgot.php">Lupa kata sandi?</a> Pakai kode pemulihan yang disimpan takmir.</p>
     </form>
 </main>
 <script src="/assets/js/admin.js?v=<?= filemtime(dirname(__DIR__) . '/assets/js/admin.js') ?>"></script>

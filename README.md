@@ -253,7 +253,7 @@ terima ke takmir) disusun terpisah sebagai dokumen tim.
 |---|---|---|
 | Layar jamaah blank/putih | Apache belum jalan atau vhost salah | `sudo systemctl status apache2`; cek `/etc/apache2/sites-enabled/jamsholat.conf` |
 | Jadwal sholat tidak muncul | Database belum di-seed atau path config salah | Cek `storage/jamsholat.db` ada; cek `config/config.php` |
-| Gagal login admin | Lupa password | `sudo bash scripts/reset_admin_password.sh <username>` (REQ-F-072, offline) |
+| Gagal login admin | Lupa password | Takmir: "Lupa kata sandi?" di halaman masuk + kode pemulihan. Teknisi: `sudo jamsholat-reset-password` di perangkat (REQ-F-072, offline) |
 | "Gagal mengubah jam sistem" di panel admin | Sudoers belum terpasang | Jalankan ulang bagian [8/10] `install.sh`, atau cek `/etc/sudoers.d/jamsholat-date` |
 | Kamera tidak mendeteksi gerakan | Camera Module: kabel pita terbalik/longgar. Webcam: index salah | `journalctl -u jamsholat-camera -n 30`; Camera Module: `python3 -c "from picamera2 import Picamera2; print(Picamera2.global_camera_info())"`; webcam: `ls /dev/video*` dan `JAMSHOLAT_CAMERA_INDEX` |
 | Murottal tidak bunyi | Belum diputar di panel, atau sedang jendela diam sekitar waktu sholat | Lihat status di Beranda panel; `journalctl -u jamsholat-alarm -n 30` |
