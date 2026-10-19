@@ -9,6 +9,12 @@ name: Package
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'Yang dibangun & diuji'
+        type: choice
+        options: [semua, windows, linux]
+        default: semua
   push:
     tags: ['v*']
 
@@ -23,6 +29,7 @@ env:
 jobs:
   linux:
     name: .deb di ${{ matrix.image }}
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'windows'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -52,6 +59,7 @@ jobs:
 
   windows:
     name: Installer di ${{ matrix.os }}
+    if: github.event_name != 'workflow_dispatch' || inputs.target != 'linux'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
