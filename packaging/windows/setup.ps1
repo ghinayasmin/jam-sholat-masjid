@@ -64,10 +64,8 @@ return [
 
 $Php = Join-Path $Root 'php\php.exe'
 $Db = Join-Path $Data 'storage\jamsholat.db'
-if (-not (Test-Path $Db)) {
-    & $Php -r '$p = new PDO("sqlite:" . $argv[1]); $p->exec(file_get_contents($argv[2]));' $Db (Join-Path $Root 'app\database\schema.sql')
-    if ($LASTEXITCODE -ne 0) { throw 'Database gagal dibuat.' }
-}
+& $Php (Join-Path $Root 'app\scripts\init_db_cli.php') $Db
+if ($LASTEXITCODE -ne 0) { throw 'Database gagal dibuat.' }
 
 # --- Apache -------------------------------------------------------------------
 # Layanan Windows tidak mencari DLL di folder PHP (PATH layanan baru berubah setelah
@@ -123,6 +121,13 @@ Alias /uploads/publications "$D/uploads/publications"
     </FilesMatch>
 </Directory>
 "@ | Set-Content -Encoding ASCII (Join-Path $Root 'apache\conf\httpd.conf')
+
+# Port 80 dipakai program lain (IIS, http.sys, Skype lama)? Catat supaya mudah dicari.
+$busy = Get-NetTCPConnection -LocalPort 80 -State Listen -ErrorAction SilentlyContinue
+foreach ($c in $busy) {
+    $proc = Get-Process -Id $c.OwningProcess -ErrorAction SilentlyContinue
+    Write-Warning "Port 80 sudah dipakai: PID $($c.OwningProcess) $($proc.ProcessName) ($($c.LocalAddress))"
+}
 
 $Httpd = Join-Path $Root 'apache\bin\httpd.exe'
 & $Httpd -t

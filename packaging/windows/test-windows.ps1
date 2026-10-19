@@ -19,7 +19,14 @@ $Data = "$env:ProgramData\JamSholat"
 $p = Start-Process -FilePath $Installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$env:TEMP\jamsholat-setup.log" -Wait -PassThru
 if ($p.ExitCode -eq 0) { Pass 'installer selesai tanpa error' } else { Fail "installer exit $($p.ExitCode)"; Get-Content "$env:TEMP\jamsholat-setup.log" -Tail 40 }
 
-if ((Get-Service JamSholatApache -ErrorAction SilentlyContinue).Status -eq 'Running') { Pass 'layanan Apache berjalan' } else { Fail 'layanan Apache tidak berjalan'; Get-Content "$Data\logs\setup.log" -Tail 40 -ErrorAction SilentlyContinue }
+if ((Get-Service JamSholatApache -ErrorAction SilentlyContinue).Status -eq 'Running') { Pass 'layanan Apache berjalan' } else {
+    Fail 'layanan Apache tidak berjalan'
+    Get-Content "$Data\logs\setup.log" -Tail 40 -ErrorAction SilentlyContinue
+    Get-Content "$Data\logs\apache-error.log" -Tail 20 -ErrorAction SilentlyContinue
+    Get-NetTCPConnection -LocalPort 80 -State Listen -ErrorAction SilentlyContinue |
+        ForEach-Object { "  port 80 dipakai PID $($_.OwningProcess) $((Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName)" }
+    exit 1   # pemeriksaan berikutnya tidak berarti tanpa Apache
+}
 
 try {
     $api = Invoke-RestMethod -Uri 'http://localhost/api/schedule.php' -TimeoutSec 30
