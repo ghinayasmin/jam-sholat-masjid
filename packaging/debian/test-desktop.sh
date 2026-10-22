@@ -64,7 +64,8 @@ SESSION=$(sed -n 's/^Exec=//p' /usr/share/applications/jamsholat-display.desktop
 click() { as_fresh env DISPLAY=:1 XDG_RUNTIME_DIR=/run/user/$U "$SESSION" > /dev/null 2>&1; }
 kiosk_pids() {
     for p in $(pgrep -u $U -f -- jamsholat-kiosk); do
-        tr '\0' ' ' < /proc/$p/cmdline 2>/dev/null | grep -qv -- '--type=\|-contentproc\|-childID' && echo $p
+        cmd=$(tr '\0' ' ' < /proc/$p/cmdline 2>/dev/null)
+        [ -n "$cmd" ] && grep -qv -- '--type=\|-contentproc\|-childID' <<< "$cmd" && echo $p
     done
 }
 alarms() { pgrep -u $U -f -- alarm_service.py | wc -l; }
@@ -73,7 +74,8 @@ click &                       # login: autostart
 sleep 25
 first=$(kiosk_pids | head -1)
 [ -n "$first" ] && pass "login membuka layar jamaah" || { fail "layar tidak terbuka"; tail -20 /home/takmir/.local/state/jamsholat/kiosk.log; }
-tr '\0' ' ' < /proc/$first/cmdline 2>/dev/null | grep -q 'layar=desktop' && pass "layar dibuka dengan petunjuk Alt+F4 (?layar=desktop)" || fail "URL tanpa layar=desktop"
+cmd=$(tr '\0' ' ' < /proc/$first/cmdline 2>/dev/null)
+grep -q 'layar=desktop' <<< "$cmd" && pass "layar dibuka dengan petunjuk Alt+F4 (?layar=desktop)" || fail "URL tanpa layar=desktop"
 [ "$(alarms)" = 1 ] && pass "layanan alarm berjalan" || fail "alarm berjalan $(alarms) kali"
 
 pkill -u $U -f -- jamsholat-kiosk; sleep 4

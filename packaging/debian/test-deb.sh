@@ -40,7 +40,9 @@ case "$loc" in *setup.php) pass "panel mengarah ke pembuatan akun pertama" ;; *)
 # Akun pertama lewat halaman setup (dari localhost).
 J=/tmp/cj; T=$(curl -s -c $J -b $J http://localhost/admin/setup.php | grep -o 'name="csrf_token" value="[^"]*"' | sed 's/.*value="//;s/"//')
 curl -s -c $J -b $J -o /dev/null -d "csrf_token=$T&username=takmir&password=rahasia123&confirm_password=rahasia123" http://localhost/admin/setup.php
-curl -s -c $J -b $J http://localhost/admin/setup.php | grep -q 'recovery-code' && pass "akun takmir dibuat + kode pemulihan tampil" || fail "setup akun gagal"
+# Keluaran ditampung dulu: dengan pipefail, "| grep -q" bisa gagal acak (SIGPIPE).
+out=$(curl -s -c $J -b $J http://localhost/admin/setup.php)
+grep -q 'recovery-code' <<< "$out" && pass "akun takmir dibuat + kode pemulihan tampil" || fail "setup akun gagal"
 code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' http://localhost/admin/dashboard.php)
 [ "$code" = 200 ] && pass "panel takmir terbuka setelah login" || fail "panel HTTP $code"
 
@@ -54,7 +56,8 @@ grep -q '^Icon=jamsholat$' /usr/share/applications/jamsholat-display.desktop /et
 command -v flock > /dev/null && command -v pgrep > /dev/null && pass "flock & pgrep ada (sesi tunggal)" || fail "flock/pgrep tidak ada"
 
 # Perintah teknisi & audio.
-jamsholat-reset-password --kode takmir | grep -q "Kode pemulihan baru" && pass "sudo jamsholat-reset-password --kode" || fail "reset password CLI"
+out=$(jamsholat-reset-password --kode takmir 2>&1)
+grep -q "Kode pemulihan baru" <<< "$out" && pass "sudo jamsholat-reset-password --kode" || fail "reset password CLI"
 n=$(find /opt/jamsholat/public/assets/audio/murottal -name '*.mp3' | wc -l)
 [ "$n" -ge 114 ] && pass "audio: adzan, iqomah, $n surah murottal" || fail "murottal hanya $n file"
 
