@@ -76,6 +76,12 @@ class TestVolumeGuard(unittest.TestCase):
         self.assertIn(["amixer", "-q", "sset", "PCM", "70%", "unmute"], run.calls)
         self.assertEqual(status, "suara dibunyikan lagi dan dinaikkan 0% ke 70%")
 
+    def test_pi_hdmi_has_no_mixer_and_is_not_an_error(self):
+        with mock.patch.dict(os.environ, {"XDG_RUNTIME_DIR": ""}):
+            run = FakeRunner({"amixer scontrols": ""})
+            status = volume_guard.ensure_audible("linux", run, which_only("amixer"))
+        self.assertEqual(status, "diatur di TV/speaker (HDMI)")
+
     def test_windows_uses_powershell_script(self):
         run = FakeRunner({"powershell.exe": "suara dibunyikan lagi\r\n"})
         status = volume_guard.ensure_audible("win32", run, which_only())

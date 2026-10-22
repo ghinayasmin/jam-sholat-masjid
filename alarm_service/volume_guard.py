@@ -84,7 +84,8 @@ def guard_amixer(run: Runner) -> str:
     controls = re.findall(r"Simple mixer control '([^']+)'", run(["amixer", "scontrols"]))
     control = next((c for c in ALSA_CONTROLS if c in controls), controls[0] if controls else None)
     if control is None:
-        raise RuntimeError("tidak ada kontrol volume ALSA")
+        # HDMI Raspberry Pi (vc4-hdmi) tidak punya pengatur volume: volumenya di TV.
+        return "diatur di TV/speaker (HDMI)"
     out = run(["amixer", "sget", control])  # "... [52%] [-12.00dB] [on]"
     m = re.search(r"\[(\d+)%\]", out)
     if not m:
