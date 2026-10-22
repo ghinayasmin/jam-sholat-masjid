@@ -16,6 +16,10 @@ Write-Host "== $($os.Caption) ($($os.Version)) =="
 $Root = "$env:ProgramFiles\JamSholat"
 $Data = "$env:ProgramData\JamSholat"
 
+# Pintasan Startup bernama lama (v1.1.0) harus dibersihkan installer baru.
+$Startup = "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp"
+New-Item -ItemType File -Force "$Startup\Jam Sholat Masjid.lnk" | Out-Null
+
 $p = Start-Process -FilePath $Installer -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$env:TEMP\jamsholat-setup.log" -Wait -PassThru
 if ($p.ExitCode -eq 0) { Pass 'installer selesai tanpa error' } else { Fail "installer exit $($p.ExitCode)"; Get-Content "$env:TEMP\jamsholat-setup.log" -Tail 40 }
 
@@ -91,29 +95,63 @@ if (-not $alarm.HasExited -and $log -match 'Memulai layanan alarm' -and $log -no
 Stop-Process -Id $alarm.Id -Force -ErrorAction SilentlyContinue
 $cv = & "$Root\python\python.exe" -c "import cv2, numpy, sqlite3; print(cv2.__version__)" 2>&1
 if ($LASTEXITCODE -eq 0) { Pass "OpenCV $cv untuk kamera" } else { Fail "OpenCV: $cv" }
-if (Test-Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\Jam Sholat Masjid.lnk") { Pass 'pintasan Startup terpasang' } else { Fail 'pintasan Startup tidak ada' }
-$lnk = (New-Object -ComObject WScript.Shell).CreateShortcut("$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Jam Sholat Masjid\Layar Jamaah.lnk")
-if ($lnk.IconLocation -match 'favicon\.ico') { Pass 'pintasan Layar Jamaah memakai ikon aplikasi' } else { Fail "ikon pintasan: $($lnk.IconLocation)" }
+if (Test-Path "$Startup\Layar Jamaah.lnk") { Pass 'pintasan Startup "Layar Jamaah" terpasang' } else { Fail 'pintasan Startup tidak ada' }
+if (-not (Test-Path "$Startup\Jam Sholat Masjid.lnk")) { Pass 'pintasan Startup lama (v1.1.0) dihapus' } else { Fail 'pintasan Startup lama masih ada (sesi ganda)' }
+$shell = New-Object -ComObject WScript.Shell
+foreach ($name in 'Layar Jamaah', 'Panel Takmir') {
+    $lnk = $shell.CreateShortcut("$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Jam Sholat Masjid\$name.lnk")
+    if ($lnk.IconLocation -match 'favicon\.ico') { Pass "pintasan $name memakai ikon aplikasi" } else { Fail "ikon pintasan $name`: $($lnk.IconLocation)" }
+}
 
-# Shortcut Layar Jamaah: sesi kedua tidak menggandakan layanan, tapi membuka lagi
-# layar yang sudah ditutup (Alt+F4) — uji manual no. 2 dan 19.
+# Alur layar jamaah (uji manual no. 2 dan 19): sesi kedua tidak menggandakan layanan,
+# tetapi membuka lagi layar yang ditutup (Alt+F4) atau membawanya ke depan.
+Add-Type @'
+using System; using System.Runtime.InteropServices;
+public static class Fg {
+    [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+    public static uint Pid() { uint p; GetWindowThreadProcessId(GetForegroundWindow(), out p); return p; }
+    [DllImport("user32.dll")] public static extern bool SystemParametersInfo(uint a, uint b, IntPtr c, uint d);
+}
+'@
+# Klik di Start memberi proses baru izin tampil di depan; Start-Process dari skrip uji
+# tidak. Kunci fokus dimatikan supaya uji meniru klik sungguhan.
+[Fg]::SystemParametersInfo(0x2001, 0, [IntPtr]::Zero, 2) | Out-Null  # SPI_SETFOREGROUNDLOCKTIMEOUT = 0
 function Get-Kiosk { Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | Where-Object { $_.CommandLine -match 'edge-kiosk' } }
+function Get-KioskMain { @(Get-Kiosk | Where-Object { $_.CommandLine -notmatch '--type=' }) }
 function Get-Session { Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" | Where-Object { $_.CommandLine -match 'session\.pyw' } }
-$session = "`"$Root\app\packaging\windows\session.pyw`""
-Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
+function Get-Alarm { @(Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'alarm_service' }) }
+function Click-LayarJamaah { Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList "`"$Root\app\packaging\windows\session.pyw`"" -WorkingDirectory "$Root\app" }
+
+# Instalasi pertama (halaman akhir installer): suara aktif, layar belum dibuka.
+Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList "`"$Root\app\packaging\windows\session.pyw`" --tanpa-layar" -WorkingDirectory "$Root\app"
 Start-Sleep -Seconds 20
-if (Get-Kiosk) { Pass 'sesi membuka layar jamaah (Edge kiosk)' } else { Fail 'layar jamaah tidak terbuka' }
+if ((Get-Alarm).Count -eq 1 -and -not (Get-Kiosk)) { Pass 'instalasi pertama: alarm jalan, layar belum menutupi panel' } else { Fail "instalasi pertama: alarm $((Get-Alarm).Count), kiosk $(@(Get-Kiosk).Count)" }
+if ((Get-Content "$Data\logs\alarm.log" -Raw -ErrorAction SilentlyContinue) -notmatch 'Traceback') { Pass 'alarm.log tanpa error' } else { Fail 'alarm.log berisi Traceback' }
+
+Click-LayarJamaah; Start-Sleep -Seconds 10
+$kiosk = Get-KioskMain
+if ($kiosk.Count -eq 1) { Pass 'Start > Layar Jamaah membuka layar' } else { Fail "jendela kiosk: $($kiosk.Count)" }
+if ($kiosk -and $kiosk[0].CommandLine -match 'layar=desktop') { Pass 'layar dibuka dengan petunjuk Alt+F4 (?layar=desktop)' } else { Fail 'URL kiosk tanpa layar=desktop' }
+
+# Tertutup jendela lain (Alt+Tab): klik membawa layar ke depan, tanpa jendela kedua.
+$note = Start-Process notepad -PassThru; Start-Sleep -Seconds 3
+if ([Fg]::Pid() -eq $note.Id) {
+    Click-LayarJamaah; Start-Sleep -Seconds 6
+    if ([Fg]::Pid() -eq $kiosk[0].ProcessId) { Pass 'klik membawa layar ke depan jendela lain' } else { Fail "jendela depan: PID $([Fg]::Pid())" }
+} else {
+    Click-LayarJamaah; Start-Sleep -Seconds 6
+    Write-Host '  · lewati cek jendela depan: runner tanpa desktop interaktif'
+}
+Stop-Process -Id $note.Id -Force -ErrorAction SilentlyContinue
+if ((Get-KioskMain).Count -eq 1) { Pass 'klik saat layar terbuka tidak membuka layar kedua' } else { Fail "jendela kiosk: $((Get-KioskMain).Count)" }
+
 Get-Kiosk | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Start-Sleep -Seconds 3
-Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
-Start-Sleep -Seconds 10
-if (Get-Kiosk) { Pass 'shortcut membuka lagi layar yang ditutup' } else { Fail 'shortcut tidak membuka lagi layar' }
-Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
-Start-Sleep -Seconds 8
-$main = @(Get-Kiosk | Where-Object { $_.CommandLine -notmatch '--type=' }).Count
-if ($main -eq 1) { Pass 'klik saat layar terbuka tidak membuka layar kedua' } else { Fail "jumlah jendela Edge kiosk: $main" }
-$n = @(Get-Session).Count
-if ($n -eq 1) { Pass 'sesi tetap satu (suara tidak dobel)' } else { Fail "jumlah sesi: $n" }
+Click-LayarJamaah; Start-Sleep -Seconds 10
+if ((Get-KioskMain).Count -eq 1) { Pass 'layar yang ditutup (Alt+F4) terbuka lagi dari shortcut' } else { Fail 'shortcut tidak membuka lagi layar' }
+if (@(Get-Session).Count -eq 1 -and (Get-Alarm).Count -eq 1) { Pass 'sesi & alarm tetap satu setelah 4 klik (suara tidak dobel)' } else { Fail "sesi $(@(Get-Session).Count), alarm $((Get-Alarm).Count)" }
+
 Get-Kiosk | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Get-Session | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'alarm_service|motion_detect' } |

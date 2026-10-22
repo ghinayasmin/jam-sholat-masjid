@@ -45,17 +45,23 @@ Source: "{#Stage}\redist\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafte
 
 [Icons]
 ; Sesi (alarm, kamera, layar jamaah) mulai otomatis setiap kali pengguna masuk Windows.
-Name: "{commonstartup}\Jam Sholat Masjid"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"; IconFilename: "{app}\app\public\favicon.ico"
+Name: "{commonstartup}\Layar Jamaah"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"; IconFilename: "{app}\app\public\favicon.ico"
 Name: "{group}\Layar Jamaah"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"; IconFilename: "{app}\app\public\favicon.ico"
 Name: "{group}\Panel Takmir"; Filename: "{app}\panel.url"; IconFilename: "{app}\app\public\favicon.ico"
 Name: "{group}\Reset kata sandi"; Filename: "{app}\app\packaging\windows\reset-password.cmd"
 Name: "{group}\Folder data (database, cadangan, log)"; Filename: "{commonappdata}\JamSholat"
 Name: "{group}\Hapus Jam Sholat Masjid"; Filename: "{uninstallexe}"
 
+[InstallDelete]
+; Nama pintasan Startup di v1.1.0.
+Type: files; Name: "{commonstartup}\Jam Sholat Masjid.lnk"
+
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Memasang Microsoft Visual C++ Runtime..."; Flags: waituntilterminated
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\app\packaging\windows\setup.ps1"" -Root ""{app}"" -Data ""{commonappdata}\JamSholat"""; StatusMsg: "Menyiapkan Apache, PHP, dan database..."; Flags: runhidden waituntilterminated
-Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"; Description: "Jalankan layar jamaah sekarang"; Flags: postinstall nowait skipifsilent
+; Suara adzan langsung aktif; layar jamaah belum dibuka supaya panel (buat akun, atur
+; lokasi) tidak tertutup layar penuh. Layar dibuka dari Start > Layar Jamaah.
+Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"" --tanpa-layar"; WorkingDir: "{app}\app"; Description: "Nyalakan suara adzan sekarang"; Flags: postinstall nowait skipifsilent
 Filename: "{app}\panel.url"; Description: "Buka panel takmir untuk membuat akun"; Flags: postinstall shellexec skipifsilent
 
 [UninstallRun]
@@ -68,4 +74,4 @@ Type: filesandordirs; Name: "{app}\app\config\config.php"
 Type: filesandordirs; Name: "{app}\php\php.ini"
 
 [Messages]
-id.FinishedLabel=Jam Sholat Masjid sudah terpasang. Buka panel takmir untuk membuat akun, lalu atur lokasi masjid. Layar jamaah dan suara adzan berjalan otomatis setiap kali Windows dinyalakan dan pengguna masuk.
+id.FinishedLabel=Jam Sholat Masjid sudah terpasang.%n%n1. Buat akun takmir di panel, lalu atur lokasi masjid.%n2. Buka layar jamaah dari Start > Layar Jamaah. Tutup dengan Alt+F4; suara adzan tetap berjalan.%n%nSetelah ini layar jamaah dan suara adzan menyala sendiri setiap kali Windows dinyalakan.

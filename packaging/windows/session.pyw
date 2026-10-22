@@ -30,7 +30,8 @@ def display_url() -> str:
         port = int((DATA / "port.txt").read_text().strip())
     except (OSError, ValueError):
         port = 80
-    return "http://localhost/display.php" if port == 80 else f"http://localhost:{port}/display.php"
+    base = "http://localhost" if port == 80 else f"http://localhost:{port}"
+    return f"{base}/display.php?layar=desktop"  # desktop: petunjuk Alt+F4 di layar jamaah
 
 
 URL = display_url()
@@ -51,9 +52,13 @@ def single_instance() -> bool:
 
 
 def ask_running_session_to_show() -> None:
-    """Shortcut Layar Jamaah diklik saat sesi sudah jalan (mis. layar ditutup dengan
-    Alt+F4): minta sesi itu membuka layar lagi, alih-alih keluar tanpa tanda apa pun."""
+    """Shortcut Layar Jamaah diklik saat sesi sudah jalan: minta sesi itu membuka layar
+    lagi (bila ditutup dengan Alt+F4) atau membawanya ke depan (bila tertutup jendela
+    lain), alih-alih keluar tanpa tanda apa pun."""
     kernel32 = ctypes.windll.kernel32
+    # Proses ini baru diklik pengguna, jadi boleh mengambil fokus; izin itu diteruskan
+    # ke sesi yang berjalan di latar belakang.
+    ctypes.windll.user32.AllowSetForegroundWindow(-1)  # ASFW_ANY
     kernel32.OpenEventW.restype = ctypes.c_void_p
     handle = kernel32.OpenEventW(0x0002, False, SHOW_EVENT)  # EVENT_MODIFY_STATE
     if handle:
@@ -109,12 +114,35 @@ def open_kiosk() -> subprocess.Popen | None:
                             creationflags=NO_WINDOW)
 
 
+def bring_to_front(pid: int) -> None:
+    """Tampilkan jendela Edge kiosk di depan jendela lain (mis. setelah Alt+Tab)."""
+    user32 = ctypes.windll.user32
+    windows: list[int] = []
+
+    @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+    def collect(hwnd, _):
+        owner = ctypes.c_ulong()
+        user32.GetWindowThreadProcessId(ctypes.c_void_p(hwnd), ctypes.byref(owner))
+        if owner.value == pid and user32.IsWindowVisible(ctypes.c_void_p(hwnd)):
+            windows.append(hwnd)
+        return True
+
+    user32.EnumWindows(collect, None)
+    for hwnd in windows:
+        if user32.IsIconic(ctypes.c_void_p(hwnd)):
+            user32.ShowWindow(ctypes.c_void_p(hwnd), 9)  # SW_RESTORE
+        user32.SetForegroundWindow(ctypes.c_void_p(hwnd))
+
+
 def serve_show_requests(event: int, kiosk: subprocess.Popen | None) -> None:
-    """Buka layar lagi setiap kali shortcut Layar Jamaah diklik, kecuali masih terbuka."""
+    """Setiap kali shortcut Layar Jamaah diklik: buka layar bila sudah ditutup, atau
+    bawa ke depan bila masih terbuka."""
     while True:
         ctypes.windll.kernel32.WaitForSingleObject(ctypes.c_void_p(event), 0xFFFFFFFF)  # INFINITE
         if kiosk is None or kiosk.poll() is not None:
             kiosk = open_kiosk()
+        else:
+            bring_to_front(kiosk.pid)
 
 
 def main() -> None:
@@ -132,7 +160,10 @@ def main() -> None:
     for name, args in services:
         threading.Thread(target=keep_running, args=(name, args), daemon=True).start()
     wait_for_web()
-    serve_show_requests(show_event, open_kiosk())
+    # Instalasi pertama: hanya panel yang dibuka (buat akun, atur lokasi); layar jamaah
+    # menyusul lewat Start → Layar Jamaah atau saat login berikutnya.
+    first_run = "--tanpa-layar" in sys.argv
+    serve_show_requests(show_event, None if first_run else open_kiosk())
 
 
 if __name__ == "__main__":
