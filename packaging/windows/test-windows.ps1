@@ -92,6 +92,28 @@ Stop-Process -Id $alarm.Id -Force -ErrorAction SilentlyContinue
 $cv = & "$Root\python\python.exe" -c "import cv2, numpy, sqlite3; print(cv2.__version__)" 2>&1
 if ($LASTEXITCODE -eq 0) { Pass "OpenCV $cv untuk kamera" } else { Fail "OpenCV: $cv" }
 if (Test-Path "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp\Jam Sholat Masjid.lnk") { Pass 'pintasan Startup terpasang' } else { Fail 'pintasan Startup tidak ada' }
+$lnk = (New-Object -ComObject WScript.Shell).CreateShortcut("$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Jam Sholat Masjid\Layar Jamaah.lnk")
+if ($lnk.IconLocation -match 'favicon\.ico') { Pass 'pintasan Layar Jamaah memakai ikon aplikasi' } else { Fail "ikon pintasan: $($lnk.IconLocation)" }
+
+# Shortcut Layar Jamaah: sesi kedua tidak menggandakan layanan, tapi membuka lagi
+# layar yang sudah ditutup (Alt+F4) — uji manual no. 2 dan 19.
+function Get-Kiosk { Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | Where-Object { $_.CommandLine -match 'edge-kiosk' } }
+function Get-Session { Get-CimInstance Win32_Process -Filter "Name='pythonw.exe'" | Where-Object { $_.CommandLine -match 'session\.pyw' } }
+$session = "`"$Root\app\packaging\windows\session.pyw`""
+Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
+Start-Sleep -Seconds 20
+if (Get-Kiosk) { Pass 'sesi membuka layar jamaah (Edge kiosk)' } else { Fail 'layar jamaah tidak terbuka' }
+Get-Kiosk | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+Start-Sleep -Seconds 3
+Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
+Start-Sleep -Seconds 10
+if (Get-Kiosk) { Pass 'shortcut membuka lagi layar yang ditutup' } else { Fail 'shortcut tidak membuka lagi layar' }
+$n = @(Get-Session).Count
+if ($n -eq 1) { Pass 'sesi tetap satu (suara tidak dobel)' } else { Fail "jumlah sesi: $n" }
+Get-Kiosk | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+Get-Session | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match 'alarm_service|motion_detect' } |
+    ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 
 # Uninstall: layanan & firewall hilang, data tetap.
 $un = Start-Process -FilePath "$Root\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru

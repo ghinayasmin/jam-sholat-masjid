@@ -41,10 +41,22 @@ EDGE_PATHS = [
 NO_WINDOW = 0x08000000  # CREATE_NO_WINDOW
 
 
+SHOW_EVENT = "Local\\JamSholatShowDisplay"
+
+
 def single_instance() -> bool:
     """Satu sesi per pengguna: login ulang tidak menggandakan suara adzan."""
     ctypes.windll.kernel32.CreateMutexW(None, False, "Local\\JamSholatSession")
     return ctypes.windll.kernel32.GetLastError() != 183  # ERROR_ALREADY_EXISTS
+
+
+def ask_running_session_to_show() -> None:
+    """Shortcut Layar Jamaah diklik saat sesi sudah jalan (mis. layar ditutup dengan
+    Alt+F4): minta sesi itu membuka layar lagi, alih-alih keluar tanpa tanda apa pun."""
+    handle = ctypes.windll.kernel32.OpenEventW(0x0002, False, SHOW_EVENT)  # EVENT_MODIFY_STATE
+    if handle:
+        ctypes.windll.kernel32.SetEvent(handle)
+        ctypes.windll.kernel32.CloseHandle(handle)
 
 
 def service_env() -> dict:
@@ -82,17 +94,31 @@ def wait_for_web(timeout: int = 90) -> None:
         time.sleep(2)
 
 
-def open_kiosk() -> None:
+def open_kiosk() -> subprocess.Popen | None:
     edge = next((p for p in EDGE_PATHS if p.is_file()), None)
     if edge is None:
         os.startfile(URL)  # browser bawaan, tanpa mode kiosk
-        return
-    subprocess.Popen([str(edge), "--kiosk", URL, "--edge-kiosk-type=fullscreen", "--no-first-run",
-                      "--disable-features=Translate"], creationflags=NO_WINDOW)
+        return None
+    # Profil Edge terpisah: kalau Edge biasa sedang terbuka, --kiosk tetap berlaku dan
+    # proses ini tetap hidup selama layar terbuka (dipakai serve_show_requests).
+    profile = Path(os.environ.get("LOCALAPPDATA", str(DATA))) / "JamSholat" / "edge-kiosk"
+    return subprocess.Popen([str(edge), "--kiosk", URL, "--edge-kiosk-type=fullscreen", "--no-first-run",
+                             f"--user-data-dir={profile}", "--disable-features=Translate"],
+                            creationflags=NO_WINDOW)
+
+
+def serve_show_requests(kiosk: subprocess.Popen | None) -> None:
+    """Buka layar lagi setiap kali shortcut Layar Jamaah diklik, kecuali masih terbuka."""
+    event = ctypes.windll.kernel32.CreateEventW(None, False, False, SHOW_EVENT)
+    while True:
+        ctypes.windll.kernel32.WaitForSingleObject(event, 0xFFFFFFFF)  # INFINITE
+        if kiosk is None or kiosk.poll() is not None:
+            kiosk = open_kiosk()
 
 
 def main() -> None:
     if not single_instance():
+        ask_running_session_to_show()
         return
     LOGS.mkdir(parents=True, exist_ok=True)
     python = str(ROOT / "python" / "python.exe")
@@ -102,9 +128,7 @@ def main() -> None:
     for name, args in services:
         threading.Thread(target=keep_running, args=(name, args), daemon=True).start()
     wait_for_web()
-    open_kiosk()
-    while True:
-        time.sleep(3600)
+    serve_show_requests(open_kiosk())
 
 
 if __name__ == "__main__":
