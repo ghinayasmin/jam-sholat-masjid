@@ -78,6 +78,16 @@
         });
     });
 
+    // Kode QR alamat panel (halaman Buka panel dari HP, #40), dibuat di perangkat tanpa internet.
+    document.querySelectorAll('[data-qr]').forEach((box) => {
+        if (typeof window.qrcode !== 'function') return;
+        const qr = window.qrcode(0, 'M');
+        qr.addData(box.dataset.qr);
+        qr.make();
+        box.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+    });
+    document.querySelectorAll('[data-print]').forEach((btn) => btn.addEventListener('click', () => window.print()));
+
     // Pratinjau pengingat adzan mengikuti angka & pesan.
     const preview = document.querySelector('[data-reminder-preview]');
     if (preview) {

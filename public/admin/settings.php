@@ -118,6 +118,8 @@ require __DIR__ . '/_header.php';
         <a class="row" href="/admin/account.php"><span></span><span class="k">Akun takmir<?= $hasRecovery ? '' : '<small>Belum ada kode pemulihan</small>' ?></span><span class="v">Kata sandi <?= $chev ?></span></a>
         <a class="row" href="/admin/settings_time.php"><span></span><span class="k">Jam &amp; tanggal</span><span class="v">Koreksi manual <?= $chev ?></span></a>
         <a class="row" href="/admin/backup.php"><span></span><span class="k">Cadangan data</span><span class="v"><?= Format::e($lastBackup) ?> <?= $chev ?></span></a>
+        <a class="row" href="/admin/phone.php"><span></span><span class="k">Buka panel dari HP</span><span class="v">Kode QR <?= $chev ?></span></a>
+        <a class="row" href="/admin/help.php"><span></span><span class="k">Panduan</span><span class="v">Bantuan <?= $chev ?></span></a>
         <a class="row" href="/admin/about.php"><span></span><span class="k">Tentang aplikasi</span><span class="v">Tim &amp; versi <?= $chev ?></span></a>
     </div>
 </section>

@@ -744,3 +744,20 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   browser dan dicocokkan dengan `/api/murottal.php` tiap 3 detik.
 - Keterangan "mulai lagi pukul …" di panel kini memakai jendela diam yang sama
   dengan layanan alarm sejak #30 (15 menit setelah iqomah, minimal 20 menit).
+- **Panduan di panel** (`admin/help.php`, Pengaturan → Sistem → Panduan): bantuan
+  singkat yang tetap terbuka tanpa internet, per topik (pertama kali dipakai,
+  buka/tutup layar, adzan tidak berbunyi, menyala sendiri setelah listrik padam,
+  panel dari HP, poster, murottal, lupa kata sandi, cadangan). Langkahnya
+  menyesuaikan perangkat (`App\Platform::kind()`: Raspberry Pi, Windows, Linux
+  desktop/server); mis. bagian masuk otomatis (netplwiz di Windows, Automatic
+  Login di Ubuntu) dan "Restore on AC Power Loss" di BIOS hanya tampil di
+  komputer biasa. Baris "Layanan adzan" di Beranda menaut ke bagian "Adzan tidak
+  berbunyi". Masuk otomatis tidak dinyalakan diam-diam oleh installer karena
+  menyangkut keamanan komputer; takmir yang memutuskan.
+- **Buka panel dari HP** (`admin/phone.php`): alamat jaringan lokal komputer
+  (alamat yang sedang dipakai browser, `hostname -I` di Linux, alamat host di
+  Windows; hanya 10.x, 172.16–31.x, 192.168.x) dan port yang dipakai, dengan kode
+  QR yang dibuat di perangkat oleh qrcode-generator 1.4.4 (MIT, disimpan di
+  `public/assets/js/vendor/`, tanpa akses jaringan). Bisa dicetak untuk ditempel.
+  Di Pi/Linux juga disebut alamat `<host>.local`. Ini menggantikan rencana stiker
+  QR Pi yang belum pernah dibuat.
