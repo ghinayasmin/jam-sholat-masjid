@@ -45,7 +45,11 @@ jobs:
           echo "$AUDIO_SHA256  $RUNNER_TEMP/$AUDIO_ZIP" | sha256sum -c -
           unzip -q "$RUNNER_TEMP/$AUDIO_ZIP" -d "$RUNNER_TEMP/audio-bundle"
       - name: Versi
-        run: echo "VERSION=$(echo "${GITHUB_REF_NAME}" | sed -n 's/^v//p' | grep . || echo 1.1.0)" >> "$GITHUB_ENV"
+        # Versi dari berkas VERSION (baris 1); tag rilis wajib sama dengannya.
+        run: |
+          v="$(head -1 VERSION | tr -d '[:space:]')"
+          case "$GITHUB_REF_NAME" in v*) [ "$GITHUB_REF_NAME" = "v$v" ] || { echo "::error::Tag $GITHUB_REF_NAME tidak sama dengan VERSION ($v)"; exit 1; } ;; esac
+          echo "VERSION=$v" >> "$GITHUB_ENV"
       - name: Bangun .deb
         run: bash packaging/debian/build-deb.sh "$VERSION" "$RUNNER_TEMP/audio-bundle/audio" dist
       - name: Uji di ${{ matrix.image }}
@@ -93,7 +97,8 @@ jobs:
           (Get-Item $iscc).VersionInfo.ProductVersion
       - name: Versi
         run: |
-          $v = if ($env:GITHUB_REF_NAME -match '^v(.+)$') { $Matches[1] } else { '1.1.0' }
+          $v = (Get-Content VERSION -TotalCount 1).Trim()
+          if ($env:GITHUB_REF_NAME -like 'v*' -and $env:GITHUB_REF_NAME -ne "v$v") { throw "Tag $env:GITHUB_REF_NAME tidak sama dengan VERSION ($v)" }
           "VERSION=$v" | Out-File -Append $env:GITHUB_ENV
       - name: Bangun installer
         run: ./packaging/windows/build.ps1 -Version $env:VERSION -AudioDir "$env:RUNNER_TEMP\audio-bundle\audio" -OutDir dist

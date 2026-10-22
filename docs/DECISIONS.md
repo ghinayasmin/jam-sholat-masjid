@@ -670,3 +670,26 @@ waktu dibuat).
      pintasan, installer, daftar aplikasi Windows, menu Linux, dan tab browser.
   Semua alur ini diuji otomatis: `test-windows.ps1` (Windows Server 2022/2025) dan
   `packaging/debian/test-desktop.sh` (Debian 12, Chromium & Firefox, Xvfb).
+
+## 40. Perbaikan v1.1.2 dari uji instalasi (DIKONFIRMASI)
+
+Hasil uji Linux pengguna (22 Okt 2026) dan tinjauan alur sesudahnya. Semua
+perbaikan berlaku untuk Raspberry Pi, Windows, dan Linux, dan dirilis bersama
+sebagai satu versi supaya tim cukup memasang ulang sekali.
+
+- **Satu sumber versi:** berkas `VERSION` di akar repo (baris 1 nomor versi,
+  baris 2 bulan rilis). Halaman Tentang, `build-deb.sh`, `build.ps1`, dan
+  workflow membacanya; tag rilis yang tidak sama dengan isi `VERSION` membuat
+  build gagal. Sebelumnya halaman Tentang menulis 1.1 saat paket 1.1.1.
+- **Hitung mundur Beranda** (`data-countdown`) berjalan di browser dan memuat
+  ulang halaman saat waktu sholat tiba. Tab yang dibiarkan terbuka tidak lagi
+  menampilkan angka lama ("8 jam 50 menit" yang sebenarnya dari 2 jam sebelumnya).
+- **Pengingat lokasi:** kolom `location_confirmed` (instalasi baru 0, database
+  lama 1) menjadi 1 saat Pengaturan → Lokasi disimpan. Selama 0, Beranda
+  menampilkan kartu "Atur lokasi masjid dulu" dan layar jamaah menulis kecil
+  "Lokasi masjid belum diatur". Tanpa ini, masjid di luar Yogyakarta bisa memakai
+  jadwal Yogyakarta tanpa sadar.
+- **Slide kas:** judul besar "Kas Masjid", dengan "Baitul Maal بيت المال" kecil di
+  bawahnya. Tidak semua jamaah paham istilah Baitul Maal.
+- **Deskripsi Tentang** menyebut bahwa aplikasi berjalan di Raspberry Pi, Windows,
+  dan Linux.

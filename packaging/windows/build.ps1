@@ -1,14 +1,14 @@
 <#
   build.ps1 — membuat JamSholat-Setup-<versi>.exe (DECISIONS.md #39).
 
-    pwsh packaging\windows\build.ps1 -Version 1.1.0 -AudioDir <folder audio> -OutDir dist
+    pwsh packaging\windows\build.ps1 -AudioDir <folder audio> -OutDir dist   (versi dari berkas VERSION)
 
   Mengunduh Apache, PHP, Python embeddable, mpg123, dan VC++ Runtime (versi dikunci di
   bawah), menyusun folder staging, memasang OpenCV ke Python, lalu mengompilasi
   JamSholat.iss dengan Inno Setup 6.5+ (iscc). Dijalankan di Windows, mis. GitHub Actions.
 #>
 param(
-    [Parameter(Mandatory = $true)][string]$Version,
+    [string]$Version = '',   # kosong = baris 1 berkas VERSION
     [Parameter(Mandatory = $true)][string]$AudioDir,
     [string]$OutDir = 'dist',
     [string]$CacheDir = "$env:TEMP\jamsholat-build-cache"
@@ -27,6 +27,7 @@ $Components = @{
 $PhpFallback = 'https://downloads.php.net/~windows/releases/php-8.4.26-Win32-vs17-x64.zip'
 
 $Repo = (Resolve-Path "$PSScriptRoot\..\..").Path
+if (-not $Version) { $Version = (Get-Content (Join-Path $Repo 'VERSION') -TotalCount 1).Trim() }
 $Stage = Join-Path $env:TEMP "jamsholat-stage"
 New-Item -ItemType Directory -Force -Path $CacheDir, $OutDir | Out-Null
 if (Test-Path $Stage) { Remove-Item -Recurse -Force $Stage }

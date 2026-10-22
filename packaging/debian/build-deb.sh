@@ -3,6 +3,7 @@
 # build-deb.sh — membuat paket jamsholat_<versi>_all.deb (DECISIONS.md #39).
 #
 #   bash packaging/debian/build-deb.sh <versi> <folder-audio> <folder-keluaran>
+#   (<versi> kosong "" = isi berkas VERSION)
 #
 # <folder-audio> berisi adzan.mp3, adzan_subuh.mp3, iqomah.mp3, CREDITS.txt, dan
 # murottal/*.mp3 (isi jamsholat-audio-v1.zip). Butuh dpkg-deb, jadi jalankan di
@@ -10,10 +11,10 @@
 #
 set -euo pipefail
 
-VERSION="${1:?versi, mis. 1.1.0}"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+VERSION="${1:-$(head -1 "$REPO/VERSION" | tr -d '[:space:]')}"   # bawaan: berkas VERSION
 AUDIO_DIR="${2:?folder audio}"
 OUT_DIR="${3:?folder keluaran}"
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 

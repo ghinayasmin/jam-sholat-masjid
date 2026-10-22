@@ -213,6 +213,7 @@
             $('mosqueName').textContent = today.mosque_name || 'Masjid';
             $('photoName').textContent = today.mosque_name || 'Masjid';
             $('mosqueAddress').textContent = today.mosque_address || '';
+            $('locationWarn').hidden = today.location_confirmed !== false;
             render();
         } catch (e) {
             console.error('Gagal memuat jadwal:', e);

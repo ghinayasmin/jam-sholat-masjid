@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../../bootstrap.php';
 
+use App\AppVersion;
 use App\Auth\AuthManager;
 use App\Auth\AuthMiddleware;
 use App\View\Format;
@@ -11,9 +12,7 @@ use App\View\Format;
 $auth = new AuthManager();
 AuthMiddleware::requireLogin($auth);
 
-// Menu Tentang (revisi dosen 19 Okt 2026, DECISIONS.md #34).
-const APP_VERSION = '1.1';
-const APP_RELEASE = 'Oktober 2026';
+// Menu Tentang (revisi dosen 19 Okt 2026, DECISIONS.md #34). Versi dari berkas VERSION.
 
 $team = ['Azhar Maulana', 'Rahmanda Putri Setiawati', 'Ghina Yasmin Azizah', 'Muhammad Dhiwaul Akbar'];
 
@@ -25,8 +24,8 @@ require __DIR__ . '/_header.php';
 
 <div class="about-hero">
     <div class="about-name">Jam Sholat Masjid</div>
-    <div class="about-ver">Versi <?= APP_VERSION ?> · <?= APP_RELEASE ?></div>
-    <p>Jadwal sholat, pengingat adzan dan iqomah, pengumuman, kas, murottal, dan kamera untuk masjid. Jadwal dihitung dengan kriteria Kemenag RI dan tampil di layar masjid, sementara pengurus mengatur semuanya dari HP.</p>
+    <div class="about-ver">Versi <?= Format::e(AppVersion::number()) ?><?= AppVersion::release() !== '' ? ' · ' . Format::e(AppVersion::release()) : '' ?></div>
+    <p>Jadwal sholat, pengingat adzan dan iqomah, pengumuman, kas, murottal, dan kamera untuk masjid. Berjalan di Raspberry Pi, komputer Windows, atau Linux milik masjid, tanpa perlu internet. Pengurus mengatur semuanya dari HP lewat WiFi masjid.</p>
 </div>
 
 <section class="group" aria-labelledby="g-tim">

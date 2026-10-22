@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'latitude' => $latitude,
             'longitude' => $longitude,
             'madzhab' => $madzhab,
+            'location_confirmed' => 1,
         ]);
         // REQ-F-002/003: jadwal yang sudah di-cache dihitung ulang dengan pengaturan baru.
         (new ScheduleEngine())->invalidateCache();

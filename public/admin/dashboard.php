@@ -46,6 +46,9 @@ if ($next === null) {
 $inText = $next['in'] >= 60
     ? intdiv($next['in'], 60) . ' jam' . ($next['in'] % 60 ? ' ' . $next['in'] % 60 . ' menit' : '') . ' lagi'
     : $next['in'] . ' menit lagi';
+// Sisa detik sampai waktu sholat berikutnya: admin.js menghitung mundur dari sini supaya
+// tab yang dibiarkan terbuka tidak menampilkan angka lama (temuan uji v1.1.1).
+$nextInSeconds = $next['in'] * 60 - (int) gmdate('s', LocalTime::now());
 $reminderAt = null;
 if ((int) $settings['reminder_enabled'] === 1) {
     $lead = ($next['name'] === 'Jumat') ? (int) $settings['reminder_friday_minutes'] : (int) $settings['reminder_minutes'];
@@ -77,9 +80,17 @@ $activeTab = 'home';
 require __DIR__ . '/_header.php';
 ?>
 
+<?php if ((int) $settings['location_confirmed'] !== 1): ?>
+    <a class="setup-card" href="/admin/settings_location.php">
+        <b>Atur lokasi masjid dulu</b>
+        <span>Jadwal sholat dan adzan masih memakai lokasi bawaan (Yogyakarta). Simpan lokasi masjid supaya waktunya tepat.</span>
+        <span class="go">Atur lokasi</span>
+    </a>
+<?php endif; ?>
+
 <div class="next-card">
     <div><div class="s">Berikutnya<?= $next['tomorrow'] ? ' (besok)' : '' ?></div><div class="w"><?= Format::e($next['name'] . ' ' . $next['time']) ?></div></div>
-    <div class="c"><?= Format::e($inText) ?></div>
+    <div class="c" data-countdown="<?= $nextInSeconds ?>"><?= Format::e($inText) ?></div>
     <?php if ($reminderAt !== null): ?>
         <div class="r">Pengingat tampil di layar jamaah pukul <?= $reminderAt ?></div>
     <?php else: ?>

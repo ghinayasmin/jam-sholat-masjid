@@ -82,6 +82,8 @@ final class Database
             'adjust_asr_minutes' => 'INTEGER NOT NULL DEFAULT 0',
             'adjust_maghrib_minutes' => 'INTEGER NOT NULL DEFAULT 0',
             'adjust_isha_minutes' => 'INTEGER NOT NULL DEFAULT 0',
+            // Database lama sudah dipakai, jadi lokasinya dianggap sudah diatur (instalasi baru: 0).
+            'location_confirmed' => 'INTEGER NOT NULL DEFAULT 1 CHECK (location_confirmed IN (0,1))',
         ],
         'publications' => [
             'starts_on' => 'TEXT',

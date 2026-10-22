@@ -116,6 +116,10 @@ a.row:active, button.row:active { background: #F6F7F4; }
 .empty { padding: 20px 16px; color: var(--muted); font-size: 14px; text-align: center; }
 
 /* ---------- Beranda ---------- */
+.setup-card { display: grid; gap: 6px; background: var(--out-soft); color: #5E231B; border: 1px solid #EBC4BE; border-radius: var(--radius); padding: 16px; margin-bottom: 14px; text-decoration: none; }
+.setup-card b { font-size: 17px; }
+.setup-card span { font-size: 14px; line-height: 1.45; }
+.setup-card .go { justify-self: start; margin-top: 4px; background: var(--out); color: #FFFFFF; font-weight: 700; border-radius: 10px; padding: 10px 16px; }
 .next-card {
     background: var(--night); color: #ECE6D8; border-radius: var(--radius);
     padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 6px 12px;

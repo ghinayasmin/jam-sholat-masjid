@@ -169,6 +169,21 @@
         }
     });
 
+    // Hitung mundur "x jam y menit lagi" di Beranda berjalan sendiri. Saat waktu sholat
+    // tiba, halaman dimuat ulang agar sholat berikutnya dan jadwal yang lewat ikut berganti.
+    const countdown = document.querySelector('[data-countdown]');
+    if (countdown) {
+        const endsAt = Date.now() + Number(countdown.dataset.countdown) * 1000;
+        const tick = () => {
+            const minutes = Math.ceil((endsAt - Date.now()) / 60000);
+            if (minutes <= 0) { location.reload(); return; }
+            const h = Math.floor(minutes / 60), m = minutes % 60;
+            countdown.textContent = (h ? h + ' jam' + (m ? ' ' + m + ' menit' : '') : m + ' menit') + ' lagi';
+        };
+        setInterval(tick, 15000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+    }
+
     // Jam perangkat belum tersinkron (listrik padam tanpa internet): cocokkan
     // dengan jam HP ini, lalu muat ulang agar jam yang tampil sudah benar.
     const clockSync = document.querySelector('[data-clock-sync]');

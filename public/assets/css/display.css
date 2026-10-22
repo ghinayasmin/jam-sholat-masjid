@@ -161,6 +161,10 @@ html, body {
     text-align: center;
     overflow: hidden;
 }
+.location-warn { margin-top: calc(var(--u) * .6); font-size: calc(var(--u) * 1.15); color: #E8A598; }
+.kas-title { text-align: center; font-size: calc(var(--u) * 3.4); font-weight: 800; letter-spacing: -0.01em; color: var(--brass); line-height: 1.1; }
+.kas-title + .kas-eyebrow { font-size: calc(var(--u) * 1.3); color: var(--ink-2); margin-top: calc(var(--u) * .5); }
+.kas-title + .kas-eyebrow .ar { font-size: calc(var(--u) * 1.7); }
 .kas-eyebrow { display: flex; justify-content: center; align-items: baseline; gap: calc(var(--u) * 1.2); font-size: calc(var(--u) * 1.75); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--brass); }
 .kas-eyebrow .ar { font-family: var(--kufi); font-size: calc(var(--u) * 2.3); letter-spacing: 0; text-transform: none; font-weight: 700; }
 .kas-label { font-size: calc(var(--u) * 2.2); font-weight: 600; color: var(--ink-2); margin-top: calc(var(--u) * 1.6); }

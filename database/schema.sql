@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     reminder_message                TEXT NOT NULL DEFAULT 'Mari bersiap dan mengambil air wudhu',
     show_finance_on_display         INTEGER NOT NULL DEFAULT 1 CHECK (show_finance_on_display IN (0,1)),
     location_name                   TEXT NOT NULL DEFAULT '',   -- label lokasi untuk pengurus, mis. "Sleman, DIY"
+    -- 0 sampai takmir menyimpan Pengaturan → Lokasi; selama itu jadwal memakai lokasi bawaan
+    -- (Yogyakarta) dan panel serta layar mengingatkan (temuan uji v1.1.1).
+    location_confirmed              INTEGER NOT NULL DEFAULT 0 CHECK (location_confirmed IN (0,1)),
     -- Murottal: diputar/dijeda takmir dari panel; layanan alarm menulis surat yang sedang diputar.
     murottal_enabled                INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1)),
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
