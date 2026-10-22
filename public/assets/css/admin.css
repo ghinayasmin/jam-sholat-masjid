@@ -101,6 +101,7 @@ img { max-width: 100%; }
 a.row:active, button.row:active { background: #F6F7F4; }
 .row .k { font-weight: 600; min-width: 0; }
 .row .k small { display: block; font-weight: 500; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row.wrap .k small { white-space: normal; line-height: 1.4; }
 .row .v { color: var(--muted); font-size: 14px; text-align: right; }
 .row .v.ok { color: var(--primary); font-weight: 600; }
 .row .chev { width: 18px; height: 18px; color: #A3ACA7; }

@@ -74,13 +74,28 @@ $hasRecovery = !empty($me['recovery_created_at']);
 $beat = (int) $settings['alarm_heartbeat'];
 $beatAge = time() - $beat;
 $audioStatus = (string) $settings['alarm_audio_status'];
+// Hasil cek volume dari volume_guard.py diterjemahkan ke kalimat untuk takmir.
+$volumeNote = '';
+if (preg_match('/^normal \((\d+)%\)/', $audioStatus, $m)) {
+    $volumeNote = ' Volume ' . $m[1] . '%.';
+} elseif (str_contains($audioStatus, 'TV')) {
+    $volumeNote = ' Volume diatur melalui TV.';
+} elseif (str_contains($audioStatus, 'dibunyikan lagi') && str_contains($audioStatus, 'dinaikkan')) {
+    $volumeNote = ' Suara yang sebelumnya dimatikan telah diaktifkan kembali dan volumenya telah dinaikkan.';
+} elseif (str_contains($audioStatus, 'dinaikkan')) {
+    $volumeNote = ' Volume yang terlalu kecil telah dinaikkan.';
+} elseif (str_contains($audioStatus, 'dibunyikan lagi')) {
+    $volumeNote = ' Suara yang sebelumnya dimatikan telah diaktifkan kembali.';
+} elseif (str_starts_with($audioStatus, 'tidak bisa dicek')) {
+    $volumeNote = ' Volume tidak dapat diperiksa.';
+}
 if ($beat === 0) {
-    $alarmRow = ['warn', 'Belum pernah berjalan', 'Di komputer biasa, layanan berjalan setelah komputer masuk (login)', 'Cek'];
+    $alarmRow = ['warn', 'Belum berjalan', 'Pada komputer Windows atau Linux, layanan ini berjalan setelah komputer masuk ke akun pengguna.', 'Cek'];
 } elseif ($beatAge > 600) {
-    $alarmRow = ['warn', 'Tidak berjalan sejak ' . gmdate('H:i', $beat + LocalTime::offsetSeconds()), 'Adzan tidak akan berbunyi. Pastikan komputer menyala dan sudah masuk (login)', 'Cek'];
+    $alarmRow = ['warn', 'Tidak berjalan sejak ' . gmdate('H.i', $beat + LocalTime::offsetSeconds()),
+        'Adzan tidak akan terdengar. Pastikan komputer dalam keadaan menyala dan sudah masuk ke akun pengguna.', 'Cek'];
 } else {
-    $volumeNote = $audioStatus === '' ? '' : ' · volume ' . $audioStatus;
-    $alarmRow = ['', 'Berjalan', 'Adzan dan iqomah siap berbunyi' . $volumeNote, 'Aktif'];
+    $alarmRow = ['', 'Berjalan', 'Adzan dan iqomah siap diputar.' . $volumeNote, 'Aktif'];
 }
 $shifts = (int) $settings['location_offset_minutes'] !== 0;
 foreach (ScheduleEngine::ADJUSTABLE as $key) {
@@ -158,9 +173,9 @@ require __DIR__ . '/_header.php';
     <div class="card">
         <a class="row" href="/display.php" target="_blank" rel="noopener"><span class="dot"></span><span class="k">Layar jamaah<small>Ketuk untuk melihat tampilannya</small></span><span class="v ok">Buka</span></a>
         <?php if ($alarmRow[0] !== ''): // bermasalah: menaut ke Panduan "Adzan tidak berbunyi" ?>
-            <a class="row" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot warn"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v"><?= $alarmRow[3] ?></span></a>
+            <a class="row wrap" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot warn"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v"><?= $alarmRow[3] ?></span></a>
         <?php else: ?>
-            <div class="row"><span class="dot"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v ok"><?= $alarmRow[3] ?></span></div>
+            <div class="row wrap"><span class="dot"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v ok"><?= $alarmRow[3] ?></span></div>
         <?php endif; ?>
         <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
         <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
