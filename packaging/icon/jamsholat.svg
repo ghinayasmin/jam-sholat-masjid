@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1F4A3A"/><stop offset="1" stop-color="#0F1915"/>
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="210" fill="url(#bg)"/>
+  <!-- kubah masjid -->
+  <path d="M232 800 V600 Q232 420 512 340 Q792 420 792 600 V800 Z" fill="#E7C98F"/>
+  <rect x="200" y="790" width="624" height="56" rx="20" fill="#E7C98F"/>
+  <!-- jam di dalam kubah -->
+  <circle cx="512" cy="610" r="150" fill="#0F1915"/>
+  <path d="M512 610 V505 M512 610 L585 655" stroke="#E7C98F" stroke-width="34" stroke-linecap="round" fill="none"/>
+  <circle cx="512" cy="610" r="22" fill="#E7C98F"/>
+  <!-- bulan sabit -->
+  <path d="M512 150 A95 95 0 1 0 590 300 A75 75 0 1 1 512 150 Z" fill="#E7C98F"/>
+</svg>

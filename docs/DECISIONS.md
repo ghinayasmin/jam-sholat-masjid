@@ -634,3 +634,14 @@ waktu dibuat).
   BOM yang terkirim sebelum respons PHP (JSON rusak, redirect gagal) → ASCII.
   Hasil akhir: semua pemeriksaan lolos di Windows Server 2022 dan 2025.
 
+- **Temuan uji manual Windows 11** (Azhar, 21 Okt 2026): (1) shortcut *Layar
+  Jamaah* tidak membuka apa pun setelah layar ditutup dengan Alt+F4, karena sesi
+  dari Startup masih berjalan dan penjaga satu-instans membuat sesi kedua keluar
+  diam-diam (uji no. 2 dan 19 kosong). Sekarang sesi kedua memberi sinyal lewat
+  event `Local\JamSholatShowDisplay`, dan sesi pertama membuka Edge lagi bila
+  layar sudah tertutup; layanan alarm tetap satu. Edge kiosk memakai profil
+  sendiri (`%LOCALAPPDATA%\JamSholat\edge-kiosk`) supaya `--kiosk` tetap berlaku
+  saat Edge biasa sedang terbuka. (2) Pintasan menampilkan ikon Python karena
+  menunjuk ke `pythonw.exe`; aplikasi kini punya ikon sendiri
+  (`packaging/icon/`, `public/favicon.ico`) untuk pintasan, installer, daftar
+  aplikasi Windows, ikon Linux (hicolor), dan tab browser.

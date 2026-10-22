@@ -47,6 +47,8 @@ mkdir -p "$STAGE/etc/apache2/sites-available" "$STAGE/etc/xdg/autostart" "$STAGE
 cp "$REPO/packaging/linux/apache-jamsholat.conf" "$STAGE/etc/apache2/sites-available/jamsholat.conf"
 cp "$REPO/packaging/linux/jamsholat-session.desktop" "$STAGE/etc/xdg/autostart/"
 install -m 755 "$REPO/scripts/jamsholat-reset-password" "$STAGE/usr/sbin/jamsholat-reset-password"
+install -Dm 644 "$REPO/packaging/icon/jamsholat-256.png" "$STAGE/usr/share/icons/hicolor/256x256/apps/jamsholat.png"
+install -Dm 644 "$REPO/packaging/icon/jamsholat.svg" "$STAGE/usr/share/icons/hicolor/scalable/apps/jamsholat.svg"
 
 install -m 755 "$REPO/packaging/debian/postinst" "$REPO/packaging/debian/prerm" \
     "$REPO/packaging/debian/postrm" "$STAGE/DEBIAN/"

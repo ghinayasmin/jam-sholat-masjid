@@ -27,6 +27,8 @@ ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 PrivilegesRequired=admin
 WizardStyle=modern
+SetupIconFile=..\..\public\favicon.ico
+UninstallDisplayIcon={app}\app\public\favicon.ico
 UninstallDisplayName=Jam Sholat Masjid
 SetupLogging=yes
 
@@ -43,9 +45,9 @@ Source: "{#Stage}\redist\vc_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafte
 
 [Icons]
 ; Sesi (alarm, kamera, layar jamaah) mulai otomatis setiap kali pengguna masuk Windows.
-Name: "{commonstartup}\Jam Sholat Masjid"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"
-Name: "{group}\Layar Jamaah"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"
-Name: "{group}\Panel Takmir"; Filename: "{app}\panel.url"
+Name: "{commonstartup}\Jam Sholat Masjid"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"; IconFilename: "{app}\app\public\favicon.ico"
+Name: "{group}\Layar Jamaah"; Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"""; WorkingDir: "{app}\app"; IconFilename: "{app}\app\public\favicon.ico"
+Name: "{group}\Panel Takmir"; Filename: "{app}\panel.url"; IconFilename: "{app}\app\public\favicon.ico"
 Name: "{group}\Reset kata sandi"; Filename: "{app}\app\packaging\windows\reset-password.cmd"
 Name: "{group}\Folder data (database, cadangan, log)"; Filename: "{commonappdata}\JamSholat"
 Name: "{group}\Hapus Jam Sholat Masjid"; Filename: "{uninstallexe}"
