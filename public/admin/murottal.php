@@ -38,13 +38,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $steps = ['next' => '__next__', 'prev' => '__prev__', 'restart' => '__restart__'];
     if (isset($steps[$action])) {
         $repo->update(['murottal_enabled' => 1, 'murottal_request' => $steps[$action] . '|' . microtime(true)]);
-        $_SESSION['flash_success'] = ['next' => 'Pindah ke surat berikutnya.', 'prev' => 'Kembali ke surat sebelumnya.',
+        $_SESSION['flash_success'] = ['next' => 'Memutar surat berikutnya.', 'prev' => 'Memutar surat sebelumnya.',
             'restart' => 'Surat diputar ulang dari awal.'][$action];
     } else {
         // Jeda menyimpan posisi; Putar melanjutkan dari detik yang sama.
         $play = $action === 'play';
         $repo->update(['murottal_enabled' => $play ? 1 : 0]);
-        $_SESSION['flash_success'] = $play ? 'Murottal dilanjutkan dalam beberapa detik.' : 'Murottal dijeda. Putar lagi untuk melanjutkan dari posisi yang sama.';
+        $_SESSION['flash_success'] = $play ? 'Murottal akan dilanjutkan dalam beberapa detik.' : 'Murottal dijeda. Tekan Lanjutkan untuk meneruskan dari posisi yang sama.';
     }
     header('Location: ' . (($_POST['back'] ?? '') === 'list' ? '/admin/murottal.php' : '/admin/'));
     exit;
@@ -58,7 +58,7 @@ $status = Murottal::status($s, (new ScheduleEngine())->getScheduleForDate(LocalT
 
 $mp = Murottal::player($s);
 $mpOn = $on;
-$mpStatus = $on ? $status : 'Ketuk Putar, atau pilih surat di bawah';
+$mpStatus = $on ? $status : 'Tekan Putar atau pilih surat di bawah ini.';
 $mpVariant = 'full';
 $mpBack = 'list';
 

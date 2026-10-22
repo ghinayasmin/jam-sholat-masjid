@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Tanggal acara tidak valid.';
     } else {
         if ($values['event_end_date'] !== '' && (!$isDate($values['event_end_date']) || $values['event_end_date'] < $values['event_date'])) {
-            $errors[] = 'Tanggal selesai acara harus sama atau setelah tanggal acara.';
+            $errors[] = 'Tanggal selesai acara tidak boleh sebelum tanggal acara.';
         }
         if ($values['event_start_time'] !== '' && !$isTime($values['event_start_time'])) {
             $errors[] = 'Jam mulai acara tidak valid.';
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Jam selesai acara tidak valid.';
         }
         if ($values['event_end_time'] !== '' && $values['event_start_time'] === '') {
-            $errors[] = 'Isi jam mulai bila jam selesai diisi.';
+            $errors[] = 'Jam mulai wajib diisi apabila jam selesai diisi.';
         }
         $oneDay = $values['event_end_date'] === '' || $values['event_end_date'] === $values['event_date'];
         if ($oneDay && $values['event_start_time'] !== '' && $values['event_end_time'] !== ''
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     if ($values['ends_on'] !== '' && (!$isDate($values['ends_on']) || $values['ends_on'] < $values['starts_on'])) {
-        $errors[] = 'Tanggal "sampai" harus sama atau setelah tanggal mulai tampil.';
+        $errors[] = 'Tanggal "Sampai" tidak boleh sebelum tanggal mulai tampil.';
     }
 
     $newImage = null;
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     @unlink($old);
                 }
             }
-            $_SESSION['flash_success'] = 'Perubahan tersimpan. Layar jamaah ikut berubah dalam 1 menit.';
+            $_SESSION['flash_success'] = 'Perubahan telah disimpan. Layar jamaah akan diperbarui dalam satu menit.';
         } else {
             $repo->create($newImage ?? '', $newImage ?? '', $caption, $values['starts_on'], $endsOn, $event);
             $_SESSION['flash_success'] = $values['starts_on'] > $today
@@ -178,10 +178,10 @@ require __DIR__ . '/_header.php';
             </div>
         </div>
         <div class="field">
-            <label class="field-label" for="event_end_date">Sampai tanggal <span class="opt">(acara beberapa hari)</span></label>
+            <label class="field-label" for="event_end_date">Sampai tanggal <span class="opt">(untuk acara lebih dari satu hari)</span></label>
             <input type="date" id="event_end_date" name="event_end_date" value="<?= Format::e($values['event_end_date']) ?>">
         </div>
-        <p class="aside tight">Tampil di layar jamaah di bawah teks pengumuman, mis. "Minggu, 25 Okt · 07.00–12.30". Jam boleh dikosongkan; jam selesai boleh kosong bila acaranya sampai selesai.</p>
+        <p class="aside tight">Waktu acara ditampilkan di layar jamaah di bawah teks pengumuman, misalnya "Minggu, 25 Okt · 07.00–12.30". Jam mulai dan jam selesai boleh dikosongkan. Kosongkan jam selesai apabila acara berlangsung hingga selesai.</p>
     </fieldset>
 
     <div class="pair">
@@ -194,13 +194,13 @@ require __DIR__ . '/_header.php';
             <input type="date" id="ends_on" name="ends_on" value="<?= Format::e($values['ends_on']) ?>">
         </div>
     </div>
-    <p class="aside tight">Bila ada tanggal acara dan "Sampai" dikosongkan, pengumuman hilang sendiri setelah acara selesai. Tanpa tanggal acara, kosongkan "Sampai" agar tampil terus sampai dihentikan.</p>
+    <p class="aside tight">Apabila tanggal acara diisi dan kolom "Sampai" dikosongkan, pengumuman akan hilang dengan sendirinya setelah acara selesai. Tanpa tanggal acara, kosongkan kolom "Sampai" agar pengumuman tetap tampil hingga dihentikan.</p>
 
     <div class="foot"><button type="submit" class="btn"><?= $editing !== null ? 'Simpan perubahan' : 'Pasang pengumuman' ?></button></div>
 </form>
 
 <?php if ($editing !== null): ?>
-    <form method="post" action="/admin/publications.php" data-confirm="Hapus pengumuman ini? Tidak bisa dibatalkan." class="foot">
+    <form method="post" action="/admin/publications.php" data-confirm="Hapus pengumuman ini? Tindakan ini tidak dapat dibatalkan." class="foot">
         <?= Csrf::field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $editId ?>">
         <button type="submit" class="btn danger">Hapus pengumuman ini</button>
     </form>

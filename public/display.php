@@ -15,7 +15,7 @@
         <header class="mosque">
             <div class="mosque-name" id="mosqueName">Masjid</div>
             <div class="mosque-address" id="mosqueAddress"></div>
-            <div class="location-warn" id="locationWarn" hidden>Lokasi masjid belum diatur di panel · jadwal masih Yogyakarta</div>
+            <div class="location-warn" id="locationWarn" hidden>Lokasi masjid belum diatur. Jadwal sholat masih menggunakan lokasi Yogyakarta.</div>
         </header>
         <div class="clock-block">
             <div class="clock" id="clock">--:--</div>

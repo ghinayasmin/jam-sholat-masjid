@@ -25,7 +25,7 @@ $svgPause = '<svg viewBox="0 0 24 24" aria-hidden="true" class="fill"><rect x="6
 ?>
 <div class="mp mp-<?= $mpVariant ?>" data-murottal-live data-position="<?= $mp['position'] ?>" data-duration="<?= (int) $mp['duration'] ?>" data-playing="<?= $mp['playing'] ? '1' : '0' ?>">
     <div class="mp-head">
-        <span class="mp-eyebrow" data-mp-state><?= $mp['playing'] ? 'Sedang diputar' : ($mpOn ? 'Menyala' : ($mpResume ? 'Dijeda' : 'Berhenti')) ?></span>
+        <span class="mp-eyebrow" data-mp-state><?= $mp['playing'] ? 'Sedang diputar' : ($mpOn ? 'Memulai' : ($mpResume ? 'Dijeda' : 'Berhenti')) ?></span>
         <span class="mp-count">Surah <span data-mp-number><?= $mp['number'] ?></span> dari <?= $mp['count'] ?></span>
     </div>
     <div class="mp-title" data-mp-title>Surah <?= Format::e($mp['title']) ?></div>

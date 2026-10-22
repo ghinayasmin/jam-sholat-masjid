@@ -110,8 +110,8 @@ require __DIR__ . '/_header.php';
 
 <?php if ((int) $settings['location_confirmed'] !== 1): ?>
     <a class="setup-card" href="/admin/settings_location.php">
-        <b>Atur lokasi masjid dulu</b>
-        <span>Jadwal sholat dan adzan masih memakai lokasi bawaan (Yogyakarta). Simpan lokasi masjid supaya waktunya tepat.</span>
+        <b>Lokasi masjid belum diatur</b>
+        <span>Jadwal sholat dan adzan masih menggunakan lokasi bawaan (Yogyakarta). Silakan atur lokasi masjid agar waktu sholat sesuai.</span>
         <span class="go">Atur lokasi</span>
     </a>
 <?php endif; ?>

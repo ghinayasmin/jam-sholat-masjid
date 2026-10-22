@@ -24,98 +24,98 @@ $backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';
 ?>
 
-<div class="note">Panduan untuk <?= $device ?> ini. Ketuk judul untuk membuka.</div>
+<div class="note">Panduan ini disesuaikan untuk <?= $device ?> ini. Ketuk judul untuk melihat penjelasan.</div>
 
 <div class="help">
 
 <details id="mulai" open>
-    <summary>Pertama kali dipakai</summary>
+    <summary>Langkah pertama</summary>
     <ol>
-        <li>Pengaturan → <a href="/admin/settings_location.php">Lokasi</a>: isi koordinat masjid (dari Google Maps: tekan lama di masjid, salin angkanya). Tanpa ini jadwal memakai Yogyakarta.</li>
-        <li>Pengaturan → <a href="/admin/mosque_profile.php">Profil &amp; foto masjid</a>: nama, alamat, dan foto.</li>
-        <li><a href="/admin/account.php">Akun takmir</a>: simpan kode pemulihan di tempat aman.</li>
-        <li>Cek Beranda → Kondisi sistem: <b>Layanan adzan · Berjalan</b>.</li>
+        <li>Buka Pengaturan, lalu <a href="/admin/settings_location.php">Lokasi</a>. Isikan koordinat masjid. Koordinat dapat diperoleh dari Google Maps dengan menekan lama titik masjid, kemudian menyalin angka yang muncul. Tanpa langkah ini, jadwal sholat menggunakan lokasi Yogyakarta.</li>
+        <li>Buka Pengaturan, lalu <a href="/admin/mosque_profile.php">Profil &amp; foto masjid</a>. Isikan nama, alamat, dan foto masjid.</li>
+        <li>Buka <a href="/admin/account.php">Akun takmir</a>, lalu simpan kode pemulihan di tempat yang aman.</li>
+        <li>Pada Beranda, bagian Kondisi sistem, pastikan tertulis <b>Layanan adzan · Berjalan</b>.</li>
     </ol>
 </details>
 
 <details id="layar">
     <summary>Membuka dan menutup layar jamaah</summary>
     <?php if ($isPi): ?>
-        <p>Di Raspberry Pi, layar jamaah menyala sendiri setiap kali perangkat dinyalakan. Tidak ada yang perlu dibuka atau ditutup.</p>
+        <p>Pada Raspberry Pi, layar jamaah tampil dengan sendirinya setiap kali perangkat dinyalakan. Layar tidak perlu dibuka atau ditutup.</p>
     <?php else: ?>
         <ul>
-            <li><b>Buka:</b> <?= $isWin ? 'Start → <b>Layar Jamaah</b>' : 'menu aplikasi → <b>Layar Jamaah</b>' ?>. Bila layar sudah terbuka tapi tertutup jendela lain, menu yang sama membawanya ke depan.</li>
-            <li><b>Tutup:</b> tekan <b>Alt+F4</b>. Suara adzan tetap berbunyi walau layar ditutup.</li>
-            <li>Setelah komputer dinyalakan dan masuk (login), layar jamaah terbuka sendiri.</li>
+            <li><b>Membuka:</b> pilih <?= $isWin ? 'Start, lalu <b>Layar Jamaah</b>' : 'menu aplikasi, lalu <b>Layar Jamaah</b>' ?>. Apabila layar sudah terbuka tetapi tertutup jendela lain, menu yang sama akan menampilkannya kembali di depan.</li>
+            <li><b>Menutup:</b> tekan <b>Alt+F4</b>. Suara adzan tetap diputar meskipun layar ditutup.</li>
+            <li>Setelah komputer dinyalakan dan masuk ke akun pengguna, layar jamaah terbuka dengan sendirinya.</li>
         </ul>
     <?php endif; ?>
 </details>
 
 <details id="adzan-tidak-bunyi">
-    <summary>Adzan tidak berbunyi</summary>
+    <summary>Adzan tidak terdengar</summary>
     <ol>
-        <li>Beranda → Kondisi sistem → <b>Layanan adzan</b>. Bila tertulis "tidak berjalan", <?= $isPi ? 'nyalakan ulang Raspberry Pi (cabut lalu pasang listriknya).' : 'pastikan komputer menyala dan sudah masuk (login). Lihat "Komputer menyala sendiri setelah listrik padam" di bawah.' ?></li>
-        <li>Pengaturan → <a href="/admin/sound.php">Suara &amp; jeda iqomah</a>: sakelar <b>Suara adzan</b> harus menyala. Bila dimatikan, adzan memang tidak diputar (untuk masjid yang adzannya dikumandangkan muadzin).</li>
-        <li>Cek speaker: kabel, tombol daya, dan volume speaker sendiri. Aplikasi menaikkan volume <?= $isPi ? 'perangkat' : 'komputer' ?> yang bisu atau terlalu kecil sebelum adzan, tapi tidak bisa menyalakan speaker yang mati.</li>
+        <li>Pada Beranda, lihat baris <b>Layanan adzan</b> di bagian Kondisi sistem. Apabila tertulis "Tidak berjalan", <?= $isPi ? 'nyalakan ulang Raspberry Pi dengan mencabut lalu memasang kembali kabel listriknya.' : 'pastikan komputer dalam keadaan menyala dan sudah masuk ke akun pengguna. Lihat juga bagian "Komputer menyala kembali setelah listrik padam".' ?></li>
+        <li>Buka Pengaturan, lalu <a href="/admin/sound.php">Suara &amp; jeda iqomah</a>. Sakelar <b>Suara adzan</b> harus dalam keadaan menyala. Apabila sakelar dimatikan, adzan memang tidak diputar. Pengaturan ini disediakan bagi masjid yang adzannya dikumandangkan langsung oleh muadzin.</li>
+        <li>Periksa speaker, meliputi kabel, tombol daya, dan pengatur volume pada speaker. Aplikasi menaikkan volume <?= $isPi ? 'perangkat' : 'komputer' ?> yang dimatikan atau terlalu kecil sebelum adzan, tetapi tidak dapat menyalakan speaker yang mati.</li>
         <?php if ($isPi): ?>
-            <li>Suara keluar lewat HDMI (TV) atau colokan 3,5 mm. Teknisi bisa memindahkannya dengan <code>sudo bash scripts/set_audio_output.sh</code>.</li>
+            <li>Suara dikeluarkan melalui HDMI (TV) atau lubang audio 3,5 mm. Teknisi dapat memindahkan keluaran suara dengan perintah <code>sudo bash scripts/set_audio_output.sh</code>.</li>
         <?php endif; ?>
     </ol>
 </details>
 
 <?php if (!$isPi): ?>
 <details id="login-otomatis">
-    <summary>Komputer menyala sendiri setelah listrik padam</summary>
-    <p>Suara adzan dan layar jamaah baru berjalan setelah ada yang masuk (login) ke komputer. Agar tetap berjalan setelah listrik padam saat masjid kosong:</p>
+    <summary>Komputer menyala kembali setelah listrik padam</summary>
+    <p>Suara adzan dan layar jamaah baru berjalan setelah komputer masuk ke akun pengguna. Agar keduanya tetap berjalan setelah listrik padam ketika masjid kosong, lakukan dua pengaturan berikut.</p>
     <ol>
-        <li><b>Masuk otomatis:</b>
+        <li><b>Masuk otomatis ke akun pengguna.</b>
             <?php if ($isWin): ?>
-                tekan Win+R, ketik <code>netplwiz</code>, hilangkan centang "Users must enter a user name and password", lalu isi kata sandi akun. (Windows 11: bila pilihan itu tidak ada, matikan dulu Settings → Accounts → Sign-in options → "For improved security, only allow Windows Hello sign-in".)
+                Tekan Win+R, ketik <code>netplwiz</code>, hilangkan centang "Users must enter a user name and password", lalu isikan kata sandi akun. Pada Windows 11, apabila pilihan tersebut tidak tersedia, matikan terlebih dahulu pengaturan Settings → Accounts → Sign-in options → "For improved security, only allow Windows Hello sign-in".
             <?php else: ?>
-                Ubuntu: Settings → System → Users → <b>Automatic Login</b>. Linux Mint: Login Window → Users → login otomatis.
+                Pada Ubuntu, buka Settings → System → Users, lalu aktifkan <b>Automatic Login</b>. Pada Linux Mint, buka Login Window → Users, lalu aktifkan login otomatis.
             <?php endif; ?>
         </li>
-        <li><b>Menyala sendiri saat listrik kembali:</b> di BIOS komputer, pilihan seperti "Restore on AC Power Loss" atau "After Power Failure" diatur ke <b>Power On</b>. Minta bantuan teknisi bila perlu.</li>
+        <li><b>Komputer menyala sendiri ketika listrik kembali.</b> Pada BIOS komputer, atur pilihan seperti "Restore on AC Power Loss" atau "After Power Failure" ke <b>Power On</b>. Mintalah bantuan teknisi apabila diperlukan.</li>
     </ol>
-    <p class="aside">Masuk otomatis berarti siapa pun yang menyalakan komputer langsung masuk. Gunakan akun khusus masjid, bukan akun pribadi.</p>
+    <p class="aside">Dengan masuk otomatis, siapa pun yang menyalakan komputer akan langsung masuk ke akun tersebut. Gunakan akun khusus masjid, bukan akun pribadi.</p>
 </details>
 <?php endif; ?>
 
 <details id="hp">
     <summary>Membuka panel dari HP</summary>
-    <p>Buka <a href="/admin/phone.php">Buka panel dari HP</a> di komputer ini, lalu pindai kode QR dengan kamera HP. HP harus tersambung ke WiFi yang sama. Cetak kodenya dan tempel di dekat layar agar pengurus lain mudah membuka panel.</p>
-    <p class="aside">Bila alamatnya berubah-ubah, minta teknisi mengatur "IP tetap" (DHCP reservation) di router untuk perangkat ini.</p>
+    <p>Buka halaman <a href="/admin/phone.php">Buka panel dari HP</a> pada perangkat ini, lalu pindai kode QR dengan kamera HP. Pastikan HP tersambung ke jaringan WiFi yang sama. Kode QR dapat dicetak dan ditempel di dekat layar agar pengurus lain mudah membuka panel.</p>
+    <p class="aside">Apabila alamat panel sering berubah, mintalah teknisi mengatur IP tetap (DHCP reservation) untuk perangkat ini pada router.</p>
 </details>
 
 <details id="pengumuman">
     <summary>Poster dan pengumuman</summary>
     <ul>
-        <li>Tab Pengumuman → <b>+ Pasang pengumuman</b>. Poster mendatar (16:9) tampil layar penuh; poster tegak tampil di samping jadwal.</li>
-        <li>Isi <b>Waktu acara</b> agar tanggal dan jamnya tampil di layar, dan poster hilang sendiri setelah acara.</li>
-        <li>Poster yang salah: ketuk <b>Ubah</b> untuk mengganti teks, tanggal, atau gambarnya.</li>
+        <li>Buka tab Pengumuman, lalu pilih <b>+ Pasang pengumuman</b>. Poster mendatar (16:9) ditampilkan memenuhi layar, sedangkan poster tegak ditampilkan di samping jadwal.</li>
+        <li>Isikan <b>Waktu acara</b> agar tanggal dan jam acara tampil di layar jamaah. Pengumuman akan hilang dengan sendirinya setelah acara selesai.</li>
+        <li>Untuk memperbaiki pengumuman, pilih <b>Ubah</b>. Teks, waktu acara, dan gambar poster dapat diganti.</li>
     </ul>
 </details>
 
 <details id="murottal">
     <summary>Murottal</summary>
     <ul>
-        <li>Beranda → Murottal: Putar, Jeda, Sebelumnya, Berikutnya. <b>Jeda</b> menyimpan posisi; Putar melanjutkan dari detik yang sama.</li>
-        <li>Murottal berhenti sendiri sekitar waktu sholat dan menyala lagi setelah sholat berjamaah.</li>
+        <li>Pada Beranda, bagian Murottal, tersedia tombol Putar, Jeda, Sebelumnya, dan Berikutnya. Tombol <b>Jeda</b> menyimpan posisi bacaan, sehingga murottal dapat dilanjutkan dari bagian yang sama.</li>
+        <li>Murottal berhenti dengan sendirinya menjelang waktu sholat dan diputar kembali setelah sholat berjamaah selesai.</li>
     </ul>
 </details>
 
 <details id="sandi">
     <summary>Lupa kata sandi</summary>
     <ul>
-        <li>Di halaman masuk, ketuk <b>Lupa kata sandi</b> dan masukkan kode pemulihan.</li>
-        <li>Kode pemulihan juga hilang: teknisi menjalankan
-            <?= $isWin ? 'Start → <b>Reset kata sandi</b> di komputer ini' : '<code>sudo jamsholat-reset-password</code> di perangkat ini' ?>.</li>
+        <li>Pada halaman masuk, pilih <b>Lupa kata sandi</b>, lalu masukkan kode pemulihan.</li>
+        <li>Apabila kode pemulihan juga hilang, teknisi dapat mengganti kata sandi melalui
+            <?= $isWin ? 'Start, lalu <b>Reset kata sandi</b> pada komputer ini' : 'perintah <code>sudo jamsholat-reset-password</code> pada perangkat ini' ?>.</li>
     </ul>
 </details>
 
 <details id="cadangan">
     <summary>Cadangan data</summary>
-    <p>Pengaturan → <a href="/admin/backup.php">Cadangan data</a> → Buat cadangan sekarang, lalu <b>Unduh</b> dan simpan di HP atau flashdisk. Cadangan berisi pengaturan, kas, dan pengumuman, dan bisa dipulihkan di perangkat baru.</p>
+    <p>Buka Pengaturan, lalu <a href="/admin/backup.php">Cadangan data</a>. Pilih Buat cadangan sekarang, kemudian <b>Unduh</b> dan simpan berkas cadangan di HP atau flashdisk. Cadangan berisi pengaturan, catatan kas, dan pengumuman, serta dapat dipulihkan pada perangkat baru.</p>
 </details>
 
 </div>

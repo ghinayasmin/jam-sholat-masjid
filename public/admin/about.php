@@ -25,7 +25,7 @@ require __DIR__ . '/_header.php';
 <div class="about-hero">
     <div class="about-name">Jam Sholat Masjid</div>
     <div class="about-ver">Versi <?= Format::e(AppVersion::number()) ?><?= AppVersion::release() !== '' ? ' · ' . Format::e(AppVersion::release()) : '' ?></div>
-    <p>Jadwal sholat, pengingat adzan dan iqomah, pengumuman, kas, murottal, dan kamera untuk masjid. Berjalan di Raspberry Pi, komputer Windows, atau Linux milik masjid, tanpa perlu internet. Pengurus mengatur semuanya dari HP lewat WiFi masjid.</p>
+    <p>Aplikasi jadwal sholat untuk masjid yang dilengkapi pengingat adzan dan iqomah, pengumuman, kas, murottal, serta kamera. Aplikasi ini dapat dijalankan pada Raspberry Pi, komputer Windows, atau komputer Linux milik masjid tanpa memerlukan koneksi internet. Seluruh pengaturan dapat dilakukan pengurus melalui HP yang tersambung ke WiFi masjid.</p>
 </div>
 
 <section class="group" aria-labelledby="g-tim">

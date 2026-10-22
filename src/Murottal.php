@@ -43,8 +43,8 @@ final class Murottal
         if ((int) $settings['murottal_enabled'] !== 1) {
             $saved = explode('|', (string) ($settings['murottal_position'] ?? ''));
             return (int) ($saved[1] ?? 0) > 0
-                ? 'Dijeda. Lanjutkan untuk meneruskan dari posisi terakhir'
-                : 'Ketuk Putar untuk memulai';
+                ? 'Murottal dijeda. Tekan Lanjutkan untuk meneruskan dari posisi terakhir.'
+                : 'Tekan Putar untuk memulai.';
         }
         if ((string) $settings['murottal_now_playing'] !== '') {
             return 'Sedang diputar: ' . $settings['murottal_now_playing'];

@@ -152,7 +152,7 @@
                     pos = p.position; duration = p.duration || 0; playing = p.playing;
                     if (q('[data-mp-title]')) q('[data-mp-title]').textContent = 'Surah ' + p.title;
                     if (q('[data-mp-number]')) q('[data-mp-number]').textContent = p.number;
-                    if (q('[data-mp-state]')) q('[data-mp-state]').textContent = playing ? 'Sedang diputar' : (data.enabled ? 'Menyala' : (pos > 0 ? 'Dijeda' : 'Berhenti'));
+                    if (q('[data-mp-state]')) q('[data-mp-state]').textContent = playing ? 'Sedang diputar' : (data.enabled ? 'Memulai' : (pos > 0 ? 'Dijeda' : 'Berhenti'));
                     paint();
                 }
                 const title = data.now_playing;

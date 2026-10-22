@@ -31,21 +31,21 @@ require __DIR__ . '/_header.php';
 ?>
 
 <?php if ($urls === []): ?>
-    <div class="flash flash-error" role="alert">Alamat jaringan komputer ini belum ditemukan. Pastikan komputer tersambung ke WiFi atau kabel LAN masjid, lalu muat ulang halaman ini.</div>
+    <div class="flash flash-error" role="alert">Alamat jaringan perangkat ini belum ditemukan. Pastikan perangkat tersambung ke WiFi atau kabel LAN masjid, kemudian muat ulang halaman ini.</div>
 <?php else: ?>
     <div class="card phone-qr">
         <div class="qr" data-qr="<?= Format::e($urls[0]) ?>" role="img" aria-label="Kode QR alamat panel takmir"></div>
         <div class="qr-url"><?= Format::e($urls[0]) ?></div>
-        <p>Arahkan kamera HP ke kode ini, lalu ketuk tautan yang muncul. HP harus tersambung ke <b>WiFi yang sama</b> dengan komputer ini.</p>
+        <p>Arahkan kamera HP ke kode ini, kemudian ketuk tautan yang muncul. Pastikan HP tersambung ke <b>jaringan WiFi yang sama</b> dengan perangkat ini.</p>
         <?php foreach (array_slice($urls, 1) as $other): ?>
-            <p class="aside tight">Alamat lain komputer ini: <?= Format::e($other) ?></p>
+            <p class="aside tight">Alamat lain perangkat ini: <?= Format::e($other) ?></p>
         <?php endforeach; ?>
         <?php if ($mdns !== null): ?>
-            <p class="aside tight">Bisa juga diketik: <?= Format::e($mdns) ?> (tidak semua HP Android mengenali alamat ini).</p>
+            <p class="aside tight">Alamat ini juga dapat diketik langsung: <?= Format::e($mdns) ?>. Alamat tersebut mungkin tidak dikenali oleh sebagian HP Android.</p>
         <?php endif; ?>
     </div>
-    <button type="button" class="btn ghost no-print" data-print>Cetak untuk ditempel</button>
-    <div class="note no-print">Alamat ini bisa berubah bila router memberi alamat baru, mis. setelah router dinyalakan ulang. Agar tetap, minta teknisi mengatur "IP tetap" (DHCP reservation) untuk komputer ini di router. Lihat <a href="/admin/help.php#hp">Panduan</a>.</div>
+    <button type="button" class="btn ghost no-print" data-print>Cetak kode QR</button>
+    <div class="note no-print">Alamat ini dapat berubah apabila router memberikan alamat baru, misalnya setelah router dinyalakan ulang. Agar alamat tidak berubah, mintalah teknisi mengatur IP tetap (DHCP reservation) untuk perangkat ini pada router. Lihat <a href="/admin/help.php#hp">Panduan</a>.</div>
 <?php endif; ?>
 
 <script src="/assets/js/vendor/qrcode-generator-1.4.4.js?v=1"></script>
