@@ -139,6 +139,8 @@
         const paint = () => {
             if (q('[data-mp-pos]')) q('[data-mp-pos]').textContent = clock(pos);
             if (q('[data-mp-fill]') && duration) q('[data-mp-fill]').style.width = Math.min(100, pos / duration * 100) + '%';
+            // Tombol saat dijeda ikut posisi terakhir yang disimpan layanan alarm.
+            if (q('[data-mp-resume]')) q('[data-mp-resume]').textContent = pos > 0 ? 'Lanjutkan dari ' + clock(pos) : 'Putar';
         };
         const refresh = async () => {
             try {

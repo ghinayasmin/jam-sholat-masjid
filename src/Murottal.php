@@ -120,7 +120,9 @@ final class Murottal
         $playing = (int) $settings['murottal_enabled'] === 1 && ($parts[3] ?? '0') === '1'
             && (string) $settings['murottal_now_playing'] !== '';
         $position = ($parts[0] ?? '') === $file ? (int) ($parts[1] ?? 0) : 0;
-        if ($playing) {
+        // Layanan alarm masih mencatat "sedang diputar" (mis. tepat setelah Jeda, sebelum
+        // ia sempat menyimpan posisi akhir): taksir dari waktu putar sejak dicatat.
+        if (($parts[3] ?? '0') === '1' && ($parts[0] ?? '') === $file) {
             $position += max(0, time() - (int) ($parts[2] ?? time()));
         }
         $duration = self::duration($file);

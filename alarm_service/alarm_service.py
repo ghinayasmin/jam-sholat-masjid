@@ -590,8 +590,9 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 state.save_position(os.path.basename(current_track()), murottal_position(), True)
                 position_saved = time.monotonic()
 
-            # 3 detik: tombol Putar/Jeda di panel terasa langsung, tetap ringan (REQ-NF-102).
-            time.sleep(3)
+            # 1 detik: Putar/Jeda/pindah surat dari panel terasa langsung (uji Pi v1.1.2: 3 detik
+            # terasa macet). Tiap putaran hanya beberapa baca SQLite kecil (REQ-NF-102).
+            time.sleep(1)
 
         except KeyboardInterrupt:
             break

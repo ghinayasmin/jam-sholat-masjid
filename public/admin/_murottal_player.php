@@ -39,7 +39,7 @@ $svgPause = '<svg viewBox="0 0 24 24" aria-hidden="true" class="fill"><rect x="6
             <?php if ($mpOn): ?>
                 <button type="submit" class="mp-main" aria-label="Jeda"><?= $svgPause ?><span>Jeda</span></button>
             <?php else: ?>
-                <button type="submit" class="mp-main"><?= $svgPlay ?><span><?= $mpResume ? 'Lanjutkan dari ' . Murottal::clock($mp['position']) : 'Putar' ?></span></button>
+                <button type="submit" class="mp-main"><?= $svgPlay ?><span data-mp-resume><?= $mpResume ? 'Lanjutkan dari ' . Murottal::clock($mp['position']) : 'Putar' ?></span></button>
             <?php endif; ?>
         </form>
         <?php $mpButton('next', 'Surat berikutnya', $svgNext, 'mp-btn'); ?>
