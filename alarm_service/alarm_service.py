@@ -603,8 +603,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
     # Jangan biarkan layar jamaah tetap menampilkan surat yang sudah tidak diputar.
     # Sinyal berhenti kedua yang datang hampir bersamaan dengan yang pertama tidak
     # boleh memotong pembersihan ini.
-    signal.signal(signal.SIGTERM, signal.SIG_IGN)
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    _ignore_stop_signals()
     for _ in range(2):
         try:
             stop_murottal()
@@ -615,11 +614,22 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
             continue
 
 
+def _ignore_stop_signals() -> None:
+    """Abaikan SIGTERM/SIGINT berikutnya. Python 3.12 bisa menolak dengan OSError ("ignored
+    due to race condition") bila sinyal kedua datang tepat saat ini dipanggil, mis.
+    timeout + runuser di uji paket. Penolakan itu aman diabaikan: layanan tetap berhenti."""
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        try:
+            signal.signal(sig, signal.SIG_IGN)
+        except (OSError, ValueError):
+            pass
+
+
 def _stop_on_sigterm(signum, frame) -> None:  # noqa: ARG001
     # systemctl stop / update.sh mengirim SIGTERM: berhenti lewat jalur yang sama dengan Ctrl+C.
     # Sinyal berikutnya diabaikan supaya pembersihan (mengosongkan judul murottal di
     # layar) tidak terputus bila SIGTERM datang dua kali.
-    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    _ignore_stop_signals()
     raise KeyboardInterrupt
 
 

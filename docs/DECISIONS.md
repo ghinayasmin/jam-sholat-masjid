@@ -771,3 +771,9 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   baru di atasnya, lalu periksa akun, kas, pengumuman, lokasi, login lama, halaman
   baru, dan iqomah baru (`test-upgrade.sh` di Debian 12 dan Ubuntu 24.04,
   `test-upgrade.ps1` di Windows Server).
+- **Sinyal berhenti ganda (setelah rilis 1.1.2):** build rilis v1.1.2 di Ubuntu
+  24.04 sempat gagal acak: uji paket menghentikan layanan alarm dengan `timeout`
+  dan `runuser`, sehingga dua SIGTERM datang hampir bersamaan, dan Python 3.12
+  menolak `signal.signal()` di dalam penangan sinyal dengan OSError. Layanan tetap
+  berhenti dengan benar; job diulang tanpa mengubah kode rilis. Perbaikannya,
+  `_ignore_stop_signals()` mengabaikan penolakan itu, masuk ke rilis berikutnya.
