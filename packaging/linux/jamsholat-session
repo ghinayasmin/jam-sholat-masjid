@@ -12,21 +12,16 @@ set -u
 INSTALL_DIR="/opt/jamsholat"
 MODE_FILE="/etc/jamsholat/mode"
 LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/jamsholat"
-URL="http://localhost/display.php"
+URL="http://localhost/display.php?layar=desktop"   # desktop: petunjuk Alt+F4
 
 [ "$(cat "$MODE_FILE" 2>/dev/null)" = "desktop" ] || exit 0
 mkdir -p "$LOG_DIR"
 
 # Satu sesi per pengguna, supaya suara adzan tidak dobel. Menu "Layar Jamaah"
-# menjalankan skrip ini juga: bila sesi sudah berjalan (mis. layar ditutup dengan
-# Alt+F4), sesi itu diminta membuka layar lagi lewat FIFO, lalu skrip ini selesai.
-RUN_DIR="${XDG_RUNTIME_DIR:-/tmp}"
-SHOW_FIFO="$RUN_DIR/jamsholat-show-$(id -u)"
-exec 9> "$RUN_DIR/jamsholat-session-$(id -u).lock"
-if ! flock -n 9; then
-    [ -p "$SHOW_FIFO" ] && timeout 3 sh -c 'echo show > "$1"' _ "$SHOW_FIFO"
-    exit 0
-fi
+# menjalankan skrip ini juga; bila sesi sudah berjalan, skrip ini hanya membuka
+# layar (lihat bagian akhir).
+exec 9> "${XDG_RUNTIME_DIR:-/tmp}/jamsholat-session-$(id -u).lock"
+flock -n 9 && FIRST=1 || FIRST=0
 
 export JAMSHOLAT_DB_PATH="$INSTALL_DIR/storage/jamsholat.db"
 export JAMSHOLAT_AUDIO_PATH="$INSTALL_DIR/public/assets/audio"
@@ -43,15 +38,10 @@ keep_running() {
     done
 }
 
-# Akun pengguna baru masuk grup jamsholat saat paket dipasang; grup baru berlaku
-# setelah keluar-masuk desktop. Tanpa itu database tidak bisa ditulis.
-if ! id -nG | tr ' ' '\n' | grep -qx jamsholat; then
-    notify-send "Jam Sholat Masjid" "Keluar lalu masuk lagi ke desktop (atau restart) agar suara adzan aktif." 2>/dev/null || true
-fi
-
-keep_running alarm /usr/bin/python3 "$INSTALL_DIR/alarm_service/alarm_service.py" 9>&- &
-if [ -e /dev/video0 ] && python3 -c "import cv2" 2>/dev/null; then
-    keep_running camera /usr/bin/python3 "$INSTALL_DIR/camera_service/motion_detect.py" 9>&- &
+# postinst memberi akun desktop izin tulis (ACL) ke folder data. Akun yang dibuat
+# setelah instalasi belum punya izin itu: beri tahu, jangan diam saja.
+if [ "$FIRST" = 1 ] && ! { [ -w "$JAMSHOLAT_DB_PATH" ] && [ -w "$INSTALL_DIR/storage" ]; }; then
+    notify-send "Jam Sholat Masjid" "Akun ini belum diizinkan menulis data. Jalankan: sudo dpkg-reconfigure jamsholat" 2>/dev/null || true
 fi
 
 # Profil browser sendiri ("jamsholat-kiosk"): mode kiosk tetap berlaku walau browser
@@ -100,19 +90,27 @@ PREFS
     echo "$(date '+%F %T') tidak ada browser (chromium/firefox)" >> "$LOG_DIR/kiosk.log"
 }
 
-rm -f "$SHOW_FIFO"
-mkfifo -m 600 "$SHOW_FIFO"
+if [ "$FIRST" = 0 ]; then
+    # Menu "Layar Jamaah" diklik saat sesi sudah berjalan. Layar yang masih terbuka
+    # (mungkin tertutup jendela lain) ditutup lalu dibuka lagi dari proses ini: proses
+    # yang baru diklik pengguna boleh tampil di depan, juga di Wayland.
+    if kiosk_open; then
+        pkill -u "$(id -u)" -f -- "jamsholat-kiosk"
+        for _ in $(seq 1 20); do kiosk_open || break; sleep 0.5; done
+    fi
+    open_kiosk
+    exit 0
+fi
+
+keep_running alarm /usr/bin/python3 "$INSTALL_DIR/alarm_service/alarm_service.py" 9>&- &
+if [ -e /dev/video0 ] && python3 -c "import cv2" 2>/dev/null; then
+    keep_running camera /usr/bin/python3 "$INSTALL_DIR/camera_service/motion_detect.py" 9>&- &
+fi
 
 # Tunggu Apache siap, lalu buka layar jamaah layar penuh.
 for _ in $(seq 1 30); do
     curl -fs -o /dev/null "$URL" && break
     sleep 2
 done
-open_kiosk
-
-# Menu "Layar Jamaah" diklik lagi: buka layar kalau sudah ditutup.
-while true; do
-    read -r _ < "$SHOW_FIFO" || sleep 1
-    sleep 1
-    kiosk_open || open_kiosk
-done
+kiosk_open || open_kiosk   # mungkin sudah dibuka lewat menu selama menunggu
+wait

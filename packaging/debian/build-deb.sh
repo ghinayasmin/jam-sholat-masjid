@@ -63,7 +63,7 @@ Version: $VERSION
 Architecture: all
 Maintainer: Tim Capstone Jam Sholat Masjid <noreply@jamsholat.local>
 Installed-Size: $SIZE_KB
-Depends: apache2, libapache2-mod-php, php-cli, php-sqlite3, php-mbstring, php-gd, sqlite3, python3, mpg123, alsa-utils, sudo, curl, adduser, rsync, procps, xdg-utils
+Depends: apache2, libapache2-mod-php, php-cli, php-sqlite3, php-mbstring, php-gd, sqlite3, python3, mpg123, alsa-utils, sudo, curl, adduser, rsync, procps, xdg-utils, acl
 Recommends: python3-opencv, chromium | chromium-browser | firefox-esr | firefox, libnotify-bin
 Section: misc
 Priority: optional

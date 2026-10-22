@@ -61,9 +61,16 @@ fi
 echo "$MODE" > /etc/jamsholat/mode
 
 if [ "$MODE" = "desktop" ]; then
-    # Pengguna desktop (UID 1000 ke atas) perlu menulis database jamsholat.
+    # Pengguna desktop (UID 1000 ke atas) perlu menulis database jamsholat. Grup baru
+    # baru berlaku setelah login ulang, jadi izin juga diberikan per akun lewat ACL
+    # yang langsung berlaku. ACL bawaan folder membuat file baru (mis. -wal SQLite)
+    # tetap bisa ditulis Apache dan akun lain, berapa pun umask pembuatnya.
     getent passwd | awk -F: '$3 >= 1000 && $3 < 60000 && $7 !~ /(nologin|false)$/ {print $1}' | while read -r u; do
         usermod -aG "$SERVICE_USER" "$u"
+        if command -v setfacl > /dev/null; then
+            setfacl -R -m "u:$u:rwX" "$INSTALL_DIR/storage" 2>/dev/null || true
+            find "$INSTALL_DIR/storage" -type d -exec setfacl -m "d:u:$u:rwX,d:g::rwX,d:g:$SERVICE_USER:rwX" {} + 2>/dev/null || true
+        fi
     done
 fi
 
@@ -90,8 +97,8 @@ cat << EOF
  2. Panel bisa dibuka dari HP lewat WiFi yang sama: http://<IP komputer ini>/admin/
 EOF
 if [ "$MODE" = "desktop" ]; then
-    echo " 3. Keluar lalu masuk lagi ke desktop (atau restart): layar jamaah dan"
-    echo "    suara adzan mulai otomatis setiap kali masuk."
+    echo " 3. Buka menu aplikasi > Layar Jamaah. Tutup dengan Alt+F4; suara adzan"
+    echo "    tetap berjalan. Setelah ini semuanya menyala sendiri setiap kali login."
 fi
 echo " Lupa kata sandi: sudo jamsholat-reset-password"
 echo "=================================================================="
