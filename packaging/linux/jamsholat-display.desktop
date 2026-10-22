@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Layar Jamaah
+GenericName=Jam Sholat Masjid
+Comment=Buka layar jamaah layar penuh (tutup dengan Alt+F4)
+Exec=/opt/jamsholat/packaging/linux/jamsholat-session
+Icon=jamsholat
+Terminal=false
+Categories=Utility;
+Keywords=jam;sholat;masjid;adzan;

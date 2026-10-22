@@ -53,10 +53,12 @@ def single_instance() -> bool:
 def ask_running_session_to_show() -> None:
     """Shortcut Layar Jamaah diklik saat sesi sudah jalan (mis. layar ditutup dengan
     Alt+F4): minta sesi itu membuka layar lagi, alih-alih keluar tanpa tanda apa pun."""
-    handle = ctypes.windll.kernel32.OpenEventW(0x0002, False, SHOW_EVENT)  # EVENT_MODIFY_STATE
+    kernel32 = ctypes.windll.kernel32
+    kernel32.OpenEventW.restype = ctypes.c_void_p
+    handle = kernel32.OpenEventW(0x0002, False, SHOW_EVENT)  # EVENT_MODIFY_STATE
     if handle:
-        ctypes.windll.kernel32.SetEvent(handle)
-        ctypes.windll.kernel32.CloseHandle(handle)
+        kernel32.SetEvent(ctypes.c_void_p(handle))
+        kernel32.CloseHandle(ctypes.c_void_p(handle))
 
 
 def service_env() -> dict:
@@ -107,11 +109,10 @@ def open_kiosk() -> subprocess.Popen | None:
                             creationflags=NO_WINDOW)
 
 
-def serve_show_requests(kiosk: subprocess.Popen | None) -> None:
+def serve_show_requests(event: int, kiosk: subprocess.Popen | None) -> None:
     """Buka layar lagi setiap kali shortcut Layar Jamaah diklik, kecuali masih terbuka."""
-    event = ctypes.windll.kernel32.CreateEventW(None, False, False, SHOW_EVENT)
     while True:
-        ctypes.windll.kernel32.WaitForSingleObject(event, 0xFFFFFFFF)  # INFINITE
+        ctypes.windll.kernel32.WaitForSingleObject(ctypes.c_void_p(event), 0xFFFFFFFF)  # INFINITE
         if kiosk is None or kiosk.poll() is not None:
             kiosk = open_kiosk()
 
@@ -120,6 +121,9 @@ def main() -> None:
     if not single_instance():
         ask_running_session_to_show()
         return
+    # Dibuat sekarang, bukan setelah Apache siap, supaya klik di awal tidak hilang.
+    ctypes.windll.kernel32.CreateEventW.restype = ctypes.c_void_p
+    show_event = ctypes.windll.kernel32.CreateEventW(None, False, False, SHOW_EVENT)
     LOGS.mkdir(parents=True, exist_ok=True)
     python = str(ROOT / "python" / "python.exe")
     services = [("alarm", [python, str(APP / "alarm_service" / "alarm_service.py")])]
@@ -128,7 +132,7 @@ def main() -> None:
     for name, args in services:
         threading.Thread(target=keep_running, args=(name, args), daemon=True).start()
     wait_for_web()
-    serve_show_requests(open_kiosk())
+    serve_show_requests(show_event, open_kiosk())
 
 
 if __name__ == "__main__":

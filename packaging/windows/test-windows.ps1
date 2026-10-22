@@ -108,6 +108,10 @@ Start-Sleep -Seconds 3
 Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
 Start-Sleep -Seconds 10
 if (Get-Kiosk) { Pass 'shortcut membuka lagi layar yang ditutup' } else { Fail 'shortcut tidak membuka lagi layar' }
+Start-Process -FilePath "$Root\python\pythonw.exe" -ArgumentList $session -WorkingDirectory "$Root\app"
+Start-Sleep -Seconds 8
+$main = @(Get-Kiosk | Where-Object { $_.CommandLine -notmatch '--type=' }).Count
+if ($main -eq 1) { Pass 'klik saat layar terbuka tidak membuka layar kedua' } else { Fail "jumlah jendela Edge kiosk: $main" }
 $n = @(Get-Session).Count
 if ($n -eq 1) { Pass 'sesi tetap satu (suara tidak dobel)' } else { Fail "jumlah sesi: $n" }
 Get-Kiosk | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }

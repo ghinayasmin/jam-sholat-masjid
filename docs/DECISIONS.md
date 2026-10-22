@@ -645,3 +645,9 @@ waktu dibuat).
   menunjuk ke `pythonw.exe`; aplikasi kini punya ikon sendiri
   (`packaging/icon/`, `public/favicon.ico`) untuk pintasan, installer, daftar
   aplikasi Windows, ikon Linux (hicolor), dan tab browser.
+- **Hal yang sama di Linux:** menu aplikasi kini punya *Layar Jamaah* dan *Panel
+  Takmir* (`/usr/share/applications`). `jamsholat-session` memakai `flock`, jadi
+  sesi kedua tidak menjalankan alarm lagi tetapi meminta sesi pertama (lewat FIFO
+  di `$XDG_RUNTIME_DIR`) membuka layar bila sudah ditutup. Browser kiosk memakai
+  profil sendiri bernama `jamsholat-kiosk` (di `~/snap/<browser>/common` untuk
+  browser snap Ubuntu) sehingga tetap layar penuh walau browser biasa terbuka.

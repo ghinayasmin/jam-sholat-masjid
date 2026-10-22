@@ -17,6 +17,17 @@ URL="http://localhost/display.php"
 [ "$(cat "$MODE_FILE" 2>/dev/null)" = "desktop" ] || exit 0
 mkdir -p "$LOG_DIR"
 
+# Satu sesi per pengguna, supaya suara adzan tidak dobel. Menu "Layar Jamaah"
+# menjalankan skrip ini juga: bila sesi sudah berjalan (mis. layar ditutup dengan
+# Alt+F4), sesi itu diminta membuka layar lagi lewat FIFO, lalu skrip ini selesai.
+RUN_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+SHOW_FIFO="$RUN_DIR/jamsholat-show-$(id -u)"
+exec 9> "$RUN_DIR/jamsholat-session-$(id -u).lock"
+if ! flock -n 9; then
+    [ -p "$SHOW_FIFO" ] && timeout 3 sh -c 'echo show > "$1"' _ "$SHOW_FIFO"
+    exit 0
+fi
+
 export JAMSHOLAT_DB_PATH="$INSTALL_DIR/storage/jamsholat.db"
 export JAMSHOLAT_AUDIO_PATH="$INSTALL_DIR/public/assets/audio"
 export JAMSHOLAT_CAPTURES_PATH="$INSTALL_DIR/storage/captures"
@@ -38,26 +49,70 @@ if ! id -nG | tr ' ' '\n' | grep -qx jamsholat; then
     notify-send "Jam Sholat Masjid" "Keluar lalu masuk lagi ke desktop (atau restart) agar suara adzan aktif." 2>/dev/null || true
 fi
 
-keep_running alarm /usr/bin/python3 "$INSTALL_DIR/alarm_service/alarm_service.py" &
+keep_running alarm /usr/bin/python3 "$INSTALL_DIR/alarm_service/alarm_service.py" 9>&- &
 if [ -e /dev/video0 ] && python3 -c "import cv2" 2>/dev/null; then
-    keep_running camera /usr/bin/python3 "$INSTALL_DIR/camera_service/motion_detect.py" &
+    keep_running camera /usr/bin/python3 "$INSTALL_DIR/camera_service/motion_detect.py" 9>&- &
 fi
+
+# Profil browser sendiri ("jamsholat-kiosk"): mode kiosk tetap berlaku walau browser
+# biasa sedang terbuka, dan prosesnya bisa dikenali untuk kiosk_open. Browser snap
+# (Ubuntu) tidak boleh menulis folder tersembunyi di home, jadi profilnya di ~/snap.
+profile_dir() {
+    local snap="$1" name="$2"
+    if [ -n "$snap" ] && [ -x "/snap/bin/$snap" ]; then
+        echo "$HOME/snap/$snap/common/$name"
+    else
+        echo "$HOME/.config/$name"
+    fi
+}
+
+kiosk_open() {
+    pgrep -u "$(id -u)" -f -- "jamsholat-kiosk" > /dev/null
+}
+
+open_kiosk() {
+    local browser profile
+    for browser in chromium chromium-browser google-chrome firefox-esr firefox; do
+        command -v "$browser" > /dev/null || continue
+        case "$browser" in
+            firefox*)
+                profile="$(profile_dir "$browser" jamsholat-kiosk-firefox)"
+                mkdir -p "$profile"
+                # Profil baru: lewati halaman sambutan & pemulihan sesi.
+                cat > "$profile/user.js" << 'PREFS'
+user_pref("browser.aboutwelcome.enabled", false);
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
+user_pref("browser.sessionstore.resume_from_crash", false);
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
+PREFS
+                "$browser" --new-instance --profile "$profile" --kiosk "$URL" >> "$LOG_DIR/kiosk.log" 2>&1 9>&- & ;;
+            *)
+                case "$browser" in chromium*) profile="$(profile_dir chromium jamsholat-kiosk)" ;;
+                                   *) profile="$(profile_dir "" jamsholat-kiosk)" ;; esac
+                "$browser" --kiosk --noerrdialogs --disable-infobars --no-first-run \
+                    --disable-session-crashed-bubble --password-store=basic \
+                    --user-data-dir="$profile" "$URL" >> "$LOG_DIR/kiosk.log" 2>&1 9>&- & ;;
+        esac
+        return
+    done
+    echo "$(date '+%F %T') tidak ada browser (chromium/firefox)" >> "$LOG_DIR/kiosk.log"
+}
+
+rm -f "$SHOW_FIFO"
+mkfifo -m 600 "$SHOW_FIFO"
 
 # Tunggu Apache siap, lalu buka layar jamaah layar penuh.
 for _ in $(seq 1 30); do
     curl -fs -o /dev/null "$URL" && break
     sleep 2
 done
-for browser in chromium chromium-browser google-chrome firefox-esr firefox; do
-    if command -v "$browser" > /dev/null; then
-        case "$browser" in
-            firefox*) "$browser" --kiosk "$URL" >> "$LOG_DIR/kiosk.log" 2>&1 & ;;
-            *) "$browser" --kiosk --noerrdialogs --disable-infobars --no-first-run \
-                   --disable-session-crashed-bubble --password-store=basic \
-                   --user-data-dir="$HOME/.config/jamsholat-kiosk" "$URL" >> "$LOG_DIR/kiosk.log" 2>&1 & ;;
-        esac
-        break
-    fi
-done
+open_kiosk
 
-wait
+# Menu "Layar Jamaah" diklik lagi: buka layar kalau sudah ditutup.
+while true; do
+    read -r _ < "$SHOW_FIFO" || sleep 1
+    sleep 1
+    kiosk_open || open_kiosk
+done

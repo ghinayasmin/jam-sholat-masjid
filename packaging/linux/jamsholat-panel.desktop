@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Panel Takmir
+GenericName=Jam Sholat Masjid
+Comment=Buka panel takmir di browser
+Exec=xdg-open http://localhost/admin/
+Icon=jamsholat
+Terminal=false
+Categories=Utility;
+Keywords=jam;sholat;masjid;admin;

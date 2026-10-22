@@ -44,6 +44,15 @@ curl -s -c $J -b $J http://localhost/admin/setup.php | grep -q 'recovery-code' &
 code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' http://localhost/admin/dashboard.php)
 [ "$code" = 200 ] && pass "panel takmir terbuka setelah login" || fail "panel HTTP $code"
 
+# Ikon & menu aplikasi (Layar Jamaah, Panel Takmir).
+for f in /usr/share/icons/hicolor/256x256/apps/jamsholat.png /usr/share/icons/hicolor/scalable/apps/jamsholat.svg \
+         /usr/share/applications/jamsholat-display.desktop /usr/share/applications/jamsholat-panel.desktop; do
+    [ -f "$f" ] || fail "tidak terpasang: $f"
+done
+grep -q '^Icon=jamsholat$' /usr/share/applications/jamsholat-display.desktop /etc/xdg/autostart/jamsholat-session.desktop \
+    && pass "ikon aplikasi & menu Layar Jamaah / Panel Takmir terpasang" || fail "ikon menu"
+command -v flock > /dev/null && command -v pgrep > /dev/null && pass "flock & pgrep ada (sesi tunggal)" || fail "flock/pgrep tidak ada"
+
 # Perintah teknisi & audio.
 jamsholat-reset-password --kode takmir | grep -q "Kode pemulihan baru" && pass "sudo jamsholat-reset-password --kode" || fail "reset password CLI"
 n=$(find /opt/jamsholat/public/assets/audio/murottal -name '*.mp3' | wc -l)
