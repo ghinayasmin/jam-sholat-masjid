@@ -157,7 +157,11 @@ require __DIR__ . '/_header.php';
     <div class="label" id="sys-label">Kondisi sistem</div>
     <div class="card">
         <a class="row" href="/display.php" target="_blank" rel="noopener"><span class="dot"></span><span class="k">Layar jamaah<small>Ketuk untuk melihat tampilannya</small></span><span class="v ok">Buka</span></a>
-        <a class="row" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot<?= $alarmRow[0] !== '' ? ' warn' : '' ?>"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v<?= $alarmRow[0] === '' ? ' ok' : '' ?>"><?= $alarmRow[3] ?></span></a>
+        <?php if ($alarmRow[0] !== ''): // bermasalah: menaut ke Panduan "Adzan tidak berbunyi" ?>
+            <a class="row" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot warn"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v"><?= $alarmRow[3] ?></span></a>
+        <?php else: ?>
+            <div class="row"><span class="dot"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v ok"><?= $alarmRow[3] ?></span></div>
+        <?php endif; ?>
         <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
         <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
         <?php if (!$hasRecovery): ?>
