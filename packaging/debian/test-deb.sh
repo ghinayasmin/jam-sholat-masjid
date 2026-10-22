@@ -61,6 +61,10 @@ grep -q "Kode pemulihan baru" <<< "$out" && pass "sudo jamsholat-reset-password 
 n=$(find /opt/jamsholat/public/assets/audio/murottal -name '*.mp3' | wc -l)
 [ "$n" -ge 114 ] && pass "audio: adzan, iqomah, $n surah murottal" || fail "murottal hanya $n file"
 
+# Lanjut murottal (#40): mpg123 distro harus bisa melompat ke frame tertentu (-k).
+fat=$(ls /opt/jamsholat/public/assets/audio/murottal/001_*.mp3 | head -1)
+mpg123 -q -t -k 1148 -n 10 "$fat" > /dev/null 2>&1 && pass "mpg123 bisa melanjutkan murottal dari detik tertentu (-k)" || fail "mpg123 -k gagal"
+
 # Layanan alarm: start, hitung jadwal, lalu dihentikan.
 cd /opt/jamsholat
 timeout 8 runuser -u jamsholat -- env JAMSHOLAT_DB_PATH=/opt/jamsholat/storage/jamsholat.db \

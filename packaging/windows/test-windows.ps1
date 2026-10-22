@@ -95,6 +95,11 @@ if (-not $alarm.HasExited -and $log -match 'Memulai layanan alarm' -and $log -no
 Stop-Process -Id $alarm.Id -Force -ErrorAction SilentlyContinue
 $cv = & "$Root\python\python.exe" -c "import cv2, numpy, sqlite3; print(cv2.__version__)" 2>&1
 if ($LASTEXITCODE -eq 0) { Pass "OpenCV $cv untuk kamera" } else { Fail "OpenCV: $cv" }
+# Lanjut murottal (#40): mpg123 bawaan harus bisa melompat ke frame tertentu (-k), uji
+# tanpa suara (-t) pada 10 frame setelah detik ke-30 Al-Fatihah.
+$fat = Get-ChildItem "$Root\app\public\assets\audio\murottal\001_*.mp3" | Select-Object -First 1
+& "$Root\mpg123\mpg123.exe" -q -t -k 1148 -n 10 $fat.FullName 2>&1 | Out-Null
+if ($LASTEXITCODE -eq 0) { Pass 'mpg123 bisa melanjutkan murottal dari detik tertentu (-k)' } else { Fail "mpg123 -k exit $LASTEXITCODE" }
 # Penjaga volume (#40): kode C# di skrip harus terkompilasi; runner tanpa speaker
 # menjawab "tidak bisa dicek (tidak ada speaker aktif)".
 $vol = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$Root\app\packaging\windows\ensure-volume.ps1" 2>&1 | Out-String
