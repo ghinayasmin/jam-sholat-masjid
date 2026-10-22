@@ -20,6 +20,7 @@ final class Icon
         'chevron' => '<path d="M9 6l6 6-6 6"/>',
         'back' => '<path d="M15 6l-6 6 6 6"/>',
         'text' => '<path d="M5 6h14M5 12h14M5 18h9"/>',
+        'calendar' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
     ];
 
     public static function svg(string $name, string $class = 'icon'): string

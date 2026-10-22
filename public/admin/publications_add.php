@@ -161,8 +161,8 @@ require __DIR__ . '/_header.php';
         <p class="hint">Teks ini muncul di baris "Pengumuman" pada layar jamaah.</p>
     </div>
 
-    <fieldset class="event-box" data-event>
-        <legend>Waktu acara <span class="opt">(opsional)</span></legend>
+    <fieldset class="event-box" data-event aria-labelledby="event-title">
+        <div class="event-head"><?= Icon::svg('calendar') ?><span id="event-title">Waktu acara</span><span class="event-opt">opsional</span></div>
         <div class="field">
             <label class="field-label" for="event_date">Tanggal</label>
             <input type="date" id="event_date" name="event_date" value="<?= Format::e($values['event_date']) ?>">

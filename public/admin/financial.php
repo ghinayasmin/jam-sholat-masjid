@@ -29,7 +29,11 @@ $monthTotals = $repo->monthTotals($month);
 $monthName = Format::monthName($month);
 
 $pageTitle = 'Kas masjid';
-$pageSubtitle = 'Hanya terlihat oleh pengurus';
+// Keterangan mengikuti sakelar slide kas di Pengaturan (#40).
+$kasOnDisplay = (int) ((new \App\Repository\SettingsRepository())->get()['show_finance_on_display'] ?? 0) === 1;
+$pageSubtitle = $kasOnDisplay
+    ? 'Saldo kas ditampilkan di layar jamaah sebagai slide Kas Masjid.'
+    : 'Saldo kas hanya dapat dilihat oleh pengurus.';
 $activeTab = 'cash';
 require __DIR__ . '/_header.php';
 ?>

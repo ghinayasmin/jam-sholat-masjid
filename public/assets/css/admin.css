@@ -245,7 +245,9 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 .current-poster img { width: 120px; height: 80px; object-fit: cover; border-radius: 8px; background: var(--night); }
 .current-poster .btn { cursor: pointer; }
 .event-box { border: 1px solid #E8D3AE; background: var(--jati-soft); border-radius: var(--radius); padding: 12px 14px 14px; margin: 0; display: grid; gap: 12px; }
-.event-box legend { font-weight: 700; color: var(--jati); padding: 0 6px; }
+.event-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; color: #5A3E20; }
+.event-head .icon { width: 20px; height: 20px; color: var(--jati); }
+.event-opt { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--jati); background: var(--surface); border: 1px solid #E8D3AE; border-radius: 999px; padding: 2px 10px; }
 .event-when { color: var(--jati); font-weight: 600; }
 .drop {
     position: relative; display: grid; justify-items: center; gap: 6px; padding: 24px 16px; text-align: center;
