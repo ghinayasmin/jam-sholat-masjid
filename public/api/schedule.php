@@ -52,6 +52,7 @@ try {
         'mosque_name' => $settings['mosque_name'],
         'mosque_address' => $settings['mosque_address'],
         'location_confirmed' => (int) $settings['location_confirmed'] === 1,
+        'app_version' => \App\AppVersion::number(),   // layar memuat ulang setelah update (#40)
         'reminder' => [
             'enabled' => (int) $settings['reminder_enabled'] === 1,
             'minutes' => (int) $settings['reminder_minutes'],

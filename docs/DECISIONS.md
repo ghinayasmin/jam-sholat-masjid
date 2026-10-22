@@ -761,3 +761,13 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   `public/assets/js/vendor/`, tanpa akses jaringan). Bisa dicetak untuk ditempel.
   Di Pi/Linux juga disebut alamat `<host>.local`. Ini menggantikan rencana stiker
   QR Pi yang belum pernah dibuat.
+- **Upgrade aman:** installer Windows kini menghentikan Apache dan proses dari
+  folder program (sesi alarm, kamera, mpg123) sebelum menimpa file
+  (`PrepareToInstall`); sebelumnya upgrade di atas versi yang berjalan bisa
+  tertahan file yang sedang dipakai. Layar jamaah memuat ulang sendiri bila
+  `app_version` dari API berubah, jadi tampilan baru langsung dipakai setelah
+  update tanpa membuka ulang layar. Uji upgrade di CI: pasang rilis sebelumnya
+  (`PREV_TAG`), isi data lewat panel, jalankan sesi lama (Windows), pasang versi
+  baru di atasnya, lalu periksa akun, kas, pengumuman, lokasi, login lama, halaman
+  baru, dan iqomah baru (`test-upgrade.sh` di Debian 12 dan Ubuntu 24.04,
+  `test-upgrade.ps1` di Windows Server).

@@ -64,6 +64,22 @@ Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Fil
 Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"" --tanpa-layar"; WorkingDir: "{app}\app"; Description: "Nyalakan suara adzan sekarang"; Flags: postinstall nowait skipifsilent
 Filename: "{app}\panel.url"; Description: "Buka panel takmir untuk membuat akun"; Flags: postinstall shellexec skipifsilent
 
+[Code]
+// Upgrade di atas versi lama (#40): Apache dan sesi alarm/kamera lama memakai file di
+// folder program, jadi hentikan dulu sebelum file ditimpa. setup.ps1 menyalakan
+// Apache lagi; sesi menyala lagi dari halaman akhir installer atau saat login.
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  Code: Integer;
+begin
+  Result := '';
+  Exec('powershell.exe',
+    '-NoProfile -ExecutionPolicy Bypass -Command "Stop-Service JamSholatApache -Force -ErrorAction SilentlyContinue; ' +
+    'Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -and $_.ExecutablePath.StartsWith(''' +
+    ExpandConstant('{app}') + ''', ''OrdinalIgnoreCase'') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"',
+    '', SW_HIDE, ewWaitUntilTerminated, Code);
+end;
+
 [UninstallRun]
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\app\packaging\windows\uninstall.ps1"" -Root ""{app}"""; Flags: runhidden waituntilterminated; RunOnceId: "JamSholatStop"
 

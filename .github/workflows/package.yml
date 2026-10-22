@@ -26,6 +26,7 @@ env:
   AUDIO_ZIP: jamsholat-audio-v1.zip
   AUDIO_SHA256: c02456b2f9f4939098834164de3f180b928d0960d5867a038295b9f613795153
   # Iqomah pengganti sejak v1.1.2 (DECISIONS.md #40), aset tambahan di rilis audio-v1.
+  PREV_TAG: v1.1.1   # versi sebelumnya untuk uji upgrade (#40)
   IQOMAH_FILE: iqomah-almakki.mp3
   IQOMAH_SHA256: 4996cb48fe6b68840dbad239ed152fd251464fb0ce2c7b108c0198f8f9ccc9cc
 
@@ -61,6 +62,13 @@ jobs:
         run: bash packaging/debian/build-deb.sh "$VERSION" "$RUNNER_TEMP/audio-bundle/audio" dist
       - name: Uji di ${{ matrix.image }}
         run: docker run --rm -v "$PWD/packaging":/pkg:ro -v "$PWD/dist":/dist:ro ${{ matrix.image }} bash /pkg/debian/test-deb.sh "/dist/jamsholat_${VERSION}_all.deb"
+      - name: Uji upgrade dari ${{ env.PREV_TAG }}
+        if: matrix.image == 'debian:12' || matrix.image == 'ubuntu:24.04'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release download "$PREV_TAG" -p "jamsholat_*_all.deb" -D prev
+          docker run --rm -v "$PWD/packaging":/pkg:ro -v "$PWD/prev":/prev:ro -v "$PWD/dist":/dist:ro ${{ matrix.image }} \
+            bash -c 'bash /pkg/debian/test-upgrade.sh /prev/*.deb "/dist/jamsholat_'"$VERSION"'_all.deb"'
       - name: Uji mode desktop (layar jamaah, Chromium & Firefox)
         if: matrix.image == 'debian:12'
         run: |
@@ -116,6 +124,12 @@ jobs:
         run: ./packaging/windows/build.ps1 -Version $env:VERSION -AudioDir "$env:RUNNER_TEMP\audio-bundle\audio" -OutDir dist
       - name: Uji installer
         run: ./packaging/windows/test-windows.ps1 -Installer "dist\JamSholat-Setup-$env:VERSION.exe"
+      - name: Uji upgrade dari ${{ env.PREV_TAG }}
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release download $env:PREV_TAG -p "JamSholat-Setup-*.exe" -D prev
+          $old = (Get-ChildItem prev\JamSholat-Setup-*.exe | Select-Object -First 1).FullName
+          ./packaging/windows/test-upgrade.ps1 -Old $old -New "dist\JamSholat-Setup-$env:VERSION.exe" -Fresh
       - name: Unggah ke Releases
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-2022'
         env: { GH_TOKEN: '${{ github.token }}' }

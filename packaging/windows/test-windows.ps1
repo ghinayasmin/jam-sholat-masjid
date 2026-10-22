@@ -95,6 +95,10 @@ if (-not $alarm.HasExited -and $log -match 'Memulai layanan alarm' -and $log -no
 Stop-Process -Id $alarm.Id -Force -ErrorAction SilentlyContinue
 $cv = & "$Root\python\python.exe" -c "import cv2, numpy, sqlite3; print(cv2.__version__)" 2>&1
 if ($LASTEXITCODE -eq 0) { Pass "OpenCV $cv untuk kamera" } else { Fail "OpenCV: $cv" }
+# Penjaga volume (#40): kode C# di skrip harus terkompilasi; runner tanpa speaker
+# menjawab "tidak bisa dicek (tidak ada speaker aktif)".
+$vol = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$Root\app\packaging\windows\ensure-volume.ps1" 2>&1 | Out-String
+if ($LASTEXITCODE -eq 0 -and $vol -match '^(normal|suara|tidak bisa dicek \(tidak ada speaker aktif\))') { Pass "penjaga volume: $($vol.Trim())" } else { Fail "penjaga volume: $vol" }
 if (Test-Path "$Startup\Layar Jamaah.lnk") { Pass 'pintasan Startup "Layar Jamaah" terpasang' } else { Fail 'pintasan Startup tidak ada' }
 if (-not (Test-Path "$Startup\Jam Sholat Masjid.lnk")) { Pass 'pintasan Startup lama (v1.1.0) dihapus' } else { Fail 'pintasan Startup lama masih ada (sesi ganda)' }
 $shell = New-Object -ComObject WScript.Shell

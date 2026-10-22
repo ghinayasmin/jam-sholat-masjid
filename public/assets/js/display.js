@@ -194,6 +194,9 @@
                 fetchJson('/api/schedule.php?date=' + localDate(addDays(now, 1))),
             ]);
             if (!today.success) return;
+            // Aplikasi baru saja diperbarui: muat ulang agar tampilan dan skrip baru dipakai.
+            if (state.appVersion && today.app_version && today.app_version !== state.appVersion) { location.reload(); return; }
+            state.appVersion = today.app_version || state.appVersion;
             state.today = today;
             state.tomorrow = tomorrow.success ? tomorrow : null;
             state.loadedDate = localDate(now);
