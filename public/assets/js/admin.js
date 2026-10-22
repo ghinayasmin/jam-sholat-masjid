@@ -70,6 +70,14 @@
         });
     });
 
+    // Ubah pengumuman: gambar pengganti langsung tampil di kartu poster saat ini.
+    document.querySelectorAll('.current-poster input[type=file]').forEach((input) => {
+        input.addEventListener('change', () => {
+            const file = input.files && input.files[0];
+            if (file) input.closest('.current-poster').querySelector('img').src = URL.createObjectURL(file);
+        });
+    });
+
     // Pratinjau pengingat adzan mengikuti angka & pesan.
     const preview = document.querySelector('[data-reminder-preview]');
     if (preview) {

@@ -713,3 +713,18 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   karena adzan Subuh menahan loop sekitar 3 menit). Di komputer biasa, layanan
   hanya berjalan setelah ada yang masuk (login), dan sebelumnya takmir tidak
   punya cara untuk tahu.
+- **Waktu acara di pengumuman:** kolom baru `event_date`, `event_end_date`,
+  `event_start_time`, `event_end_time` (semua opsional). Ditulis seragam oleh
+  `Format::eventWhen()`: "Minggu, 25 Okt · 07.00–12.30", "Rabu–Kamis, 28–29 Okt
+  · 08.00", "Sabtu, 31 Okt – Senin, 2 Nov". Nama hari mengikuti aplikasi
+  (Minggu), sama dengan baris puasa sunnah. Tampil sebagai baris kedua berwarna
+  kuningan di baris Pengumuman layar jamaah, dan sebagai label di bawah poster
+  portrait (gambar diperkecil, tidak ditimpa). Bila tanggal acara diisi dan
+  "Sampai" kosong, "Sampai" otomatis tanggal (selesai) acara, sehingga poster
+  hilang sendiri setelah acara. Jam selesai tanpa jam mulai, dan jam selesai
+  sebelum jam mulai pada acara satu hari, ditolak. Ikut cadangan dan pemulihan.
+- **Ubah pengumuman:** `publications_add.php?id=` memakai formulir yang sama
+  dengan isi lama, "Ganti gambar" (gambar lama dihapus setelah gambar baru
+  tersimpan), "Simpan perubahan", dan "Hapus pengumuman ini". Status tampil dan
+  urutan tidak berubah. Sebelumnya poster yang salah hanya bisa dihapus lalu
+  diunggah ulang.

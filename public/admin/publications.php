@@ -67,10 +67,12 @@ $renderItem = static function (array $p, string $group): void {
         <?php else: ?>
             <span class="thumb"><?= Icon::svg('text') ?></span>
         <?php endif; ?>
-        <span class="k"><?= Format::e($title) ?><small><?= Format::e($when) ?></small></span>
+        <?php $eventWhen = Format::eventWhen($p['event_date'] ?? null, $p['event_end_date'] ?? null, $p['event_start_time'] ?? null, $p['event_end_time'] ?? null); ?>
+        <span class="k"><?= Format::e($title) ?><?php if ($eventWhen !== null): ?><small class="event-when">Acara: <?= Format::e($eventWhen) ?></small><?php endif; ?><small><?= Format::e($when) ?></small></span>
         <?php if ($group === 'scheduled'): ?><span class="tag">Menunggu</span><?php else: ?><span></span><?php endif; ?>
     </div>
     <div style="display:flex;gap:16px;padding:0 16px 10px 80px;margin-top:-8px">
+        <a href="/admin/publications_add.php?id=<?= (int) $p['id'] ?>" class="link-btn" style="color:var(--primary);min-height:32px;font-size:14px;font-weight:700;display:flex;align-items:center">Ubah</a>
         <?php if ($group === 'finished'): ?>
             <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="republish"><input type="hidden" name="id" value="<?= (int) $p['id'] ?>">
                 <button type="submit" class="link-btn" style="color:var(--primary);min-height:32px;font-size:14px">Pasang lagi</button></form>

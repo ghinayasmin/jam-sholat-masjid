@@ -17,6 +17,9 @@ try {
             // null untuk pengumuman teks saja (tanpa poster)
             'url' => $p['file_path'] !== '' ? '/uploads/publications/' . rawurlencode(basename($p['file_path'])) : null,
             'caption' => $p['caption'],
+            // "Minggu, 25 Okt · 07.00–12.30" atau null (#40)
+            'event' => \App\View\Format::eventWhen($p['event_date'] ?? null, $p['event_end_date'] ?? null,
+                $p['event_start_time'] ?? null, $p['event_end_time'] ?? null),
             'order' => (int) $p['display_order'],
         ];
     }, $items);

@@ -25,7 +25,7 @@
             <span class="countdown-value" id="countdownValue">-</span>
             <span class="countdown-text" id="countdownText"></span>
         </div>
-        <div class="poster" id="poster" hidden><img id="posterImg" alt=""></div>
+        <div class="poster" id="poster" hidden><img id="posterImg" alt=""><div class="poster-event" id="posterEvent"></div></div>
         <!-- Slide saldo kas seukuran poster (DECISIONS.md #27). -->
         <div class="kas" id="kasSlide" hidden>
             <div>
@@ -55,7 +55,7 @@
             <li data-key="isha"><span class="p-name">Isya</span><span class="p-ar">العشاء</span><span class="p-time">--:--</span></li>
         </ol>
         <dl class="info">
-            <div id="infoAnnouncement" hidden><dt>Pengumuman</dt><dd id="announcementText"></dd></div>
+            <div id="infoAnnouncement" hidden><dt>Pengumuman</dt><dd><span id="announcementText"></span><span class="ann-event" id="announcementEvent" hidden></span></dd></div>
             <div id="infoMurottal" hidden><dt>Murottal</dt><dd id="murottalTitle"></dd></div>
             <div id="infoFasting" hidden><dt id="fastingWhen">Puasa sunnah hari ini</dt><dd id="fastingLabel"></dd></div>
         </dl>

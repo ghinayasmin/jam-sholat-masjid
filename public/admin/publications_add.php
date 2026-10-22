@@ -23,56 +23,111 @@ $publicationsPath = (string) Config::get('publications_path');
 $maxBytes = UploadedImage::maxBytes((int) Config::get('publication_max_bytes', 20 * 1024 * 1024));
 $maxMb = round($maxBytes / 1024 / 1024, 1);
 
-$values = ['caption' => '', 'starts_on' => $today, 'ends_on' => ''];
+// ?id= : ubah pengumuman yang sudah dipasang (#40), selain itu pasang baru.
+$editId = (int) ($_GET['id'] ?? 0);
+$editing = $editId > 0 ? $repo->find($editId) : null;
+if ($editId > 0 && $editing === null) {
+    header('Location: /admin/publications.php');
+    exit;
+}
+
+$fields = ['caption', 'starts_on', 'ends_on', 'event_date', 'event_end_date', 'event_start_time', 'event_end_time'];
+$values = ['caption' => '', 'starts_on' => $today, 'ends_on' => '', 'event_date' => '', 'event_end_date' => '',
+    'event_start_time' => '', 'event_end_time' => ''];
+if ($editing !== null) {
+    foreach ($fields as $f) {
+        $values[$f] = (string) ($editing[$f] ?? '');
+    }
+}
 $errors = [];
+$isDate = static fn (string $v): bool => (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', $v);
+$isTime = static fn (string $v): bool => (bool) preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $v);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Csrf::requireValid($_POST['csrf_token'] ?? null);
 
-    $values['caption'] = trim((string) ($_POST['caption'] ?? ''));
-    $values['starts_on'] = trim((string) ($_POST['starts_on'] ?? ''));
-    $values['ends_on'] = trim((string) ($_POST['ends_on'] ?? ''));
+    foreach ($fields as $f) {
+        $values[$f] = trim((string) ($_POST[$f] ?? ''));
+    }
     $file = $_FILES['poster'] ?? null;
     $hasFile = $file !== null && $file['error'] !== UPLOAD_ERR_NO_FILE;
+    $hasOldImage = $editing !== null && $editing['file_path'] !== '';
 
-    if (!$hasFile && $values['caption'] === '') {
+    if (!$hasFile && !$hasOldImage && $values['caption'] === '') {
         $errors[] = 'Pilih foto poster atau tulis teks pengumumannya.';
     }
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $values['starts_on'])) {
-        $errors[] = 'Tanggal mulai tidak valid.';
+    if (!$isDate($values['starts_on'])) {
+        $errors[] = 'Tanggal mulai tampil tidak valid.';
     }
-    if ($values['ends_on'] !== '' && (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $values['ends_on']) || $values['ends_on'] < $values['starts_on'])) {
-        $errors[] = 'Tanggal selesai harus sama atau setelah tanggal mulai.';
+    // Waktu acara (opsional). Tanpa tanggal, jam dan tanggal selesai diabaikan.
+    if ($values['event_date'] === '') {
+        $values['event_end_date'] = $values['event_start_time'] = $values['event_end_time'] = '';
+    } elseif (!$isDate($values['event_date'])) {
+        $errors[] = 'Tanggal acara tidak valid.';
+    } else {
+        if ($values['event_end_date'] !== '' && (!$isDate($values['event_end_date']) || $values['event_end_date'] < $values['event_date'])) {
+            $errors[] = 'Tanggal selesai acara harus sama atau setelah tanggal acara.';
+        }
+        if ($values['event_start_time'] !== '' && !$isTime($values['event_start_time'])) {
+            $errors[] = 'Jam mulai acara tidak valid.';
+        }
+        if ($values['event_end_time'] !== '' && !$isTime($values['event_end_time'])) {
+            $errors[] = 'Jam selesai acara tidak valid.';
+        }
+        if ($values['event_end_time'] !== '' && $values['event_start_time'] === '') {
+            $errors[] = 'Isi jam mulai bila jam selesai diisi.';
+        }
+        $oneDay = $values['event_end_date'] === '' || $values['event_end_date'] === $values['event_date'];
+        if ($oneDay && $values['event_start_time'] !== '' && $values['event_end_time'] !== ''
+            && $values['event_end_time'] <= $values['event_start_time']) {
+            $errors[] = 'Jam selesai harus setelah jam mulai.';
+        }
+        // Poster acara hilang sendiri setelah acaranya lewat.
+        if ($values['ends_on'] === '') {
+            $values['ends_on'] = $values['event_end_date'] !== '' ? $values['event_end_date'] : $values['event_date'];
+        }
+    }
+    if ($values['ends_on'] !== '' && (!$isDate($values['ends_on']) || $values['ends_on'] < $values['starts_on'])) {
+        $errors[] = 'Tanggal "sampai" harus sama atau setelah tanggal mulai tampil.';
     }
 
-    $safeName = '';
+    $newImage = null;
     if ($errors === [] && $hasFile) {
         [$stored, $uploadError] = UploadedImage::store($file, $publicationsPath, 'pub', $maxBytes);
         if ($uploadError !== null) {
             $errors[] = $uploadError;
         } else {
-            $safeName = (string) $stored;
+            $newImage = (string) $stored;
         }
     }
 
     if ($errors === []) {
-        $repo->create(
-            $safeName,
-            $safeName,
-            $values['caption'] !== '' ? mb_substr($values['caption'], 0, 200) : null,
-            $values['starts_on'],
-            $values['ends_on'] !== '' ? $values['ends_on'] : null
-        );
-        $_SESSION['flash_success'] = $values['starts_on'] > $today
-            ? 'Pengumuman terjadwal, mulai tampil ' . Format::shortDate($values['starts_on']) . '.'
-            : 'Pengumuman tampil di layar jamaah dalam 1 menit.'
-                . ($values['ends_on'] !== '' ? ' Otomatis hilang setelah ' . Format::shortDate($values['ends_on']) . '.' : '');
+        $caption = $values['caption'] !== '' ? mb_substr($values['caption'], 0, 200) : null;
+        $endsOn = $values['ends_on'] !== '' ? $values['ends_on'] : null;
+        $event = ['date' => $values['event_date'], 'end_date' => $values['event_end_date'],
+            'start_time' => $values['event_start_time'], 'end_time' => $values['event_end_time']];
+        if ($editing !== null) {
+            $repo->update($editId, $newImage, $caption, $values['starts_on'], $endsOn, $event);
+            if ($newImage !== null && $hasOldImage) {
+                $old = $publicationsPath . '/' . basename($editing['file_path']);
+                if (is_file($old)) {
+                    @unlink($old);
+                }
+            }
+            $_SESSION['flash_success'] = 'Perubahan tersimpan. Layar jamaah ikut berubah dalam 1 menit.';
+        } else {
+            $repo->create($newImage ?? '', $newImage ?? '', $caption, $values['starts_on'], $endsOn, $event);
+            $_SESSION['flash_success'] = $values['starts_on'] > $today
+                ? 'Pengumuman terjadwal, mulai tampil ' . Format::shortDate($values['starts_on']) . '.'
+                : 'Pengumuman tampil di layar jamaah dalam 1 menit.'
+                    . ($endsOn !== null ? ' Otomatis hilang setelah ' . Format::shortDate($endsOn) . '.' : '');
+        }
         header('Location: /admin/publications.php');
         exit;
     }
 }
 
-$pageTitle = 'Pasang pengumuman';
+$pageTitle = $editing !== null ? 'Ubah pengumuman' : 'Pasang pengumuman';
 $backHref = '/admin/publications.php';
 $backLabel = 'Pengumuman';
 require __DIR__ . '/_header.php';
@@ -85,12 +140,19 @@ require __DIR__ . '/_header.php';
 <form method="post" enctype="multipart/form-data" class="stack">
     <?= Csrf::field() ?>
 
-    <label class="drop">
-        <?= Icon::svg('upload') ?>
-        <b>Pilih foto poster</b>
-        <small>Dari galeri HP atau ambil foto · JPG/PNG, maks <?= $maxMb ?> MB</small>
-        <input type="file" name="poster" accept="image/jpeg,image/png">
-    </label>
+    <?php if ($editing !== null && $editing['file_path'] !== ''): ?>
+        <div class="card current-poster">
+            <img src="/uploads/publications/<?= rawurlencode(basename($editing['file_path'])) ?>" alt="Poster saat ini">
+            <label class="btn small ghost">Ganti gambar<input type="file" name="poster" accept="image/jpeg,image/png" hidden></label>
+        </div>
+    <?php else: ?>
+        <label class="drop">
+            <?= Icon::svg('upload') ?>
+            <b>Pilih foto poster</b>
+            <small>Dari galeri HP atau ambil foto · JPG/PNG, maks <?= $maxMb ?> MB</small>
+            <input type="file" name="poster" accept="image/jpeg,image/png">
+        </label>
+    <?php endif; ?>
 
     <div class="field">
         <label class="field-label" for="caption">Teks pengumuman <span class="opt">(wajib bila tanpa poster)</span></label>
@@ -98,6 +160,29 @@ require __DIR__ . '/_header.php';
                placeholder="Contoh: Kajian tafsir Ahad ba'da Subuh">
         <p class="hint">Teks ini muncul di baris "Pengumuman" pada layar jamaah.</p>
     </div>
+
+    <fieldset class="event-box" data-event>
+        <legend>Waktu acara <span class="opt">(opsional)</span></legend>
+        <div class="field">
+            <label class="field-label" for="event_date">Tanggal</label>
+            <input type="date" id="event_date" name="event_date" value="<?= Format::e($values['event_date']) ?>">
+        </div>
+        <div class="pair">
+            <div class="field">
+                <label class="field-label" for="event_start_time">Jam mulai</label>
+                <input type="time" id="event_start_time" name="event_start_time" value="<?= Format::e($values['event_start_time']) ?>">
+            </div>
+            <div class="field">
+                <label class="field-label" for="event_end_time">Jam selesai</label>
+                <input type="time" id="event_end_time" name="event_end_time" value="<?= Format::e($values['event_end_time']) ?>">
+            </div>
+        </div>
+        <div class="field">
+            <label class="field-label" for="event_end_date">Sampai tanggal <span class="opt">(acara beberapa hari)</span></label>
+            <input type="date" id="event_end_date" name="event_end_date" value="<?= Format::e($values['event_end_date']) ?>">
+        </div>
+        <p class="aside tight">Tampil di layar jamaah di bawah teks pengumuman, mis. "Minggu, 25 Okt · 07.00–12.30". Jam boleh dikosongkan; jam selesai boleh kosong bila acaranya sampai selesai.</p>
+    </fieldset>
 
     <div class="pair">
         <div class="field">
@@ -109,9 +194,16 @@ require __DIR__ . '/_header.php';
             <input type="date" id="ends_on" name="ends_on" value="<?= Format::e($values['ends_on']) ?>">
         </div>
     </div>
-    <p class="aside tight">Kosongkan "Sampai" bila pengumuman tampil terus sampai dihentikan.</p>
+    <p class="aside tight">Bila ada tanggal acara dan "Sampai" dikosongkan, pengumuman hilang sendiri setelah acara selesai. Tanpa tanggal acara, kosongkan "Sampai" agar tampil terus sampai dihentikan.</p>
 
-    <div class="foot"><button type="submit" class="btn">Pasang pengumuman</button></div>
+    <div class="foot"><button type="submit" class="btn"><?= $editing !== null ? 'Simpan perubahan' : 'Pasang pengumuman' ?></button></div>
 </form>
+
+<?php if ($editing !== null): ?>
+    <form method="post" action="/admin/publications.php" data-confirm="Hapus pengumuman ini? Tidak bisa dibatalkan." class="foot">
+        <?= Csrf::field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $editId ?>">
+        <button type="submit" class="btn danger">Hapus pengumuman ini</button>
+    </form>
+<?php endif; ?>
 
 <?php require __DIR__ . '/_footer.php'; ?>

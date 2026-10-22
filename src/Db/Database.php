@@ -90,6 +90,10 @@ final class Database
         'publications' => [
             'starts_on' => 'TEXT',
             'ends_on' => 'TEXT',
+            'event_date' => 'TEXT',
+            'event_end_date' => 'TEXT',
+            'event_start_time' => 'TEXT',
+            'event_end_time' => 'TEXT',
         ],
         'admin_users' => [
             'recovery_hash' => 'TEXT',

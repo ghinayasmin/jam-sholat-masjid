@@ -96,6 +96,20 @@ file_put_contents($tmpDir . '/publications/p1.jpg', 'x');
 $pubRepo->create('p1.jpg', 'p1.jpg', 'Caption 1');
 check('Publications: tersimpan & aktif', count($pubRepo->allActive()) === 1);
 
+// Waktu acara & ubah pengumuman (DECISIONS.md #40)
+$evId = $pubRepo->create('', '', 'Kajian Ahad', '2026-10-20', '2026-10-25',
+    ['date' => '2026-10-25', 'start_time' => '07:00', 'end_time' => '12:30']);
+$ev = $pubRepo->find($evId);
+check('Acara: tersimpan', $ev['event_date'] === '2026-10-25' && $ev['event_start_time'] === '07:00' && $ev['event_end_date'] === null);
+check('Acara: format satu hari', App\View\Format::eventWhen('2026-10-25', null, '07:00', '12:30') === 'Minggu, 25 Okt · 07.00–12.30');
+check('Acara: format beberapa hari', App\View\Format::eventWhen('2026-10-28', '2026-10-29', '08:00') === 'Rabu–Kamis, 28–29 Okt · 08.00');
+check('Acara: format lintas bulan', App\View\Format::eventWhen('2026-10-31', '2026-11-02') === 'Sabtu, 31 Okt – Senin, 2 Nov');
+check('Acara: tanpa tanggal = null', App\View\Format::eventWhen(null, null, '07:00') === null);
+$pubRepo->update($evId, null, 'Kajian Ahad pagi', '2026-10-20', '2026-10-26', ['date' => '2026-10-26']);
+$ev = $pubRepo->find($evId);
+check('Ubah: teks & tanggal berubah, gambar tetap', $ev['caption'] === 'Kajian Ahad pagi' && $ev['event_date'] === '2026-10-26'
+    && $ev['event_start_time'] === null && $ev['file_path'] === '' && (int) $ev['is_active'] === 1);
+
 $finRepo = new FinancialRepository();
 $finRepo->create('2026-09-01', 'Infaq', 'masuk', 100000, null);
 $finRepo->create('2026-09-02', 'Listrik', 'keluar', 30000, null);
@@ -115,6 +129,7 @@ $backupMgr->restoreFromFile($backup['file_path']);
 check('Restore: saldo pulih ke 70000', $finRepo->currentBalance() === 70000);
 check('Restore: mosque_name pulih (bukan "BERUBAH")', $settingsRepo->get()['mosque_name'] !== 'BERUBAH');
 check('Restore: file publikasi tetap ada', is_file($tmpDir . '/publications/p1.jpg'));
+check('Restore: waktu acara pengumuman ikut pulih', ($pubRepo->find($evId)['event_date'] ?? null) === '2026-10-26');
 check('Restore: pengaturan baru ikut pulih tanpa daftar manual',
     (int) $settingsRepo->get()['adjust_isha_minutes'] === 4 && (int) $settingsRepo->get()['iqomah_fajr_minutes'] === 25);
 // Cadangan lama yang belum punya suatu kolom: kolom itu tetap bernilai sekarang.

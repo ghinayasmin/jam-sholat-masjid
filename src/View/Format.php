@@ -46,6 +46,33 @@ final class Format
     }
 
     /** "Kamis, 1 Oktober 2026" */
+    /**
+     * Waktu acara pengumuman (#40): "Minggu, 25 Okt · 07.00–12.30",
+     * "Rabu–Kamis, 28–29 Okt · 08.00", atau "Sabtu, 31 Okt – Senin, 2 Nov".
+     * null bila tanggal acara tidak diisi.
+     */
+    public static function eventWhen(?string $date, ?string $endDate = null, ?string $start = null, ?string $end = null): ?string
+    {
+        if ($date === null || $date === '') {
+            return null;
+        }
+        [$y, $m, $d] = array_map('intval', explode('-', $date));
+        $dow = (int) gmdate('w', gmmktime(0, 0, 0, $m, $d, $y));
+        $text = self::DAYS[$dow] . ', ' . $d . ' ' . self::MONTHS_SHORT[$m - 1];
+        if ($endDate !== null && $endDate !== '' && $endDate > $date) {
+            [$y2, $m2, $d2] = array_map('intval', explode('-', $endDate));
+            $dow2 = (int) gmdate('w', gmmktime(0, 0, 0, $m2, $d2, $y2));
+            $text = ($m2 === $m && $y2 === $y)
+                ? self::DAYS[$dow] . '–' . self::DAYS[$dow2] . ', ' . $d . '–' . $d2 . ' ' . self::MONTHS_SHORT[$m - 1]
+                : $text . ' – ' . self::DAYS[$dow2] . ', ' . $d2 . ' ' . self::MONTHS_SHORT[$m2 - 1];
+        }
+        $clock = static fn (string $hm): string => str_replace(':', '.', $hm);
+        if ($start !== null && $start !== '') {
+            $text .= ' · ' . $clock($start) . ($end !== null && $end !== '' ? '–' . $clock($end) : '');
+        }
+        return $text;
+    }
+
     public static function longDate(string $ymd): string
     {
         [$y, $m, $d] = array_map('intval', explode('-', $ymd));

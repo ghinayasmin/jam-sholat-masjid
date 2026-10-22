@@ -241,6 +241,12 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 .switch input:focus-visible + span { outline: 3px solid #8FBFA3; outline-offset: 2px; }
 
 /* Unggah poster */
+.current-poster { display: flex; align-items: center; gap: 14px; padding: 12px; }
+.current-poster img { width: 120px; height: 80px; object-fit: cover; border-radius: 8px; background: var(--night); }
+.current-poster .btn { cursor: pointer; }
+.event-box { border: 1px solid #E8D3AE; background: var(--jati-soft); border-radius: var(--radius); padding: 12px 14px 14px; margin: 0; display: grid; gap: 12px; }
+.event-box legend { font-weight: 700; color: var(--jati); padding: 0 6px; }
+.event-when { color: var(--jati); font-weight: 600; }
 .drop {
     position: relative; display: grid; justify-items: center; gap: 6px; padding: 24px 16px; text-align: center;
     background: var(--surface); border: 2px dashed #B7C0B9; border-radius: var(--radius); cursor: pointer;

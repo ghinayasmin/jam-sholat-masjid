@@ -113,7 +113,13 @@ CREATE TABLE IF NOT EXISTS publications (
     -- Pengumuman berjadwal (YYYY-MM-DD, NULL = tanpa batas). Pengumuman teks saja
     -- disimpan dengan file_name/file_path kosong.
     starts_on     TEXT,
-    ends_on       TEXT
+    ends_on       TEXT,
+    -- Waktu acara yang diumumkan (#40), opsional: tanggal (YYYY-MM-DD), tanggal
+    -- selesai untuk acara beberapa hari, jam mulai dan jam selesai (HH:MM).
+    event_date       TEXT,
+    event_end_date   TEXT,
+    event_start_time TEXT,
+    event_end_time   TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_publications_active_order ON publications(is_active, display_order);
 

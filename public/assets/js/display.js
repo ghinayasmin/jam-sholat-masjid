@@ -226,7 +226,10 @@
             if (!data.success) return;
             const items = data.items || [];
             state.posters = items.filter((p) => p.url);
-            state.captions = items.map((p) => (p.caption || '').trim()).filter(Boolean);
+            // Teks pengumuman beserta waktu acaranya (#40); poster tanpa teks tetap tampil
+            // di baris Pengumuman bila ada waktu acara.
+            state.captions = items.map((p) => ({ text: (p.caption || '').trim(), event: p.event || '' }))
+                .filter((c) => c.text || c.event);
             // Muat lebih dulu, sekaligus catat orientasi: landscape tampil layar penuh.
             state.posters.forEach((p) => {
                 const img = new Image();
@@ -284,7 +287,10 @@
         const row = $('infoAnnouncement');
         if (state.captions.length === 0) { row.hidden = true; return; }
         state.captionIndex %= state.captions.length;
-        $('announcementText').textContent = state.captions[state.captionIndex];
+        const c = state.captions[state.captionIndex];
+        $('announcementText').textContent = c.text || c.event;
+        $('announcementEvent').textContent = c.text ? c.event : '';
+        $('announcementEvent').hidden = !(c.text && c.event);
         row.hidden = false;
     }
 
@@ -392,6 +398,10 @@
                 // Portrait/persegi di panel kiri; landscape memenuhi layar.
                 const item = slide.item;
                 const img = item.wide ? $('posterFullImg') : $('posterImg');
+                if (!item.wide) {
+                    $('posterEvent').textContent = item.event || '';
+                    $('poster').classList.toggle('has-event', Boolean(item.event));
+                }
                 img.onerror = () => { state.posters = state.posters.filter((p) => p !== item); state.currentSlide = null; };
                 img.src = item.url;
                 img.alt = item.caption || 'Pengumuman';

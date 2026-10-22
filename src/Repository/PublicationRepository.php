@@ -73,21 +73,49 @@ final class PublicationRepository
         string $filePath,
         ?string $caption,
         ?string $startsOn = null,
-        ?string $endsOn = null
+        ?string $endsOn = null,
+        array $event = []
     ): int {
         $nextOrder = (int) Database::connection()
             ->query('SELECT COALESCE(MAX(display_order), 0) + 1 FROM publications')
             ->fetchColumn();
 
         $stmt = Database::connection()->prepare(
-            'INSERT INTO publications (file_name, file_path, caption, display_order, is_active, starts_on, ends_on)
-             VALUES (:fn, :fp, :cap, :ord, 1, :start, :end)'
+            'INSERT INTO publications (file_name, file_path, caption, display_order, is_active, starts_on, ends_on,
+                event_date, event_end_date, event_start_time, event_end_time)
+             VALUES (:fn, :fp, :cap, :ord, 1, :start, :end, :ed, :eed, :est, :eet)'
         );
         $stmt->execute([
             'fn' => $fileName, 'fp' => $filePath, 'cap' => $caption, 'ord' => $nextOrder,
             'start' => $startsOn, 'end' => $endsOn,
-        ]);
+        ] + self::eventParams($event));
         return (int) Database::connection()->lastInsertId();
+    }
+
+    /**
+     * Ubah pengumuman yang sudah dipasang (#40). $filePath null = gambar tidak diganti.
+     * Status tampil (aktif/dihentikan) dan urutan tidak berubah.
+     */
+    public function update(int $id, ?string $filePath, ?string $caption, ?string $startsOn, ?string $endsOn, array $event = []): void
+    {
+        $setFile = $filePath === null ? '' : 'file_name = :fn, file_path = :fp, ';
+        $stmt = Database::connection()->prepare(
+            "UPDATE publications SET {$setFile}caption = :cap, starts_on = :start, ends_on = :end,
+                event_date = :ed, event_end_date = :eed, event_start_time = :est, event_end_time = :eet
+             WHERE id = :id"
+        );
+        $params = ['cap' => $caption, 'start' => $startsOn, 'end' => $endsOn, 'id' => $id] + self::eventParams($event);
+        if ($filePath !== null) {
+            $params += ['fn' => $filePath, 'fp' => $filePath];
+        }
+        $stmt->execute($params);
+    }
+
+    /** @param array<string, ?string> $event kunci date, end_date, start_time, end_time */
+    private static function eventParams(array $event): array
+    {
+        $v = static fn (string $k): ?string => isset($event[$k]) && $event[$k] !== '' ? (string) $event[$k] : null;
+        return ['ed' => $v('date'), 'eed' => $v('end_date'), 'est' => $v('start_time'), 'eet' => $v('end_time')];
     }
 
     /** Pasang ulang pengumuman lama: aktifkan lagi mulai hari ini tanpa batas akhir. */

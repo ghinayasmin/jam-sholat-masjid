@@ -128,9 +128,10 @@ final class BackupManager
             $publicationsPath = (string) Config::get('publications_path');
             $stmtP = $pdo->prepare(
                 'INSERT INTO publications
-                    (id, file_name, file_path, caption, display_order, is_active, uploaded_at, starts_on, ends_on)
+                    (id, file_name, file_path, caption, display_order, is_active, uploaded_at, starts_on, ends_on,
+                    event_date, event_end_date, event_start_time, event_end_time)
                  VALUES (:id, :file_name, :file_path, :caption, :display_order, :is_active, :uploaded_at,
-                    :starts_on, :ends_on)'
+                    :starts_on, :ends_on, :event_date, :event_end_date, :event_start_time, :event_end_time)'
             );
             foreach ($data['publications'] ?? [] as $p) {
                 $stmtP->execute([
@@ -138,6 +139,8 @@ final class BackupManager
                     'caption' => $p['caption'], 'display_order' => $p['display_order'],
                     'is_active' => $p['is_active'], 'uploaded_at' => $p['uploaded_at'],
                     'starts_on' => $p['starts_on'] ?? null, 'ends_on' => $p['ends_on'] ?? null,
+                    'event_date' => $p['event_date'] ?? null, 'event_end_date' => $p['event_end_date'] ?? null,
+                    'event_start_time' => $p['event_start_time'] ?? null, 'event_end_time' => $p['event_end_time'] ?? null,
                 ]);
                 if (!empty($p['file_base64']) && $p['file_path'] !== '') {
                     $target = $publicationsPath . '/' . basename($p['file_path']);
