@@ -411,6 +411,18 @@
         $('photoFull').hidden = !(c && c.kind === 'photo');
     }
 
+    // Komputer biasa: tampilkan cara menutup layar saat dibuka dan saat mouse digerakkan.
+    if (new URLSearchParams(location.search).get('layar') === 'desktop') {
+        let hintTimer;
+        const showExitHint = (ms) => {
+            $('exitHint').hidden = false;
+            clearTimeout(hintTimer);
+            hintTimer = setTimeout(() => { $('exitHint').hidden = true; }, ms);
+        };
+        showExitHint(6000);
+        document.addEventListener('mousemove', () => showExitHint(3000));
+    }
+
     render();
     setInterval(render, 1000);
 

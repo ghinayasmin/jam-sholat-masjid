@@ -234,3 +234,30 @@ html, body {
 .overlay-bar i { display: block; height: 100%; width: 100%; background: var(--brass); }
 .overlay-ar { font-family: var(--kufi); color: var(--brass); font-size: calc(var(--u) * 5); line-height: 1.1; }
 .overlay-title { font-size: calc(var(--u) * 3.6); font-weight: 700; letter-spacing: -0.02em; }
+
+/* ---------- Petunjuk menutup layar (komputer biasa, bukan Pi) ---------- */
+.exit-hint {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--u) * 2);
+    transform: translateX(-50%);
+    padding: calc(var(--u) * .9) calc(var(--u) * 1.6);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: calc(var(--u) * .8);
+    color: var(--ink-2);
+    font-size: calc(var(--u) * 1.25);
+    white-space: nowrap;
+    transition: opacity .4s;
+    z-index: 10;
+}
+.exit-hint[hidden] { display: block; opacity: 0; pointer-events: none; }
+.exit-hint b { color: var(--brass); font-weight: 600; }
+.exit-hint kbd {
+    font-family: inherit;
+    font-weight: 700;
+    color: var(--ink);
+    padding: 0 calc(var(--u) * .4);
+    border: 1px solid var(--line);
+    border-radius: calc(var(--u) * .3);
+}

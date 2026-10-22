@@ -115,6 +115,8 @@
     </div>
 </div>
 
+<!-- Hanya di komputer biasa (?layar=desktop): cara menutup layar penuh. -->
+<div class="exit-hint" id="exitHint" hidden>Tekan <kbd>Alt</kbd>+<kbd>F4</kbd> untuk menutup layar. Suara adzan tetap berjalan; buka lagi dari menu <b>Layar Jamaah</b>.</div>
 <script src="/assets/js/display.js?v=<?= filemtime(__DIR__ . '/assets/js/display.js') ?>"></script>
 </body>
 </html>
