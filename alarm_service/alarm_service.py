@@ -147,6 +147,34 @@ def mpg123_output_args(platform: str | None = None) -> list[str]:
     return ["-o", module] if module else []
 
 
+def mp3_frames_per_second(path: str) -> float | None:
+    """Jumlah frame MP3 per detik dari header frame pertama (lewati tag ID3v2), untuk
+    melompat ke detik tertentu dengan "mpg123 -k <frame>" (murottal dilanjutkan, #40)."""
+    try:
+        with open(path, "rb") as fh:
+            data = fh.read(64 * 1024)
+    except OSError:
+        return None
+    pos = 0
+    if data[:3] == b"ID3" and len(data) >= 10:
+        pos = 10 + ((data[6] & 0x7F) << 21 | (data[7] & 0x7F) << 14 | (data[8] & 0x7F) << 7 | (data[9] & 0x7F))
+        if pos + 4 > len(data):
+            with open(path, "rb") as fh:
+                fh.seek(pos)
+                data = fh.read(4096)
+            pos = 0
+    rates = {3: (44100, 48000, 32000), 2: (22050, 24000, 16000), 0: (11025, 12000, 8000)}  # MPEG1, 2, 2.5
+    while pos + 4 <= len(data):
+        if data[pos] == 0xFF and (data[pos + 1] & 0xE0) == 0xE0:
+            version = (data[pos + 1] >> 3) & 0x03
+            sr_index = (data[pos + 2] >> 2) & 0x03
+            if version in rates and sr_index < 3:
+                samples = 1152 if version == 3 else 576
+                return rates[version][sr_index] / samples
+        pos += 1
+    return None
+
+
 class AudioPlayer:
     """Wrapper pemutaran audio via player command-line. Player dipilih
     otomatis (mpg123 untuk mp3, aplay untuk wav) — bisa di-mock di test
@@ -184,12 +212,17 @@ class AudioPlayer:
         proc.wait()
         return True
 
-    def start_background(self, path: str) -> None:
+    def start_background(self, path: str, offset_seconds: float = 0) -> None:
+        """offset_seconds > 0: mulai dari detik itu (mpg123 -k), untuk murottal yang dijeda."""
         self.stop_background()
         cmd = self._player_for(path)
         if cmd is None:
             logger.warning("Tidak ada player audio untuk murottal: %s", path)
             return
+        if offset_seconds > 0 and cmd[0] == "mpg123":
+            fps = mp3_frames_per_second(path)
+            if fps:
+                cmd = cmd[:2] + ["-k", str(int(offset_seconds * fps))] + cmd[2:]
         self._current_process = self._runner(cmd)
 
     def stop_background(self) -> None:
@@ -346,6 +379,37 @@ class MurottalState:
         except sqlite3.Error as exc:
             logger.error("Gagal mencatat adzan yang diputar: %s", exc)
 
+    def save_position(self, file: str, seconds: float, playing: bool) -> None:
+        """Posisi murottal "file|detik|ditulis|1/0" (#40): Jeda lalu Putar melanjutkan
+        dari detik yang sama, juga setelah komputer mati. Panel menampilkan progresnya."""
+        value = f"{file}|{int(seconds)}|{int(time.time())}|{1 if playing else 0}" if file else ""
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                conn.execute("UPDATE mosque_settings SET murottal_position = ? WHERE id = 1", (value,))
+                conn.commit()
+            finally:
+                conn.close()
+        except sqlite3.Error as exc:
+            logger.error("Gagal menyimpan posisi murottal: %s", exc)
+
+    def saved_position(self) -> tuple[str, float]:
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                row = conn.execute("SELECT murottal_position FROM mosque_settings WHERE id = 1").fetchone()
+            finally:
+                conn.close()
+        except sqlite3.Error:
+            return "", 0.0
+        parts = (row[0] if row and row[0] else "").split("|")
+        if len(parts) < 2:
+            return "", 0.0
+        try:
+            return parts[0], float(parts[1])
+        except ValueError:
+            return "", 0.0
+
     def heartbeat(self, audio_status: str | None = None) -> None:
         """Tanda hidup untuk Beranda panel (DECISIONS.md #40): ditulis tiap menit,
         beserta hasil cek volume terakhir bila ada."""
@@ -398,13 +462,25 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
     state = MurottalState(db_path)
     state.set_now_playing("")
     state.set_alarm_playing("")  # sisa dari layanan yang berhenti di tengah adzan
-    # Setelah restart (mis. update.sh), lanjut dari surat terakhir yang dipilih takmir.
+    # Setelah restart (mis. update.sh atau listrik padam), lanjut dari posisi tersimpan
+    # (#40), atau dari surat terakhir yang dipilih takmir.
     last_request = state.request()
     chosen = last_request.split("|", 1)[0]
     names = [os.path.basename(f) for f in murottal_queue]
-    if chosen in names:
+    resume_file, resume_pos = state.saved_position()
+    if resume_file in names:
+        murottal_index = names.index(resume_file)
+    elif chosen in names:
         murottal_index = names.index(chosen)
     murottal_started = 0.0
+    murottal_offset = 0.0     # detik surat saat pemutar terakhir dimulai
+    position_saved = 0.0
+
+    def current_track() -> str:
+        return murottal_queue[murottal_index % len(murottal_queue)] if murottal_queue else ""
+
+    def murottal_position() -> float:
+        return murottal_offset + (time.monotonic() - murottal_started)
 
     def check_volume(reason: str) -> None:
         status = volume_guard.ensure_audible()
@@ -413,8 +489,13 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
 
     check_volume("layanan mulai")  # volume bisa kembali 0 setelah restart (#40)
 
-    def stop_murottal() -> None:
-        nonlocal murottal_playing
+    def stop_murottal(save: bool = True) -> None:
+        """Hentikan murottal (Jeda, jendela diam, adzan) dan simpan posisinya, supaya
+        Putar berikutnya melanjutkan dari detik yang sama (#40)."""
+        nonlocal murottal_playing, resume_file, resume_pos
+        if murottal_playing and save:
+            resume_file, resume_pos = os.path.basename(current_track()), murottal_position()
+            state.save_position(resume_file, resume_pos, False)
         player.stop_background()
         murottal_playing = False
         state.set_now_playing("")
@@ -429,8 +510,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                 schedule, iqomah_minutes = load_today_schedule(db_path)
                 scheduler = AlarmScheduler(schedule, iqomah_minutes)
                 murottal_queue = murottal_files()
-                murottal_index = 0
-                stop_murottal()
+                stop_murottal()  # posisi disimpan; murottal berlanjut, tidak kembali ke Al-Fatihah
 
             # Jadwal (koreksi per sholat, lokasi) dan jeda iqomah yang diubah takmir di panel
             # berlaku dalam 1 menit, tanpa restart. Adzan yang sudah berbunyi tidak diulang.
@@ -468,34 +548,47 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
             # (Jeda, jendela diam, adzan), indeks tetap sehingga surat yang sama diulang.
             if murottal_playing and not player.is_playing():
                 murottal_playing = False
-                murottal_index += 1
-                state.set_now_playing("")
-                if time.monotonic() - murottal_started < 5:
+                if time.monotonic() - murottal_started < 5 and murottal_offset == 0:
                     logger.warning("Pemutar murottal berhenti seketika (file rusak atau speaker sibuk), lanjut ke surat berikutnya.")
+                murottal_index += 1
+                resume_file, resume_pos = os.path.basename(current_track()), 0.0
+                state.save_position(resume_file, 0, False)
+                state.set_now_playing("")
 
-            # Takmir memilih surat di panel: mulai dari surat itu, lalu lanjut berurutan.
+            # Takmir memilih surat, Berikutnya, Sebelumnya, atau Mulai ulang di panel:
+            # surat itu diputar dari awal, lalu lanjut berurutan.
             request = state.request()
-            if request and request != last_request:
+            if request and request != last_request and murottal_queue:
                 last_request = request
                 chosen = request.split("|", 1)[0]
                 names = [os.path.basename(f) for f in murottal_queue]
-                if chosen in names:
-                    murottal_index = names.index(chosen)
+                step = {"__next__": 1, "__prev__": -1, "__restart__": 0}.get(chosen)
+                if step is not None or chosen in names:
+                    murottal_index = (murottal_index + step) % len(murottal_queue) if step is not None else names.index(chosen)
+                    resume_file, resume_pos = os.path.basename(current_track()), 0.0
                     if murottal_playing:
-                        stop_murottal()
+                        stop_murottal(save=False)
 
             # REQ-F-032 (Should): murottal hanya bila dinyalakan takmir dan di luar jendela diam.
             wanted = bool(murottal_queue) and state.enabled() and not scheduler.in_quiet_window(now)
             if wanted and not murottal_playing:
-                track = murottal_queue[murottal_index % len(murottal_queue)]
-                player.start_background(track)
+                track = current_track()
+                offset = resume_pos if os.path.basename(track) == resume_file else 0.0
+                player.start_background(track, offset)
                 murottal_playing = player.is_playing()
                 if murottal_playing:
                     murottal_started = time.monotonic()
+                    murottal_offset = offset
                     state.set_now_playing(murottal_title(track))
-                    logger.info("Murottal: %s", murottal_title(track))
+                    state.save_position(os.path.basename(track), offset, True)
+                    position_saved = time.monotonic()
+                    logger.info("Murottal: %s%s", murottal_title(track), f" dari detik {int(offset)}" if offset else "")
             elif not wanted and murottal_playing:
                 stop_murottal()
+            elif murottal_playing and time.monotonic() - position_saved >= 10:
+                # Posisi berkala: listrik padam pun hanya kehilangan beberapa detik.
+                state.save_position(os.path.basename(current_track()), murottal_position(), True)
+                position_saved = time.monotonic()
 
             # 3 detik: tombol Putar/Jeda di panel terasa langsung, tetap ringan (REQ-NF-102).
             time.sleep(3)

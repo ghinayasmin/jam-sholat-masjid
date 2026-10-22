@@ -115,23 +115,42 @@
         });
     });
 
-    // Status murottal ikut berubah tanpa memuat ulang: layanan alarm butuh beberapa
-    // detik untuk pindah surat setelah takmir mengetuk.
+    // Pemutar murottal (#40): progres berjalan tiap detik, dan keadaan dari layanan
+    // alarm (pindah surat, jeda, jendela diam) dibaca ulang tiap 3 detik.
     const live = document.querySelector('[data-murottal-live]');
     if (live) {
-        const statusEl = live.querySelector('[data-murottal-status]');
+        const q = (sel) => live.querySelector(sel);
         const tracks = document.querySelectorAll('button.track[data-title]');
+        const clock = (t) => String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+        let pos = Number(live.dataset.position) || 0;
+        let duration = Number(live.dataset.duration) || 0;
+        let playing = live.dataset.playing === '1';
+        const enabledAtLoad = Boolean(live.querySelector('input[name=action][value=pause]'));
+        const paint = () => {
+            if (q('[data-mp-pos]')) q('[data-mp-pos]').textContent = clock(pos);
+            if (q('[data-mp-fill]') && duration) q('[data-mp-fill]').style.width = Math.min(100, pos / duration * 100) + '%';
+        };
         const refresh = async () => {
             try {
                 const data = await (await fetch('/api/murottal.php', { cache: 'no-store' })).json();
-                const title = data.success ? data.now_playing : null;
-                if (title) statusEl.textContent = 'Sedang diputar: ' + title;
+                if (!data.success) return;
+                if (data.enabled !== enabledAtLoad) { location.reload(); return; }  // Putar/Jeda dari HP lain
+                const p = data.player;
+                if (p) {
+                    pos = p.position; duration = p.duration || 0; playing = p.playing;
+                    if (q('[data-mp-title]')) q('[data-mp-title]').textContent = 'Surah ' + p.title;
+                    if (q('[data-mp-number]')) q('[data-mp-number]').textContent = p.number;
+                    if (q('[data-mp-state]')) q('[data-mp-state]').textContent = playing ? 'Sedang diputar' : (data.enabled ? 'Menyala' : (pos > 0 ? 'Dijeda' : 'Berhenti'));
+                    paint();
+                }
+                const title = data.now_playing;
+                if (title && q('[data-murottal-status]')) q('[data-murottal-status]').textContent = 'Sedang diputar: ' + title;
                 tracks.forEach((btn) => {
-                    const on = title !== null && btn.dataset.title === title;
+                    const on = p !== null && p !== undefined && btn.dataset.title === p.title && (data.enabled || pos > 0);
                     btn.classList.toggle('playing', on);
                     btn.toggleAttribute('aria-current', on);
                     const v = btn.querySelector('.v');
-                    v.textContent = on ? 'Diputar' : 'Putar';
+                    v.textContent = on ? (data.enabled ? 'Diputar' : 'Dijeda') : 'Putar';
                     v.classList.toggle('ok', on);
                 });
             } catch (err) { /* jaringan putus sebentar: coba lagi di putaran berikutnya */ }
@@ -140,7 +159,9 @@
         // Halaman bisa diganti lewat document.write (lihat pengiriman formulir di bawah)
         // tanpa membuang timer lama, jadi simpan di window agar tidak menumpuk.
         clearInterval(window.murottalTimer);
+        clearInterval(window.murottalTick);
         window.murottalTimer = setInterval(() => { if (!document.hidden) refresh(); }, 3000);
+        window.murottalTick = setInterval(() => { if (playing && (!duration || pos < duration)) { pos += 1; paint(); } }, 1000);
     }
 
     // Konfirmasi sebelum tindakan yang menghapus/menimpa data.

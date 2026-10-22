@@ -128,15 +128,16 @@ require __DIR__ . '/_header.php';
 
 <section class="group" aria-labelledby="murottal-label">
     <div class="label" id="murottal-label">Murottal</div>
-    <div class="card murottal-card"<?= $murottalOn ? ' data-murottal-live' : '' ?>>
-        <span class="k"><?= $murottalOn ? 'Murottal menyala' : 'Murottal berhenti' ?><small data-murottal-status><?= Format::e($murottalStatus) ?></small></span>
-        <?php if ($murottalReady): ?>
-            <form method="post" action="/admin/murottal.php"><?= Csrf::field() ?>
-                <input type="hidden" name="action" value="<?= $murottalOn ? 'pause' : 'play' ?>">
-                <button type="submit" class="btn small<?= $murottalOn ? ' ghost' : '' ?>"><?= $murottalOn ? 'Jeda' : 'Putar' ?></button>
-            </form>
-        <?php endif; ?>
-    </div>
+    <?php if ($murottalReady):
+        $mp = \App\Murottal::player($settings);
+        $mpOn = $murottalOn;
+        $mpStatus = $murottalStatus;
+        $mpVariant = 'compact';
+        $mpBack = 'home';
+        require __DIR__ . '/_murottal_player.php';
+    else: ?>
+        <div class="card murottal-card"><span class="k">Murottal<small data-murottal-status><?= Format::e($murottalStatus) ?></small></span></div>
+    <?php endif; ?>
     <?php if ($murottalReady): ?>
         <div class="card" style="margin-top:8px"><a class="row" href="/admin/murottal.php"><span></span><span class="k">Pilih surat</span><span class="v"><?= Icon::svg('chevron', 'icon chev') ?></span></a></div>
     <?php endif; ?>

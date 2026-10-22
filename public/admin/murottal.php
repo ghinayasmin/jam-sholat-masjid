@@ -34,9 +34,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: /admin/murottal.php');
         exit;
     }
-    $play = $action === 'play';
-    $repo->update(['murottal_enabled' => $play ? 1 : 0]);
-    $_SESSION['flash_success'] = $play ? 'Murottal diputar dalam beberapa detik.' : 'Murottal dijeda.';
+    // Berikutnya / Sebelumnya / Mulai ulang: layanan alarm memutar surat itu dari awal (#40).
+    $steps = ['next' => '__next__', 'prev' => '__prev__', 'restart' => '__restart__'];
+    if (isset($steps[$action])) {
+        $repo->update(['murottal_enabled' => 1, 'murottal_request' => $steps[$action] . '|' . microtime(true)]);
+        $_SESSION['flash_success'] = ['next' => 'Pindah ke surat berikutnya.', 'prev' => 'Kembali ke surat sebelumnya.',
+            'restart' => 'Surat diputar ulang dari awal.'][$action];
+    } else {
+        // Jeda menyimpan posisi; Putar melanjutkan dari detik yang sama.
+        $play = $action === 'play';
+        $repo->update(['murottal_enabled' => $play ? 1 : 0]);
+        $_SESSION['flash_success'] = $play ? 'Murottal dilanjutkan dalam beberapa detik.' : 'Murottal dijeda. Putar lagi untuk melanjutkan dari posisi yang sama.';
+    }
     header('Location: ' . (($_POST['back'] ?? '') === 'list' ? '/admin/murottal.php' : '/admin/'));
     exit;
 }
@@ -47,7 +56,13 @@ $now = (string) $s['murottal_now_playing'];
 $nowMinutes = (int) gmdate('G', LocalTime::now()) * 60 + (int) gmdate('i', LocalTime::now());
 $status = Murottal::status($s, (new ScheduleEngine())->getScheduleForDate(LocalTime::today()), $nowMinutes, gmdate('w', LocalTime::now()) === '5');
 
-$pageTitle = 'Pilih surat';
+$mp = Murottal::player($s);
+$mpOn = $on;
+$mpStatus = $on ? $status : 'Ketuk Putar, atau pilih surat di bawah';
+$mpVariant = 'full';
+$mpBack = 'list';
+
+$pageTitle = 'Murottal';
 $backHref = '/admin/';
 $backLabel = 'Beranda';
 require __DIR__ . '/_header.php';
@@ -56,12 +71,7 @@ require __DIR__ . '/_header.php';
 <?php if ($tracks === []): ?>
     <div class="card"><div class="empty">Belum ada file murottal di perangkat. Lihat public/assets/audio/README.md.</div></div>
 <?php else: ?>
-    <div class="card murottal-card" data-murottal-live>
-        <span class="k"><?= $on ? 'Murottal menyala' : 'Murottal berhenti' ?><small data-murottal-status><?= Format::e($on ? $status : 'Ketuk surat untuk memutar') ?></small></span>
-        <?php if ($on): ?>
-            <form method="post"><?= Csrf::field() ?><input type="hidden" name="action" value="pause"><input type="hidden" name="back" value="list"><button type="submit" class="btn small ghost">Jeda</button></form>
-        <?php endif; ?>
-    </div>
+    <?php require __DIR__ . '/_murottal_player.php'; ?>
 
     <section class="group" aria-labelledby="tracks-label">
         <div class="field">
@@ -70,12 +80,12 @@ require __DIR__ . '/_header.php';
         <div class="label" id="tracks-label"><?= count($tracks) ?> surat · diputar berurutan</div>
         <div class="card" id="trackList">
             <?php foreach ($tracks as $i => $t):
-                $playing = $now !== '' && $now === $t['title']; ?>
+                $playing = $mp !== null && $mp['file'] === $t['file'] && ($on || $mp['position'] > 0); ?>
                 <form method="post" data-filter-text="<?= Format::e(($i + 1) . ' ' . $t['title'] . ' ' . $t['file']) ?>"><?= Csrf::field() ?><input type="hidden" name="action" value="choose"><input type="hidden" name="file" value="<?= Format::e($t['file']) ?>">
                     <button type="submit" class="row track<?= $playing ? ' playing' : '' ?>" data-title="<?= Format::e($t['title']) ?>"<?= $playing ? ' aria-current="true"' : '' ?>>
                         <span class="n"><?= $i + 1 ?></span>
                         <span class="k">Surah <?= Format::e($t['title']) ?></span>
-                        <span class="v<?= $playing ? ' ok' : '' ?>"><?= $playing ? 'Diputar' : 'Putar' ?></span>
+                        <span class="v<?= $playing ? ' ok' : '' ?>"><?= $playing ? ($on ? 'Diputar' : 'Dijeda') : 'Putar' ?></span>
                     </button>
                 </form>
             <?php endforeach; ?>

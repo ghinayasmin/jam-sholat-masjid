@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     murottal_enabled                INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1)),
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
     murottal_request                TEXT NOT NULL DEFAULT '',   -- "file|cap waktu": surat yang dipilih takmir
+    murottal_position               TEXT NOT NULL DEFAULT '',   -- "file|detik|ditulis|1/0": lanjut setelah Jeda (#40)
     alarm_now_playing               TEXT NOT NULL DEFAULT '',   -- "adzan|maghrib" selama rekaman diputar (#32)
     -- Tanda hidup layanan alarm (detik Unix, ditulis tiap menit) dan hasil cek volume
     -- terakhir, untuk "Layanan adzan" di Beranda (#40).

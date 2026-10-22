@@ -728,3 +728,19 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   tersimpan), "Simpan perubahan", dan "Hapus pengumuman ini". Status tampil dan
   urutan tidak berubah. Sebelumnya poster yang salah hanya bisa dihapus lalu
   diunggah ulang.
+- **Pemutar murottal dengan lanjut dari posisi terakhir:** sebelumnya Jeda lalu
+  Putar mengulang surat dari awal. Layanan alarm kini menyimpan posisi
+  `murottal_position` ("file|detik|ditulis|1/0") tiap 10 detik selama diputar dan
+  setiap kali berhenti (Jeda, jendela diam, adzan, layanan dimatikan). Putar
+  berikutnya memakai `mpg123 -k <frame>`; frame per detik dibaca dari header MP3
+  per berkas (44,1 kHz dan 48 kHz sama-sama ada di koleksi murottal). Posisi
+  bertahan setelah komputer mati, dan pergantian hari tidak lagi mengembalikan
+  murottal ke Al-Fatihah. Memilih surat, Berikutnya, Sebelumnya, dan "Mulai ulang
+  dari awal surat" memutar surat itu dari awal (permintaan `__next__`,
+  `__prev__`, `__restart__` di `murottal_request`). Panel menampilkan pemutar yang
+  sama di Beranda (ringkas) dan halaman Murottal (gelap): judul, "Surah n dari
+  114", progres dengan durasi (dihitung PHP dari ukuran berkas dan bitrate),
+  ⏮ ⏯ ⏭, dan tombol "Lanjutkan dari mm:ss" saat dijeda. Progres berjalan di
+  browser dan dicocokkan dengan `/api/murottal.php` tiap 3 detik.
+- Keterangan "mulai lagi pukul …" di panel kini memakai jendela diam yang sama
+  dengan layanan alarm sejak #30 (15 menit setelah iqomah, minimal 20 menit).

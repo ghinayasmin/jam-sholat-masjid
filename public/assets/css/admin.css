@@ -277,6 +277,36 @@ form.stack { display: flex; flex-direction: column; gap: 20px; flex: 1; }
 .motion-grid figcaption { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--muted); padding: 0 10px; }
 .motion-grid figcaption .link-btn { font-size: 13px; }
 .motion-clear { margin-top: 16px; }
+/* Pemutar murottal (#40) */
+.mp { border-radius: var(--radius); padding: 16px; display: grid; gap: 10px; }
+.mp-full { background: var(--night); color: #ECE6D8; padding: 20px; margin-bottom: 18px; }
+.mp-compact { background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.mp-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.mp-eyebrow { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--jati); }
+.mp-full .mp-eyebrow { color: var(--brass); }
+.mp-count { color: var(--muted); }
+.mp-full .mp-count, .mp-full .mp-times, .mp-full .mp-status { color: #A9B4AE; }
+.mp-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.mp-full .mp-title { font-size: 24px; font-weight: 800; }
+.mp-status { font-size: 13px; color: var(--muted); margin-top: -6px; }
+.mp-bar { height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.mp-full .mp-bar { background: rgba(236, 230, 216, .16); }
+.mp-bar i { display: block; height: 100%; background: var(--jati); transition: width .9s linear; }
+.mp-full .mp-bar i { background: var(--brass); }
+.mp-times { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: -4px; }
+.mp-controls { display: flex; align-items: center; gap: 10px; }
+.mp-form { margin: 0; }
+.mp-main-form { flex: 1; }
+.mp-btn, .mp-main { display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font: inherit; }
+.mp-btn { width: 48px; height: 48px; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line-strong); color: var(--ink-2); }
+.mp-full .mp-btn { background: transparent; box-shadow: inset 0 0 0 1px rgba(236, 230, 216, .22); color: #ECE6D8; border-radius: 50%; }
+.mp-main { width: 100%; height: 48px; border-radius: 12px; background: var(--primary); color: #FFFFFF; font-size: 15px; font-weight: 700; }
+.mp-full .mp-main { background: var(--brass); color: #1B1408; }
+.mp svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mp svg.fill { fill: currentColor; stroke: none; }
+.mp-restart { margin: 0; }
+.mp-restart .link-btn { font-size: 13px; color: var(--muted); min-height: 32px; padding: 0; }
+.mp-full .mp-restart .link-btn { color: #A9B4AE; }
 .murottal-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
 .murottal-card .k { display: flex; flex-direction: column; font-weight: 600; }
 .murottal-card .k small { font-weight: 400; color: var(--muted); font-size: 13px; margin-top: 2px; }

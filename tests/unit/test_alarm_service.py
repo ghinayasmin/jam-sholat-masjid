@@ -11,8 +11,8 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'alarm_service'))
 from alarm_service import (  # noqa: E402
-    AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, load_iqomah_minutes, mpg123_output_args,
-    murottal_title,
+    AlarmScheduler, AudioPlayer, MurottalState, alarm_audio_file, load_iqomah_minutes, mp3_frames_per_second,
+    mpg123_output_args, murottal_title,
 )
 
 
@@ -160,6 +160,54 @@ class TestAudioPlayer(unittest.TestCase):
         first_call_count = len(self.calls)
         self.player.start_background("/tmp/murottal2.mp3")
         self.assertEqual(len(self.calls), first_call_count + 1)
+
+
+class TestMurottalResume(unittest.TestCase):
+    """Jeda lalu Putar melanjutkan dari detik yang sama (DECISIONS.md #40)."""
+
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def mp3(self, name, header, id3=True):
+        path = os.path.join(self.tmp.name, name)
+        tag = b"ID3\x03\x00\x00\x00\x00\x00\x0a" + b"\x00" * 10 if id3 else b""
+        with open(path, "wb") as fh:
+            fh.write(tag + header + b"\x00" * 400)
+        return path
+
+    def test_frames_per_second_from_header(self):
+        # MPEG1 44,1 kHz (1152 sampel/frame) dan 48 kHz; MPEG2 22,05 kHz (576).
+        self.assertAlmostEqual(mp3_frames_per_second(self.mp3("a.mp3", b"\xff\xfb\x50\xc4")), 44100 / 1152)
+        self.assertAlmostEqual(mp3_frames_per_second(self.mp3("b.mp3", b"\xff\xfb\x54\xc4", id3=False)), 48000 / 1152)
+        self.assertAlmostEqual(mp3_frames_per_second(self.mp3("c.mp3", b"\xff\xf3\x50\xc4")), 22050 / 576)
+        self.assertIsNone(mp3_frames_per_second(os.path.join(self.tmp.name, "tidak-ada.mp3")))
+
+    def test_resume_skips_to_saved_second(self):
+        calls = []
+        player = AudioPlayer(runner=lambda cmd: calls.append(cmd) or TestAudioPlayer.FakeProcess())
+        path = self.mp3("067_Al-Mulk.mp3", b"\xff\xfb\x54\xc4")
+        player._player_for = lambda p: ["mpg123", "-q", p]
+        player.start_background(path, offset_seconds=12)
+        self.assertEqual(calls[-1], ["mpg123", "-q", "-k", "500", path])  # 12 dtk × 41,67 frame/dtk
+        player.start_background(path)
+        self.assertEqual(calls[-1], ["mpg123", "-q", path])
+
+    def test_position_saved_and_read_back(self):
+        import sqlite3
+        db = os.path.join(self.tmp.name, "j.db")
+        conn = sqlite3.connect(db)
+        conn.execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY, murottal_position TEXT NOT NULL DEFAULT '')")
+        conn.execute("INSERT INTO mosque_settings (id) VALUES (1)")
+        conn.commit()
+        conn.close()
+        state = MurottalState(db)
+        self.assertEqual(state.saved_position(), ("", 0.0))
+        state.save_position("067_Al-Mulk.mp3", 192.7, False)
+        self.assertEqual(state.saved_position(), ("067_Al-Mulk.mp3", 192.0))
 
 
 class TestAlarmAudioFile(unittest.TestCase):
