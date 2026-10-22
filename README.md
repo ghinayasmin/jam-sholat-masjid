@@ -167,6 +167,9 @@ Paket siap pakai ada di halaman **Releases** (dibangun oleh `.github/workflows/p
   `sudo apt install ./jamsholat_<versi>_all.deb`
 
 Lalu buka `http://localhost/admin/` di komputer itu untuk membuat akun takmir.
+Layar jamaah dibuka dari menu **Layar Jamaah** (Start di Windows, menu aplikasi di
+Linux) dan ditutup dengan Alt+F4; suara adzan tetap berjalan. Setelah itu layar dan
+suara menyala sendiri setiap kali pengguna masuk.
 Detail rancangan: `docs/DECISIONS.md` #39, sumber paket: `packaging/`.
 
 ## 9. Running the Application

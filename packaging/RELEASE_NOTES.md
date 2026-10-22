@@ -8,6 +8,6 @@ Jam Sholat Masjid untuk komputer biasa, tanpa Raspberry Pi.
 sudo apt install ./jamsholat_<versi>_all.deb
 ```
 
-Setelah terpasang, buka `http://localhost/admin/` di komputer itu untuk membuat akun takmir. Panel bisa dibuka dari HP lewat WiFi yang sama di `http://<IP komputer>/admin/`.
+Setelah terpasang, buka `http://localhost/admin/` di komputer itu untuk membuat akun takmir. Layar jamaah dibuka dari menu **Layar Jamaah** (Start di Windows, menu aplikasi di Linux) dan ditutup dengan Alt+F4; suara adzan tetap berjalan. Panel bisa dibuka dari HP lewat WiFi yang sama di `http://<IP komputer>/admin/`.
 
 Paket berisi audio adzan, iqomah, dan 114 surah murottal (±1 GB). Sumber dan lisensi audio: `public/assets/audio/CREDITS.txt` atau Pengaturan → Tentang aplikasi.

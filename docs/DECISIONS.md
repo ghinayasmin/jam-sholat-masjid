@@ -634,20 +634,39 @@ waktu dibuat).
   BOM yang terkirim sebelum respons PHP (JSON rusak, redirect gagal) → ASCII.
   Hasil akhir: semua pemeriksaan lolos di Windows Server 2022 dan 2025.
 
-- **Temuan uji manual Windows 11** (Azhar, 21 Okt 2026): (1) shortcut *Layar
-  Jamaah* tidak membuka apa pun setelah layar ditutup dengan Alt+F4, karena sesi
-  dari Startup masih berjalan dan penjaga satu-instans membuat sesi kedua keluar
-  diam-diam (uji no. 2 dan 19 kosong). Sekarang sesi kedua memberi sinyal lewat
-  event `Local\JamSholatShowDisplay`, dan sesi pertama membuka Edge lagi bila
-  layar sudah tertutup; layanan alarm tetap satu. Edge kiosk memakai profil
-  sendiri (`%LOCALAPPDATA%\JamSholat\edge-kiosk`) supaya `--kiosk` tetap berlaku
-  saat Edge biasa sedang terbuka. (2) Pintasan menampilkan ikon Python karena
-  menunjuk ke `pythonw.exe`; aplikasi kini punya ikon sendiri
-  (`packaging/icon/`, `public/favicon.ico`) untuk pintasan, installer, daftar
-  aplikasi Windows, ikon Linux (hicolor), dan tab browser.
-- **Hal yang sama di Linux:** menu aplikasi kini punya *Layar Jamaah* dan *Panel
-  Takmir* (`/usr/share/applications`). `jamsholat-session` memakai `flock`, jadi
-  sesi kedua tidak menjalankan alarm lagi tetapi meminta sesi pertama (lewat FIFO
-  di `$XDG_RUNTIME_DIR`) membuka layar bila sudah ditutup. Browser kiosk memakai
-  profil sendiri bernama `jamsholat-kiosk` (di `~/snap/<browser>/common` untuk
-  browser snap Ubuntu) sehingga tetap layar penuh walau browser biasa terbuka.
+- **Temuan uji manual Windows 11** (Azhar, 21 Okt 2026) dan tinjauan alur pengguna
+  sesudahnya (v1.1.1):
+  1. Shortcut *Layar Jamaah* tidak membuka apa pun setelah layar ditutup dengan
+     Alt+F4: sesi dari Startup masih berjalan dan penjaga satu-instans membuat
+     sesi kedua keluar diam-diam (uji no. 2 dan 19 kosong). Sekarang sesi kedua
+     memberi sinyal lewat event `Local\JamSholatShowDisplay`; sesi pertama membuka
+     Edge lagi, atau membawanya ke depan bila masih terbuka tapi tertutup jendela
+     lain (`AllowSetForegroundWindow` dari proses yang diklik, lalu
+     `SetForegroundWindow`). Layanan alarm tetap satu. Edge kiosk memakai profil
+     sendiri (`%LOCALAPPDATA%\JamSholat\edge-kiosk`) supaya `--kiosk` tetap berlaku
+     saat Edge biasa terbuka.
+  2. Di Linux, menu aplikasi kini punya *Layar Jamaah* dan *Panel Takmir*.
+     `jamsholat-session` memakai `flock`: klik kedua tidak menjalankan alarm lagi,
+     hanya membuka layar. Bila layar masih terbuka, layar ditutup lalu dibuka lagi
+     dari proses yang diklik, karena hanya proses itu yang boleh tampil di depan
+     (juga di Wayland, yang melarang aplikasi menaikkan jendela lain). Profil
+     browser kiosk bernama `jamsholat-kiosk` (di `~/snap/<browser>/common` untuk
+     browser snap Ubuntu).
+  3. Cara menutup layar penuh tidak terlihat: layar jamaah menampilkan petunjuk
+     "Alt+F4 … suara adzan tetap berjalan" selama 6 detik saat dibuka dan 3 detik
+     setiap mouse bergerak, hanya bila dibuka dengan `?layar=desktop` (Windows &
+     Linux). Pi tidak memakai parameter itu.
+  4. Linux tidak lagi wajib login ulang setelah `apt install`: `postinst` memberi
+     akun desktop izin tulis ke `storage/` lewat ACL (langsung berlaku), plus ACL
+     bawaan folder agar file baru (mis. `-wal` SQLite) tetap bisa ditulis Apache.
+     Grup `jamsholat` tetap dipasang. Akun yang dibuat sesudah instalasi:
+     `sudo dpkg-reconfigure jamsholat`.
+  5. Instalasi pertama di Windows hanya membuka panel (buat akun, atur lokasi);
+     suara adzan sudah aktif (`session.pyw --tanpa-layar`), layar jamaah dibuka
+     dari Start. Pintasan Startup diganti nama menjadi *Layar Jamaah*; pintasan
+     lama dihapus installer.
+  6. Pintasan menampilkan ikon Python karena menunjuk ke `pythonw.exe`. Aplikasi
+     kini punya ikon sendiri (`packaging/icon/`, `public/favicon.ico`) untuk
+     pintasan, installer, daftar aplikasi Windows, menu Linux, dan tab browser.
+  Semua alur ini diuji otomatis: `test-windows.ps1` (Windows Server 2022/2025) dan
+  `packaging/debian/test-desktop.sh` (Debian 12, Chromium & Firefox, Xvfb).
