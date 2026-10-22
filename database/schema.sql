@@ -46,6 +46,10 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
     murottal_request                TEXT NOT NULL DEFAULT '',   -- "file|cap waktu": surat yang dipilih takmir
     alarm_now_playing               TEXT NOT NULL DEFAULT '',   -- "adzan|maghrib" selama rekaman diputar (#32)
+    -- Tanda hidup layanan alarm (detik Unix, ditulis tiap menit) dan hasil cek volume
+    -- terakhir, untuk "Layanan adzan" di Beranda (#40).
+    alarm_heartbeat                 INTEGER NOT NULL DEFAULT 0,
+    alarm_audio_status              TEXT NOT NULL DEFAULT '',
     -- Suara adzan/iqomah dari speaker. Bisa dimatikan bila dikumandangkan langsung oleh muadzin;
     -- Instalasi baru: iqomah bawaan nyala (revisi dosen, DECISIONS.md #30).
     adzan_sound_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1)),

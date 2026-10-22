@@ -1,7 +1,9 @@
 Sumber: Wikimedia Commons. Murottal 114 surat oleh Aaqib Azeez (uploader Atcovi), dikompres ke MP3 64 kbps mono.
 Surat 37-50 hanya ada versi mujawwad.
 
-iqomah.wav | Iqamah.ogg (dikonversi ke WAV; di paket .deb/Windows: iqomah.mp3 64 kbps mono) | CC0 | https://commons.wikimedia.org/wiki/File:Iqamah.ogg
+iqomah.mp3 | "إقامة مدنية للقارئ عبدالكريم المكي Iqamah by Abdulkarim Almakki.mp3" (Syaikh Abdul Karim Al-Makki, gaya Madinah), hening awal/akhir dipotong, volume disamakan dengan adzan, MP3 64 kbps mono | lisensi tidak dicantumkan pengunggah | https://archive.org/details/IQOMAH
+  (sejak v1.1.2; dipilih tim karena jernih dan berdurasi wajar, 52 detik)
+iqomah.wav (sampai v1.1.1, tidak dipakai lagi) | Iqamah.ogg | CC0 | https://commons.wikimedia.org/wiki/File:Iqamah.ogg
 
 Adzan (Internet Archive, item AdzanMisyariRasyid, diberi label CC0 oleh pengunggah):
 adzan.mp3 | mecca_56_22.mp3 (Masjidil Haram) | CC0 (label pengunggah) | https://archive.org/details/AdzanMisyariRasyid

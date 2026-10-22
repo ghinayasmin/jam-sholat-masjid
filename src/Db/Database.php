@@ -65,6 +65,8 @@ final class Database
             'murottal_now_playing' => "TEXT NOT NULL DEFAULT ''",
             'murottal_request' => "TEXT NOT NULL DEFAULT ''",
             'alarm_now_playing' => "TEXT NOT NULL DEFAULT ''",
+            'alarm_heartbeat' => 'INTEGER NOT NULL DEFAULT 0',
+            'alarm_audio_status' => "TEXT NOT NULL DEFAULT ''",
             'adzan_sound_enabled' => 'INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1))',
             'iqomah_sound_enabled' => 'INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1))',
             'hijri_offset_days' => 'INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2)',

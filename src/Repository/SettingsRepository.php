@@ -32,6 +32,7 @@ final class SettingsRepository
      */
     private const RUNTIME_COLUMNS = [
         'id', 'updated_at', 'murottal_now_playing', 'murottal_request', 'alarm_now_playing',
+        'alarm_heartbeat', 'alarm_audio_status',
         'last_sync_at', 'last_sync_status',
     ];
 

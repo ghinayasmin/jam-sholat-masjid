@@ -693,3 +693,23 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   bawahnya. Tidak semua jamaah paham istilah Baitul Maal.
 - **Deskripsi Tentang** menyebut bahwa aplikasi berjalan di Raspberry Pi, Windows,
   dan Linux.
+- **Iqomah baru:** rekaman Syaikh Abdul Karim Al-Makki (gaya Madinah) dari koleksi
+  "IQOMAH" di Internet Archive, dipilih pengguna dari tujuh kandidat karena jernih.
+  Rekaman lama (Commons, 1:33) terdengar salah dan terlalu panjang. Hening di awal
+  dan akhir dipotong, volumenya disamakan dengan adzan (0,58×), MP3 64 kbps mono,
+  52 detik. Pengunggah tidak mencantumkan lisensi; atas keputusan pengguna rekaman
+  ini tetap dibawa installer, dengan sumber dicantumkan di Tentang dan
+  `CREDITS.txt`. Disimpan sebagai aset `iqomah-almakki.mp3` di rilis `audio-v1`
+  (SHA256 dicek), ditimpakan ke paket audio saat build.
+- **Penjaga volume** (`alarm_service/volume_guard.py`): saat layanan mulai dan
+  sebelum setiap adzan/iqomah, volume bisu dibunyikan lagi dan volume di bawah 30%
+  dinaikkan ke 70%. PipeWire (`wpctl`) atau PulseAudio (`pactl`) di Linux desktop,
+  ALSA (`amixer`) di Raspberry Pi dan server, API volume Windows lewat
+  `packaging/windows/ensure-volume.ps1`. Volume di atas 30% tidak disentuh, dan
+  kegagalan tidak pernah menghentikan adzan.
+- **Layanan adzan di Beranda:** layanan alarm menulis `alarm_heartbeat` tiap menit
+  dan hasil cek volume ke `alarm_audio_status`. Beranda menampilkan "Berjalan",
+  "Belum pernah berjalan", atau "Tidak berjalan sejak HH:MM" (lebih dari 10 menit,
+  karena adzan Subuh menahan loop sekitar 3 menit). Di komputer biasa, layanan
+  hanya berjalan setelah ada yang masuk (login), dan sebelumnya takmir tidak
+  punya cara untuk tahu.

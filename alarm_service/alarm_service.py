@@ -30,6 +30,9 @@ import signal
 import time
 from glob import glob
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import volume_guard  # noqa: E402
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_DB_PATH = os.environ.get("JAMSHOLAT_DB_PATH", os.path.join(PROJECT_ROOT, "storage", "jamsholat.db"))
 AUDIO_DIR = os.environ.get("JAMSHOLAT_AUDIO_PATH", os.path.join(PROJECT_ROOT, "public", "assets", "audio"))
@@ -343,6 +346,23 @@ class MurottalState:
         except sqlite3.Error as exc:
             logger.error("Gagal mencatat adzan yang diputar: %s", exc)
 
+    def heartbeat(self, audio_status: str | None = None) -> None:
+        """Tanda hidup untuk Beranda panel (DECISIONS.md #40): ditulis tiap menit,
+        beserta hasil cek volume terakhir bila ada."""
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                if audio_status is None:
+                    conn.execute("UPDATE mosque_settings SET alarm_heartbeat = ? WHERE id = 1", (int(time.time()),))
+                else:
+                    conn.execute("UPDATE mosque_settings SET alarm_heartbeat = ?, alarm_audio_status = ? WHERE id = 1",
+                                 (int(time.time()), audio_status))
+                conn.commit()
+            finally:
+                conn.close()
+        except sqlite3.Error as exc:
+            logger.error("Gagal menulis tanda hidup layanan: %s", exc)
+
     def set_now_playing(self, title: str) -> None:
         if title == self._written:
             return
@@ -386,6 +406,13 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
         murottal_index = names.index(chosen)
     murottal_started = 0.0
 
+    def check_volume(reason: str) -> None:
+        status = volume_guard.ensure_audible()
+        logger.info("Cek volume (%s): %s", reason, status)
+        state.heartbeat(status)
+
+    check_volume("layanan mulai")  # volume bisa kembali 0 setelah restart (#40)
+
     def stop_murottal() -> None:
         nonlocal murottal_playing
         player.stop_background()
@@ -413,6 +440,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                     scheduler.schedule = fresh_schedule
                 scheduler.set_iqomah_minutes(iqomah_minutes)
                 settings_loaded = time.monotonic()
+                state.heartbeat()
 
             for kind, prayer in scheduler.check(now):
                 # Dimatikan takmir bila adzan/iqomah dikumandangkan langsung oleh muadzin.
@@ -424,6 +452,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                     logger.info("Waktu iqomah %s: suara iqomah dimatikan di panel, tidak diputar.", prayer)
                     continue
                 stop_murottal()  # hentikan murottal dulu (REQ-F-032, TC-ALM-003)
+                check_volume(f"{kind} {prayer}")
                 audio_file = alarm_audio_file(kind, prayer)
                 logger.info("Memutar %s untuk %s (%s)", kind, prayer, audio_file)
                 if os.path.isfile(audio_file):

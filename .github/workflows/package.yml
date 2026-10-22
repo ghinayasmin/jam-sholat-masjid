@@ -25,6 +25,9 @@ env:
   AUDIO_TAG: audio-v1
   AUDIO_ZIP: jamsholat-audio-v1.zip
   AUDIO_SHA256: c02456b2f9f4939098834164de3f180b928d0960d5867a038295b9f613795153
+  # Iqomah pengganti sejak v1.1.2 (DECISIONS.md #40), aset tambahan di rilis audio-v1.
+  IQOMAH_FILE: iqomah-almakki.mp3
+  IQOMAH_SHA256: 4996cb48fe6b68840dbad239ed152fd251464fb0ce2c7b108c0198f8f9ccc9cc
 
 jobs:
   linux:
@@ -44,6 +47,10 @@ jobs:
           gh release download "$AUDIO_TAG" -p "$AUDIO_ZIP" -D "$RUNNER_TEMP"
           echo "$AUDIO_SHA256  $RUNNER_TEMP/$AUDIO_ZIP" | sha256sum -c -
           unzip -q "$RUNNER_TEMP/$AUDIO_ZIP" -d "$RUNNER_TEMP/audio-bundle"
+          gh release download "$AUDIO_TAG" -p "$IQOMAH_FILE" -D "$RUNNER_TEMP"
+          echo "$IQOMAH_SHA256  $RUNNER_TEMP/$IQOMAH_FILE" | sha256sum -c -
+          cp "$RUNNER_TEMP/$IQOMAH_FILE" "$RUNNER_TEMP/audio-bundle/audio/iqomah.mp3"
+          cp public/assets/audio/CREDITS.txt "$RUNNER_TEMP/audio-bundle/audio/CREDITS.txt"
       - name: Versi
         # Versi dari berkas VERSION (baris 1); tag rilis wajib sama dengannya.
         run: |
@@ -90,6 +97,11 @@ jobs:
           $hash = (Get-FileHash "$env:RUNNER_TEMP\$env:AUDIO_ZIP" -Algorithm SHA256).Hash.ToLower()
           if ($hash -ne $env:AUDIO_SHA256) { throw "SHA256 audio tidak cocok: $hash" }
           Expand-Archive "$env:RUNNER_TEMP\$env:AUDIO_ZIP" "$env:RUNNER_TEMP\audio-bundle"
+          gh release download $env:AUDIO_TAG -p $env:IQOMAH_FILE -D $env:RUNNER_TEMP
+          $ih = (Get-FileHash "$env:RUNNER_TEMP\$env:IQOMAH_FILE" -Algorithm SHA256).Hash.ToLower()
+          if ($ih -ne $env:IQOMAH_SHA256) { throw "SHA256 iqomah tidak cocok: $ih" }
+          Copy-Item "$env:RUNNER_TEMP\$env:IQOMAH_FILE" "$env:RUNNER_TEMP\audio-bundle\audio\iqomah.mp3" -Force
+          Copy-Item public\assets\audio\CREDITS.txt "$env:RUNNER_TEMP\audio-bundle\audio\CREDITS.txt" -Force
       - name: Inno Setup
         run: |
           choco install innosetup --no-progress -y

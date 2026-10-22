@@ -69,6 +69,19 @@ $murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes, $isFr
 $clockOk = \App\SystemClock::isTrusted();
 $me = (new \App\Repository\AdminUserRepository())->findById((int) ($_SESSION['admin_id'] ?? 0));
 $hasRecovery = !empty($me['recovery_created_at']);
+// Layanan adzan (DECISIONS.md #40): tanda hidup ditulis tiap menit; adzan Subuh yang
+// panjang menahan loop beberapa menit, jadi batasnya 10 menit.
+$beat = (int) $settings['alarm_heartbeat'];
+$beatAge = time() - $beat;
+$audioStatus = (string) $settings['alarm_audio_status'];
+if ($beat === 0) {
+    $alarmRow = ['warn', 'Belum pernah berjalan', 'Di komputer biasa, layanan berjalan setelah komputer masuk (login)', 'Cek'];
+} elseif ($beatAge > 600) {
+    $alarmRow = ['warn', 'Tidak berjalan sejak ' . gmdate('H:i', $beat + LocalTime::offsetSeconds()), 'Adzan tidak akan berbunyi. Pastikan komputer menyala dan sudah masuk (login)', 'Cek'];
+} else {
+    $volumeNote = $audioStatus === '' ? '' : ' · volume ' . $audioStatus;
+    $alarmRow = ['', 'Berjalan', 'Adzan dan iqomah siap berbunyi' . $volumeNote, 'Aktif'];
+}
 $shifts = (int) $settings['location_offset_minutes'] !== 0;
 foreach (ScheduleEngine::ADJUSTABLE as $key) {
     $shifts = $shifts || (int) $settings["adjust_{$key}_minutes"] !== 0;
@@ -143,6 +156,7 @@ require __DIR__ . '/_header.php';
     <div class="label" id="sys-label">Kondisi sistem</div>
     <div class="card">
         <a class="row" href="/display.php" target="_blank" rel="noopener"><span class="dot"></span><span class="k">Layar jamaah<small>Ketuk untuk melihat tampilannya</small></span><span class="v ok">Buka</span></a>
+        <a class="row" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot<?= $alarmRow[0] !== '' ? ' warn' : '' ?>"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v<?= $alarmRow[0] === '' ? ' ok' : '' ?>"><?= $alarmRow[3] ?></span></a>
         <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
         <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
         <?php if (!$hasRecovery): ?>
