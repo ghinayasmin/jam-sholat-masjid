@@ -42,9 +42,9 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-051 | Data Restore | ✅ | `BackupManager.php` | ✅ round-trip backup→ubah data→restore→data pulih, teruji |
 | REQ-F-060 | Automatic Time Sync | ✅ | OS-level `systemd-timesyncd` (lihat DECISIONS.md #10) | Standar OS, tidak perlu kode custom |
 | REQ-F-061 | Offline Time Accuracy | ✅ | `fake-hwclock` (DECISIONS.md #9) + jam dicocokkan otomatis dengan jam HP saat panel dibuka (`SystemClock`, `clock_sync.php`, DECISIONS.md #24) | Diuji di Pi 3 (TC-SYNC-002) |
-| REQ-F-070 | Admin Authentication | ✅ | `AuthManager.php` | ✅ unit test; **di Pi 3:** login salah ditolak, login benar masuk ke Beranda (HP) |
+| REQ-F-070 | Admin Authentication | ✅ | `AuthManager.php`, akun bawaan admin / 000 wajib diganti saat pertama masuk (`DefaultAccount`, `change_password.php`, DECISIONS #41) | ✅ unit test; **di Pi 3:** login salah ditolak, login benar masuk ke Beranda (HP) |
 | REQ-F-071 | Restricted Settings Access | ✅ | `AuthMiddleware.php` | ✅ redirect ke login saat belum auth, teruji |
-| REQ-F-072 | Offline Admin Password Recovery | ✅ | `admin/forgot.php` + kode pemulihan (`RecoveryCode`), perintah teknisi `sudo jamsholat-reset-password` (`scripts/reset_password_cli.php`) (DECISIONS #33) | ✅ uji integrasi + uji alur web lokal; tanpa internet |
+| REQ-F-072 | Offline Admin Password Recovery | ✅ | Reset ke akun bawaan admin / 000 dari perangkat: `sudo jamsholat-reset-password`, menu Linux "Reset Kata Sandi Jam Sholat", Start → Reset kata sandi (Windows); `scripts/reset_password_cli.php`, `DefaultAccount`, petunjuk di `admin/forgot.php` (DECISIONS #41) | ✅ uji integrasi + CI Windows/Linux (sesi lama keluar, kata sandi lama ditolak); tanpa internet |
 
 ## Non-Functional Requirements
 

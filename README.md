@@ -94,7 +94,7 @@ sudo bash scripts/install.sh
 
 Script akan: memasang seluruh paket sistem, membuat user layanan
 `jamsholat`, menyalin project ke `/opt/jamsholat`, inisialisasi database,
-**meminta Anda membuat akun admin pertama secara interaktif**, memasang
+menyiapkan akun takmir bawaan **admin / 000** (wajib diganti saat pertama masuk), memasang
 dependency Python, mengatur timezone `Asia/Jakarta`, mengonfigurasi Apache
 vhost + pembatasan akses LAN, dan mengaktifkan semua systemd service.
 
@@ -166,7 +166,8 @@ Paket siap pakai ada di halaman **Releases** (dibangun oleh `.github/workflows/p
 - **Debian, Ubuntu, Linux Mint, Raspberry Pi OS (desktop):**
   `sudo apt install ./jamsholat_<versi>_all.deb`
 
-Lalu buka `http://localhost/admin/` di komputer itu untuk membuat akun takmir.
+Lalu buka `http://localhost/admin/` dan masuk dengan **admin / 000**. Panel meminta kata sandi
+baru, lalu menuntun Langkah awal (nama masjid, lokasi, periksa suara).
 Layar jamaah dibuka dari menu **Layar Jamaah** (Start di Windows, menu aplikasi di
 Linux) dan ditutup dengan Alt+F4; suara adzan tetap berjalan. Setelah itu layar dan
 suara menyala sendiri setiap kali pengguna masuk.
@@ -268,7 +269,7 @@ terima ke takmir) disusun terpisah sebagai dokumen tim.
 |---|---|---|
 | Layar jamaah blank/putih | Apache belum jalan atau vhost salah | `sudo systemctl status apache2`; cek `/etc/apache2/sites-enabled/jamsholat.conf` |
 | Jadwal sholat tidak muncul | Database belum di-seed atau path config salah | Cek `storage/jamsholat.db` ada; cek `config/config.php` |
-| Gagal login admin | Lupa password | Takmir: "Lupa kata sandi?" di halaman masuk + kode pemulihan. Teknisi: `sudo jamsholat-reset-password` di perangkat (REQ-F-072, offline) |
+| Gagal login admin | Lupa password | Kembalikan ke akun bawaan admin / 000 dari perangkat: `sudo jamsholat-reset-password` (Pi/Linux), menu "Reset Kata Sandi Jam Sholat" (Linux desktop), atau Start → Jam Sholat Masjid → Reset kata sandi (Windows). Data tidak terhapus; kata sandi wajib diganti saat masuk (REQ-F-072, DECISIONS #41) |
 | "Gagal mengubah jam sistem" di panel admin | Sudoers belum terpasang | Jalankan ulang bagian [8/10] `install.sh`, atau cek `/etc/sudoers.d/jamsholat-date` |
 | Kamera tidak mendeteksi gerakan | Camera Module: kabel pita terbalik/longgar. Webcam: index salah | `journalctl -u jamsholat-camera -n 30`; Camera Module: `python3 -c "from picamera2 import Picamera2; print(Picamera2.global_camera_info())"`; webcam: `ls /dev/video*` dan `JAMSHOLAT_CAMERA_INDEX` |
 | Murottal tidak bunyi | Belum diputar di panel, atau sedang jendela diam sekitar waktu sholat | Lihat status di Beranda panel; `journalctl -u jamsholat-alarm -n 30` |

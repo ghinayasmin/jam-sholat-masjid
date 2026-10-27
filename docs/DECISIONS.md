@@ -777,3 +777,79 @@ sebagai satu versi supaya tim cukup memasang ulang sekali.
   menolak `signal.signal()` di dalam penangan sinyal dengan OSError. Layanan tetap
   berhenti dengan benar; job diulang tanpa mengubah kode rilis. Perbaikannya,
   `_ignore_stop_signals()` mengabaikan penolakan itu, masuk ke rilis berikutnya.
+
+## 41. Akun bawaan admin / 000 dan reset ke bawaan (KOREKSI #33, revisi dosen 27 Okt 2026)
+
+- **Masalah:** dosen meminta pembuatan akun ("Buat akun takmir" di `setup.php`, atau
+  pertanyaan di `install.sh`) dihapus. Sistemnya diminta seperti modem dan DVR CCTV:
+  akun bawaan yang disebut di panduan, dan kata sandi bisa dikembalikan ke bawaan
+  bila lupa.
+- **Akun bawaan:** `App\Auth\DefaultAccount` membuat `admin` / `000` saat database
+  dibuka dan belum ada akun (`Database::migrate`), sama di Pi, Windows, dan Linux.
+  Kolom baru `admin_users.must_change_password` (1 untuk akun bawaan).
+- **Wajib ganti:** selama kolom itu 1, `AuthMiddleware` mengarahkan semua halaman ke
+  `change_password.php`; `capture.php` dan `api/motion_events.php` menolak dengan 401.
+  Kata sandi baru minimal 8 karakter, jadi `000` tidak bisa dipakai lagi. Alasan:
+  panel terbuka untuk siapa pun di WiFi masjid, dan kata sandi bawaan tercantum
+  di panduan. Kata sandi bawaan tidak ditampilkan di halaman masuk.
+- **Reset:** hanya dari perangkat itu sendiri, seperti tombol reset modem.
+  `scripts/reset_password_cli.php` (konfirmasi y/t, `--ya` untuk uji otomatis)
+  mengembalikan akun bernama admin, atau akun pertama bila tidak ada, ke
+  `admin` / `000` dan wajib ganti. Data masjid tidak disentuh. Dijalankan lewat
+  `sudo jamsholat-reset-password` (Pi lewat SSH, Linux), menu aplikasi baru
+  "Reset Kata Sandi Jam Sholat" (Linux desktop, Terminal + sudo), atau Start →
+  Jam Sholat Masjid → Reset kata sandi (Windows; tanpa izin Administrator karena
+  Users boleh menulis `ProgramData\JamSholat`). `forgot.php` kini hanya berisi
+  petunjuk sesuai perangkat; tidak ada reset yang bisa dipicu dari HP.
+- **Sesi:** sesi menyimpan sidik hash kata sandi. Setelah kata sandi diganti atau
+  direset, sesi di HP lain ikut keluar; HP yang mengganti kata sandi tetap masuk.
+  Sesi dari sebelum v1.1.3 diberi sidik saat pertama dibuka (tidak dipaksa keluar).
+- **Dihapus:** `setup.php`, `RecoveryCode`, kode pemulihan di Akun takmir, Beranda,
+  dan Pengaturan. Kolom `recovery_hash`/`recovery_created_at` dibiarkan di
+  database lama dan tidak dipakai lagi. Batas percobaan masuk (10 kali dalam
+  15 menit) tetap berlaku.
+- **Upgrade:** akun dan kata sandi lama tetap, tidak wajib ganti. Bila direset,
+  akun lama (misalnya `takmir`) berganti nama menjadi `admin`.
+
+## 42. Langkah awal dan pilihan kabupaten/kota (DIKONFIRMASI 27 Okt 2026)
+
+- **Masalah:** takmir yang jarang memakai komputer harus mencari sendiri menu
+  Lokasi dan mengisi lintang/bujur dari Google Maps, langkah tersulit di aplikasi
+  padahal menentukan jadwal sholat.
+- **Pilihan kabupaten/kota:** 514 kabupaten/kota dari GeoNames (`ID.txt`, fitur
+  ADM2, CC BY 4.0, dicantumkan di Tentang) di
+  `public/assets/data/kabupaten_kota.json` (nama, provinsi, lintang, bujur; 38
+  provinsi, jumlah per provinsi cocok dengan data resmi). Nama Inggris diganti
+  nama Indonesia dari nama alternatif; Toba Samosir ditulis Toba (nama sejak 2020).
+  Pencarian berjalan di HP (`admin.js`), tanpa internet: abaikan tanda baca dan
+  spasi, nama yang diawali kata yang diketik tampil lebih dulu, Enter memilih hasil
+  teratas. Koordinat manual tetap ada di bagian "Isi koordinat secara manual (lebih
+  tepat)"; "lintang, bujur" dari Google Maps bisa ditempel sekaligus, dan koma
+  desimal dibaca sebagai titik. Selisih pusat kabupaten dengan titik masjid
+  biasanya 1–2 menit. Formulir dipakai bersama (`_location_fields.php`,
+  `App\Schedule\LocationInput`).
+- **Langkah awal** (`welcome.php`): setelah kata sandi bawaan diganti pada instalasi
+  baru, panel menuntun tiga langkah: nama masjid, lokasi, periksa suara. Bisa
+  dilewati. Kolom `setup_done` (instalasi baru 0, database lama 1); selama 0,
+  Beranda menampilkan kartu "Langkah awal belum selesai" (menggantikan kartu
+  lokasi). "Gunakan lokasi HP" tidak dipakai: browser memblokir GPS di alamat
+  http lokal.
+
+## 43. Tombol "Coba putar suara adzan" (DIKONFIRMASI 27 Okt 2026)
+
+- **Masalah:** satu-satunya cara memastikan speaker berbunyi adalah menunggu waktu
+  adzan.
+- **Cara kerja:** `sound_test.php` menulis `sound_test_request` (detik Unix, kolom
+  runtime, tidak ikut cadangan). Layanan alarm membacanya tiap putaran (1 detik),
+  menjeda murottal, menjalankan penjaga volume (#40), lalu memutar awal adzan
+  selama 10 detik (`AudioPlayer.play_for`). Permintaan yang lebih tua dari 60 detik
+  dan permintaan sebelum layanan mulai diabaikan. Layar jamaah tidak menampilkan
+  layar adzan untuk uji ini. Bila tanda hidup layanan lebih dari 10 menit, panel
+  langsung menjawab bahwa pemutar adzan tidak aktif.
+- **Tempat:** Beranda (Kondisi sistem), Pengaturan → Suara & jeda iqomah, dan
+  Langkah awal.
+- **Istilah panel** ikut diganti agar mudah dipahami takmir: "Geser waktu adzan"
+  (dulu Koreksi jadwal), "Pemutar adzan: Siap / Belum aktif / Tidak aktif sejak
+  pukul …" (dulu Layanan adzan · Berjalan), "Pergantian poster" (dulu Pergantian
+  slide), "Mengikuti ketentuan Kemenag RI · Sesuai", tanpa singkatan "dtk"/"mnt"
+  dan tanpa rangkaian "·" di keterangan.
