@@ -12,7 +12,7 @@ use App\Db\Database;
 // TIDAK diletakkan di public/ agar tidak bisa diakses langsung tanpa auth.
 $auth = new AuthManager();
 $auth->startSession();
-if (!$auth->isLoggedIn()) {
+if (!$auth->isLoggedIn() || $auth->mustChangePassword()) { // kata sandi bawaan belum diganti (#41)
     http_response_code(401);
     exit('Unauthorized');
 }

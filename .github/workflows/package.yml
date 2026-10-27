@@ -26,7 +26,7 @@ env:
   AUDIO_ZIP: jamsholat-audio-v1.zip
   AUDIO_SHA256: c02456b2f9f4939098834164de3f180b928d0960d5867a038295b9f613795153
   # Iqomah pengganti sejak v1.1.2 (DECISIONS.md #40), aset tambahan di rilis audio-v1.
-  PREV_TAG: v1.1.1   # versi sebelumnya untuk uji upgrade (#40)
+  PREV_TAG: v1.1.2   # versi sebelumnya untuk uji upgrade (#40)
   IQOMAH_FILE: iqomah-almakki.mp3
   IQOMAH_SHA256: 4996cb48fe6b68840dbad239ed152fd251464fb0ce2c7b108c0198f8f9ccc9cc
 

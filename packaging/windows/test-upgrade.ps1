@@ -76,4 +76,10 @@ foreach ($page in 'help', 'phone', 'murottal') {
 $iq = Get-Item "$Root\app\public\assets\audio\iqomah.mp3" -ErrorAction SilentlyContinue
 if ($iq -and $iq.Length -lt 600KB) { Pass "iqomah baru terpasang ($([math]::Round($iq.Length / 1KB)) KB)" } else { Fail "iqomah: $($iq.Length) byte" }
 
+# Reset ke bawaan (#41): akun lama "takmir" menjadi admin / 000, data tetap.
+& "$Root\php\php.exe" "$Root\app\scripts\reset_password_cli.php" --ya | Out-Null
+$acc = Sql 'SELECT username, must_change_password FROM admin_users'
+if ($acc -eq 'admin|1') { Pass 'reset: akun lama menjadi admin / 000, wajib ganti' } else { Fail "reset akun lama: $acc" }
+if ((Sql 'SELECT COUNT(*) FROM financial_entries') -eq '1') { Pass 'reset tidak menghapus data kas' } else { Fail 'data kas berubah setelah reset' }
+
 if ($script:Fail -eq 0) { Write-Host 'SEMUA LULUS (upgrade Windows)' } else { Write-Host 'ADA YANG GAGAL (upgrade Windows)'; exit 1 }

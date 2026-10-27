@@ -87,27 +87,13 @@ fi
 # Grup harus bisa menulis DB (file -wal/-shm SQLite ikut izin file DB).
 chmod 664 "$INSTALL_DIR/storage/jamsholat.db"
 
-echo "=== [6/10] Membuat akun admin pertama (REQ-F-070) ==="
-# Perintah reset kata sandi untuk teknisi, bisa dijalankan dari folder mana pun (DECISIONS.md #33).
+echo "=== [6/10] Menyiapkan akun takmir bawaan (REQ-F-070) ==="
+# Perintah reset kata sandi, bisa dijalankan dari folder mana pun (DECISIONS.md #33, #41).
 install -m 755 "$INSTALL_DIR"/scripts/jamsholat-reset-password /usr/local/sbin/jamsholat-reset-password
-ADMIN_COUNT=$(sqlite3 "$INSTALL_DIR/storage/jamsholat.db" "SELECT COUNT(*) FROM admin_users;")
-if [ "$ADMIN_COUNT" -eq 0 ]; then
-    read -rp "Username admin takmir: " ADMIN_USER
-    read -rsp "Password admin takmir: " ADMIN_PASS
-    echo
-    # Lewat PHP (prepared statement), bukan SQL yang dirangkai dari input.
-    sudo -u "$SERVICE_USER" php -r '
-        require $argv[1] . "/bootstrap.php";
-        (new App\Repository\AdminUserRepository())->create($argv[2], password_hash($argv[3], PASSWORD_BCRYPT));
-    ' "$INSTALL_DIR" "$ADMIN_USER" "$ADMIN_PASS"
-    unset ADMIN_PASS
-    echo "Admin '$ADMIN_USER' berhasil dibuat."
-    # Kode pemulihan pertama: takmir bisa mengganti kata sandi sendiri bila lupa.
-    jamsholat-reset-password --kode "$ADMIN_USER"
-    read -rp "Catat kode pemulihan di atas, lalu tekan Enter untuk melanjutkan... " _
-else
-    echo "Akun admin sudah ada, dilewati. Untuk reset kata sandi: sudo jamsholat-reset-password"
-fi
+# Membuka database sekali membuat akun bawaan admin / 000 bila belum ada akun (#41).
+sudo -u "$SERVICE_USER" php -r 'require $argv[1] . "/bootstrap.php"; App\Db\Database::connection();' "$INSTALL_DIR"
+echo "Masuk ke panel takmir dengan nama pengguna admin dan kata sandi 000."
+echo "Anda akan diminta membuat kata sandi baru saat pertama kali masuk."
 
 echo "=== [7/10] Instalasi dependency Python (butuh internet, sekali saja) ==="
 # python3-opencv dari apt (langkah 1) sudah membawa cv2 + numpy. pip hanya

@@ -13,6 +13,8 @@ use App\Repository\AdminUserRepository;
  */
 final class AuthManager
 {
+    private bool $mustChange = false;
+
     public function __construct(
         private readonly AdminUserRepository $users = new AdminUserRepository()
     ) {
@@ -58,6 +60,7 @@ final class AuthManager
         $_SESSION['admin_id'] = (int) $user['id'];
         $_SESSION['admin_username'] = $user['username'];
         $_SESSION['last_activity'] = time();
+        $_SESSION['password_tag'] = self::passwordTag($user['password_hash']);
         $this->users->touchLogin((int) $user['id']);
 
         return true;
@@ -73,8 +76,36 @@ final class AuthManager
             $this->logout();
             return false;
         }
+        // Kata sandi diganti atau direset ke bawaan (DECISIONS.md #41): sesi lama di HP lain
+        // ikut keluar. Sesi dari sebelum v1.1.3 belum punya tanda ini, jadi tandanya diisi.
+        $user = $this->users->findById((int) $_SESSION['admin_id']);
+        $tag = $user === null ? null : self::passwordTag($user['password_hash']);
+        if ($tag === null || ($_SESSION['password_tag'] ?? $tag) !== $tag) {
+            $this->logout();
+            return false;
+        }
+        $_SESSION['password_tag'] = $tag;
         $_SESSION['last_activity'] = time();
+        $this->mustChange = (int) $user['must_change_password'] === 1;
         return true;
+    }
+
+    /** Masih memakai kata sandi bawaan (admin / 000): panel belum boleh dipakai. */
+    public function mustChangePassword(): bool
+    {
+        return $this->mustChange;
+    }
+
+    /** Setelah takmir mengganti kata sandinya sendiri, sesi ini tetap masuk. */
+    public function passwordChanged(string $newHash): void
+    {
+        $_SESSION['password_tag'] = self::passwordTag($newHash);
+        $this->mustChange = false;
+    }
+
+    private static function passwordTag(string $hash): string
+    {
+        return substr(hash('sha256', $hash), 0, 16);
     }
 
     public function currentUsername(): ?string

@@ -12,7 +12,7 @@ header('Content-Type: application/json; charset=utf-8');
 // REQ-F-023: hanya admin yang boleh melihat rekaman kamera.
 $auth = new AuthManager();
 $auth->startSession();
-if (!$auth->isLoggedIn()) {
+if (!$auth->isLoggedIn() || $auth->mustChangePassword()) { // kata sandi bawaan belum diganti (#41)
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Butuh login admin.']);
     exit;

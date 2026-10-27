@@ -25,11 +25,6 @@ final class AdminUserRepository
         return $row === false ? null : $row;
     }
 
-    public function count(): int
-    {
-        return (int) Database::connection()->query('SELECT COUNT(*) FROM admin_users')->fetchColumn();
-    }
-
     public function create(string $username, string $passwordHash): int
     {
         $stmt = Database::connection()->prepare(
@@ -39,27 +34,13 @@ final class AdminUserRepository
         return (int) Database::connection()->lastInsertId();
     }
 
+    /** Kata sandi baru dari takmir sendiri, jadi akun tidak lagi wajib ganti kata sandi. */
     public function updatePasswordHash(int $id, string $passwordHash): void
     {
         $stmt = Database::connection()->prepare(
-            'UPDATE admin_users SET password_hash = :p WHERE id = :id'
+            'UPDATE admin_users SET password_hash = :p, must_change_password = 0 WHERE id = :id'
         );
         $stmt->execute(['p' => $passwordHash, 'id' => $id]);
-    }
-
-    /** Simpan hash kode pemulihan baru (kode lama otomatis tidak berlaku). */
-    public function setRecoveryHash(int $id, string $hash): void
-    {
-        $stmt = Database::connection()->prepare(
-            'UPDATE admin_users SET recovery_hash = :h, recovery_created_at = CURRENT_TIMESTAMP WHERE id = :id'
-        );
-        $stmt->execute(['h' => $hash, 'id' => $id]);
-    }
-
-    /** @return list<string> */
-    public function usernames(): array
-    {
-        return Database::connection()->query('SELECT username FROM admin_users ORDER BY id')->fetchAll(\PDO::FETCH_COLUMN);
     }
 
     public function touchLogin(int $id): void

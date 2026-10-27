@@ -160,7 +160,7 @@ def main() -> None:
     for name, args in services:
         threading.Thread(target=keep_running, args=(name, args), daemon=True).start()
     wait_for_web()
-    # Instalasi pertama: hanya panel yang dibuka (buat akun, atur lokasi); layar jamaah
+    # Instalasi pertama: hanya panel yang dibuka (ganti kata sandi bawaan, langkah awal); layar jamaah
     # menyusul lewat Start → Layar Jamaah atau saat login berikutnya.
     first_run = "--tanpa-layar" in sys.argv
     serve_show_requests(show_event, None if first_run else open_kiosk())

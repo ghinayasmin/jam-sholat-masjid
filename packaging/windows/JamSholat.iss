@@ -59,10 +59,10 @@ Type: files; Name: "{commonstartup}\Jam Sholat Masjid.lnk"
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Memasang Microsoft Visual C++ Runtime..."; Flags: waituntilterminated
 Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\app\packaging\windows\setup.ps1"" -Root ""{app}"" -Data ""{commonappdata}\JamSholat"""; StatusMsg: "Menyiapkan Apache, PHP, dan database..."; Flags: runhidden waituntilterminated
-; Suara adzan langsung aktif; layar jamaah belum dibuka supaya panel (buat akun, atur
-; lokasi) tidak tertutup layar penuh. Layar dibuka dari Start > Layar Jamaah.
+; Suara adzan langsung aktif; layar jamaah belum dibuka supaya panel (kata sandi, langkah
+; awal) tidak tertutup layar penuh. Layar dibuka dari Start > Layar Jamaah.
 Filename: "{app}\python\pythonw.exe"; Parameters: """{app}\app\packaging\windows\session.pyw"" --tanpa-layar"; WorkingDir: "{app}\app"; Description: "Nyalakan suara adzan sekarang"; Flags: postinstall nowait skipifsilent
-Filename: "{app}\panel.url"; Description: "Buka panel takmir untuk membuat akun"; Flags: postinstall shellexec skipifsilent
+Filename: "{app}\panel.url"; Description: "Buka panel takmir"; Flags: postinstall shellexec skipifsilent
 
 [Code]
 // Upgrade di atas versi lama (#40): Apache dan sesi alarm/kamera lama memakai file di
@@ -90,4 +90,4 @@ Type: filesandordirs; Name: "{app}\app\config\config.php"
 Type: filesandordirs; Name: "{app}\php\php.ini"
 
 [Messages]
-id.FinishedLabel=Jam Sholat Masjid sudah terpasang.%n%n1. Buat akun takmir di panel, lalu atur lokasi masjid.%n2. Buka layar jamaah dari Start > Layar Jamaah. Tutup dengan Alt+F4; suara adzan tetap berjalan.%n%nSetelah ini layar jamaah dan suara adzan menyala sendiri setiap kali Windows dinyalakan.
+id.FinishedLabel=Jam Sholat Masjid sudah terpasang.%n%n1. Masuk ke panel takmir dengan nama pengguna admin dan kata sandi 000, lalu buat kata sandi baru.%n2. Buka layar jamaah dari Start > Layar Jamaah. Tutup dengan Alt+F4; suara adzan tetap berjalan.%n%nSetelah ini layar jamaah dan suara adzan menyala sendiri setiap kali Windows dinyalakan.

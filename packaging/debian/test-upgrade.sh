@@ -52,6 +52,8 @@ rm -f $J
 T=$(csrf $B/admin/login.php)
 code=$(curl -s -c $J -b $J -o /dev/null -w '%{redirect_url}' -d "csrf_token=$T&username=takmir&password=rahasia123" $B/admin/login.php)
 case "$code" in *dashboard*|*/admin/) pass "login dengan kata sandi lama tetap bisa" ;; *) fail "login gagal setelah upgrade ($code)" ;; esac
+code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' $B/admin/dashboard.php)
+[ "$code" = 200 ] && pass "akun lama tidak diminta ganti kata sandi (#41)" || fail "Beranda HTTP $code setelah upgrade"
 version=$(head -1 /opt/jamsholat/VERSION)
 out=$(curl -s -c $J -b $J $B/admin/about.php)
 grep -q "Versi $version" <<< "$out" && pass "halaman Tentang: Versi $version" || fail "halaman Tentang tidak menampilkan versi $version"
@@ -59,6 +61,11 @@ for page in help phone murottal; do
     code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' $B/admin/$page.php)
     [ "$code" = 200 ] && pass "halaman baru $page.php terbuka" || fail "$page.php HTTP $code"
 done
+# Reset ke bawaan (#41): akun lama "takmir" menjadi admin / 000, data tetap.
+jamsholat-reset-password --ya > /dev/null 2>&1
+[ "$(sqlite3 "$DB" "SELECT username||'/'||must_change_password FROM admin_users")" = "admin/1" ] \
+    && pass "reset: akun lama menjadi admin / 000, wajib ganti" || fail "reset akun lama: $(sqlite3 "$DB" "SELECT username, must_change_password FROM admin_users")"
+[ "$(sqlite3 "$DB" "SELECT COUNT(*) FROM financial_entries")" = 1 ] && pass "reset tidak menghapus data kas" || fail "data kas berubah setelah reset"
 api=$(curl -s $B/api/schedule.php)
 grep -q "\"app_version\":\"$version\"" <<< "$api" && pass "API mengirim versi (layar jamaah memuat ulang)" || fail "API tanpa app_version"
 

@@ -51,7 +51,8 @@ install -m 755 "$REPO/scripts/jamsholat-reset-password" "$STAGE/usr/sbin/jamshol
 install -Dm 644 "$REPO/packaging/icon/jamsholat-256.png" "$STAGE/usr/share/icons/hicolor/256x256/apps/jamsholat.png"
 install -Dm 644 "$REPO/packaging/icon/jamsholat.svg" "$STAGE/usr/share/icons/hicolor/scalable/apps/jamsholat.svg"
 install -Dm 644 -t "$STAGE/usr/share/applications" \
-    "$REPO/packaging/linux/jamsholat-display.desktop" "$REPO/packaging/linux/jamsholat-panel.desktop"
+    "$REPO/packaging/linux/jamsholat-display.desktop" "$REPO/packaging/linux/jamsholat-panel.desktop" \
+    "$REPO/packaging/linux/jamsholat-reset-password.desktop"
 
 install -m 755 "$REPO/packaging/debian/postinst" "$REPO/packaging/debian/prerm" \
     "$REPO/packaging/debian/postrm" "$STAGE/DEBIAN/"

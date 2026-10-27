@@ -106,10 +106,16 @@ require __DIR__ . '/_header.php';
 
 <details id="sandi">
     <summary>Lupa kata sandi</summary>
+    <p>Kata sandi dapat dikembalikan ke kata sandi bawaan melalui perangkat tempat aplikasi ini terpasang. Data masjid tidak akan terhapus.</p>
     <ul>
-        <li>Pada halaman masuk, pilih <b>Lupa kata sandi</b>, lalu masukkan kode pemulihan.</li>
-        <li>Apabila kode pemulihan juga hilang, teknisi dapat mengganti kata sandi melalui
-            <?= $isWin ? 'Start, lalu <b>Reset kata sandi</b> pada komputer ini' : 'perintah <code>sudo jamsholat-reset-password</code> pada perangkat ini' ?>.</li>
+        <?php if ($isWin): ?>
+            <li>Pada komputer masjid, buka menu Start, pilih <b>Jam Sholat Masjid</b>, lalu klik <b>Reset kata sandi</b>.</li>
+        <?php elseif ($kind === Platform::LINUX_DESKTOP): ?>
+            <li>Pada komputer masjid, buka menu aplikasi, lalu pilih <b>Reset Kata Sandi Jam Sholat</b>. Masukkan kata sandi komputer bila diminta.</li>
+        <?php else: ?>
+            <li>Mintalah teknisi menjalankan perintah <code>sudo jamsholat-reset-password</code> pada <?= $isPi ? 'Raspberry Pi melalui SSH' : 'perangkat ini' ?>.</li>
+        <?php endif; ?>
+        <li>Setelah itu, masuklah dengan nama pengguna dan kata sandi bawaan yang tercantum di Panduan Pengguna, lalu buat kata sandi baru.</li>
     </ul>
 </details>
 

@@ -73,13 +73,12 @@ CREATE TABLE IF NOT EXISTS admin_users (
     password_hash TEXT NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_login_at DATETIME,
-    recovery_hash TEXT,             -- hash kode pemulihan sekali pakai (DECISIONS.md #33)
-    recovery_created_at DATETIME
+    must_change_password INTEGER NOT NULL DEFAULT 0 CHECK (must_change_password IN (0,1))  -- akun bawaan admin/000 (DECISIONS.md #41)
 );
 
--- Percobaan login/pemulihan yang gagal, untuk membatasi tebak-tebakan (DECISIONS.md #33).
+-- Percobaan login yang gagal, untuk membatasi tebak-tebakan (DECISIONS.md #33).
 CREATE TABLE IF NOT EXISTS auth_failures (
-    action    TEXT NOT NULL,        -- 'login' | 'recover'
+    action    TEXT NOT NULL,        -- 'login' ('recover' hanya di database lama, #41)
     ip        TEXT NOT NULL,
     failed_at INTEGER NOT NULL      -- detik Unix
 );

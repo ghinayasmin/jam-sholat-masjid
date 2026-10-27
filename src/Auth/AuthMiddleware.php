@@ -10,13 +10,19 @@ namespace App\Auth;
  */
 final class AuthMiddleware
 {
-    public static function requireLogin(AuthManager $auth): void
+    /**
+     * $allowDefaultPassword hanya untuk halaman ganti kata sandi bawaan: selama akun
+     * masih admin / 000, halaman lain diarahkan ke sana (DECISIONS.md #41).
+     */
+    public static function requireLogin(AuthManager $auth, bool $allowDefaultPassword = false): void
     {
         $auth->startSession();
         if (!$auth->isLoggedIn()) {
-            // Instalasi baru tanpa akun: arahkan ke pembuatan akun pertama (DECISIONS.md #39).
-            $setupNeeded = (new \App\Repository\AdminUserRepository())->count() === 0;
-            header('Location: ' . ($setupNeeded ? '/admin/setup.php' : '/admin/login.php'));
+            header('Location: /admin/login.php');
+            exit;
+        }
+        if ($auth->mustChangePassword() && !$allowDefaultPassword) {
+            header('Location: /admin/change_password.php');
             exit;
         }
     }

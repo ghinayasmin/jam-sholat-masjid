@@ -65,10 +65,8 @@ $murottalOn = (int) $settings['murottal_enabled'] === 1;
 $murottalReady = \App\Murottal::tracks() !== [];
 $murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes, $isFriday);
 
-// Kondisi sistem (DECISIONS.md #36): jam perangkat dan kode pemulihan akun ini.
+// Kondisi sistem (DECISIONS.md #36): jam perangkat.
 $clockOk = \App\SystemClock::isTrusted();
-$me = (new \App\Repository\AdminUserRepository())->findById((int) ($_SESSION['admin_id'] ?? 0));
-$hasRecovery = !empty($me['recovery_created_at']);
 // Layanan adzan (DECISIONS.md #40): tanda hidup ditulis tiap menit; adzan Subuh yang
 // panjang menahan loop beberapa menit, jadi batasnya 10 menit.
 $beat = (int) $settings['alarm_heartbeat'];
@@ -179,9 +177,6 @@ require __DIR__ . '/_header.php';
         <?php endif; ?>
         <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
         <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
-        <?php if (!$hasRecovery): ?>
-            <a class="row" href="/admin/account.php#kode-pemulihan"><span class="dot warn"></span><span class="k">Kode pemulihan<small>Belum dibuat. Perlu bila lupa kata sandi</small></span><span class="v">Buat</span></a>
-        <?php endif; ?>
     </div>
 </section>
 

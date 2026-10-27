@@ -1,5 +1,5 @@
 @echo off
-rem Reset kata sandi panel takmir (padanan "sudo jamsholat-reset-password" di Linux).
+rem Kembalikan akun panel takmir ke admin / 000 (padanan "sudo jamsholat-reset-password" di Linux).
 rem Pintasan "Reset kata sandi" di Start Menu menjalankan file ini.
 setlocal
 set "ROOT=%~dp0..\..\.."

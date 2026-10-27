@@ -15,10 +15,6 @@ if ($auth->isLoggedIn()) {
     header('Location: /admin/dashboard.php');
     exit;
 }
-if ((new \App\Repository\AdminUserRepository())->count() === 0) {
-    header('Location: /admin/setup.php');
-    exit;
-}
 
 $error = null;
 
@@ -74,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="password" name="password" required autocomplete="current-password">
         </label>
         <button type="submit" class="btn">Masuk</button>
-        <p class="muted" style="margin:0;font-size:14px"><a href="/admin/forgot.php">Lupa kata sandi?</a> Pakai kode pemulihan yang disimpan takmir.</p>
+        <p class="muted" style="margin:0;font-size:14px"><a href="/admin/forgot.php">Lupa kata sandi?</a></p>
     </form>
 </main>
 <script src="/assets/js/admin.js?v=<?= filemtime(dirname(__DIR__) . '/assets/js/admin.js') ?>"></script>

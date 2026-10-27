@@ -97,8 +97,7 @@ final class Database
             'event_end_time' => 'TEXT',
         ],
         'admin_users' => [
-            'recovery_hash' => 'TEXT',
-            'recovery_created_at' => 'DATETIME',
+            'must_change_password' => 'INTEGER NOT NULL DEFAULT 0 CHECK (must_change_password IN (0,1))',
         ],
     ];
 
@@ -123,6 +122,10 @@ final class Database
                     $pdo->exec("ALTER TABLE $table ADD COLUMN $column $definition");
                 }
             }
+        }
+        // Instalasi baru langsung punya akun admin / 000 (DECISIONS.md #41).
+        if ($pdo->query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'admin_users'")->fetchColumn()) {
+            \App\Auth\DefaultAccount::ensure($pdo);
         }
     }
 

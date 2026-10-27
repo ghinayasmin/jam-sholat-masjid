@@ -146,15 +146,27 @@ check('Settings: kolom tak dikenal diabaikan', (function () use ($settingsRepo) 
     return true;
 })());
 
-// --- Kode pemulihan & batas percobaan (DECISIONS.md #33) ---
-$code = App\Auth\RecoveryCode::generate();
-check('Pemulihan: format kode XXXX-XXXX-XXXX-XXXX', (bool) preg_match('/^[A-Z2-9]{4}(-[A-Z2-9]{4}){3}$/', $code));
-$hash = App\Auth\RecoveryCode::hash($code);
-check('Pemulihan: cocok walau diketik huruf kecil tanpa tanda hubung',
-    App\Auth\RecoveryCode::verify(strtolower(str_replace('-', '', $code)), $hash));
-check('Pemulihan: kode lain ditolak', !App\Auth\RecoveryCode::verify(App\Auth\RecoveryCode::generate(), $hash));
-check('Pemulihan: akun tanpa kode ditolak', !App\Auth\RecoveryCode::verify($code, null));
-$throttle = new App\Auth\Throttle('recover', 3);
+// --- Akun bawaan admin / 000 & batas percobaan (DECISIONS.md #33, #41) ---
+$pdo = App\Db\Database::connection();
+$users = new App\Repository\AdminUserRepository();
+$admin = $users->findByUsername('admin');
+check('Akun bawaan: admin dibuat otomatis di database baru', $admin !== null);
+check('Akun bawaan: kata sandi 000', $admin !== null && password_verify('000', $admin['password_hash']));
+check('Akun bawaan: wajib ganti kata sandi', $admin !== null && (int) $admin['must_change_password'] === 1);
+$pdo->exec("DELETE FROM admin_users WHERE username = 'testadmin'"); // akun uji Auth di atas
+App\Auth\DefaultAccount::ensure($pdo);
+check('Akun bawaan: tidak dibuat dua kali', (int) $pdo->query('SELECT COUNT(*) FROM admin_users')->fetchColumn() === 1);
+$users->updatePasswordHash((int) $admin['id'], password_hash('rahasia123', PASSWORD_BCRYPT));
+$changed = $users->findById((int) $admin['id']);
+check('Ganti kata sandi: tidak lagi wajib ganti', (int) $changed['must_change_password'] === 0);
+$pdo->exec("UPDATE admin_users SET username = 'takmir'");
+$was = App\Auth\DefaultAccount::reset($pdo);
+$reset = $users->findById((int) $admin['id']);
+check('Reset: akun lama (takmir) menjadi admin', $was === 'takmir' && $reset['username'] === 'admin');
+check('Reset: kata sandi kembali 000 dan wajib ganti',
+    password_verify('000', $reset['password_hash']) && (int) $reset['must_change_password'] === 1);
+check('Reset: tidak menambah akun', (int) $pdo->query('SELECT COUNT(*) FROM admin_users')->fetchColumn() === 1);
+$throttle = new App\Auth\Throttle('login', 3);
 for ($i = 0; $i < 3; $i++) {
     $throttle->recordFailure('10.0.0.9');
 }

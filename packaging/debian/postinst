@@ -2,7 +2,7 @@
 #
 # postinst — paket jamsholat untuk Debian, Ubuntu, Linux Mint, Raspberry Pi OS
 # (DECISIONS.md #39). Padanan langkah scripts/install.sh, tanpa bertanya apa pun:
-# akun takmir pertama dibuat di http://localhost/admin/ setelah instalasi.
+# akun takmir bawaan admin / 000 dibuat saat database pertama kali dibuka (#41).
 #
 set -e
 
@@ -93,14 +93,16 @@ cat << EOF
 
 ==================================================================
  Jam Sholat Masjid terpasang (mode: $MODE).
- 1. Buka http://localhost/admin/ di komputer ini untuk membuat akun takmir.
+ 1. Masuk ke panel takmir (http://localhost/admin/) dengan nama pengguna admin
+    dan kata sandi 000. Anda akan diminta membuat kata sandi baru saat pertama
+    kali masuk.
  2. Panel bisa dibuka dari HP lewat WiFi yang sama: http://<IP komputer ini>/admin/
 EOF
 if [ "$MODE" = "desktop" ]; then
     echo " 3. Buka menu aplikasi > Layar Jamaah. Tutup dengan Alt+F4; suara adzan"
     echo "    tetap berjalan. Setelah ini semuanya menyala sendiri setiap kali login."
 fi
-echo " Lupa kata sandi: sudo jamsholat-reset-password"
+echo " Lupa kata sandi: sudo jamsholat-reset-password (kembali ke admin / 000)"
 echo "=================================================================="
 
 exit 0
