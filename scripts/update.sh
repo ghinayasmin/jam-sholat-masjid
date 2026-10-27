@@ -36,6 +36,7 @@ rsync -a --chown="$SERVICE_USER":"$SERVICE_USER" \
 # File yang sudah dihapus dari repo (rsync di atas tidak menghapus).
 rm -f "$INSTALL_DIR"/public/admin/iqomah.php   # diganti sound.php (DECISIONS.md #23)
 rm -f "$INSTALL_DIR"/src/Schedule/ScheduleSync.php   # tidak dipakai (DECISIONS.md #38)
+rm -f "$INSTALL_DIR"/public/admin/setup.php "$INSTALL_DIR"/src/Auth/RecoveryCode.php   # akun bawaan (#41)
 # Foto kamera lama dibuat tanpa izin tulis grup; panel (www-data) perlu menimpanya saat menghapus.
 find "$INSTALL_DIR/storage/captures" -type f -name "*.jpg" -exec chmod 664 {} +
 

@@ -76,6 +76,7 @@ foreach ($page in 'help', 'phone', 'murottal') {
 $iq = Get-Item "$Root\app\public\assets\audio\iqomah.mp3" -ErrorAction SilentlyContinue
 if ($iq -and $iq.Length -lt 600KB) { Pass "iqomah baru terpasang ($([math]::Round($iq.Length / 1KB)) KB)" } else { Fail "iqomah: $($iq.Length) byte" }
 
+if (-not (Test-Path "$Root\app\public\admin\setup.php")) { Pass 'setup.php lama terhapus saat upgrade' } else { Fail 'setup.php lama masih ada' }
 # Reset ke bawaan (#41): akun lama "takmir" menjadi admin / 000, data tetap.
 & "$Root\php\php.exe" "$Root\app\scripts\reset_password_cli.php" --ya | Out-Null
 $acc = Sql 'SELECT username, must_change_password FROM admin_users'

@@ -61,6 +61,7 @@ for page in help phone murottal; do
     code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' $B/admin/$page.php)
     [ "$code" = 200 ] && pass "halaman baru $page.php terbuka" || fail "$page.php HTTP $code"
 done
+[ ! -e /opt/jamsholat/public/admin/setup.php ] && pass "setup.php lama terhapus saat upgrade" || fail "setup.php lama masih ada"
 # Reset ke bawaan (#41): akun lama "takmir" menjadi admin / 000, data tetap.
 jamsholat-reset-password --ya > /dev/null 2>&1
 [ "$(sqlite3 "$DB" "SELECT username||'/'||must_change_password FROM admin_users")" = "admin/1" ] \

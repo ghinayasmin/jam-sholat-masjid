@@ -55,6 +55,9 @@ Name: "{group}\Hapus Jam Sholat Masjid"; Filename: "{uninstallexe}"
 [InstallDelete]
 ; Nama pintasan Startup di v1.1.0.
 Type: files; Name: "{commonstartup}\Jam Sholat Masjid.lnk"
+; Dihapus di v1.1.3 (akun bawaan, DECISIONS.md #41); installer hanya menimpa file.
+Type: files; Name: "{app}\app\public\admin\setup.php"
+Type: files; Name: "{app}\app\src\Auth\RecoveryCode.php"
 
 [Run]
 Filename: "{tmp}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Memasang Microsoft Visual C++ Runtime..."; Flags: waituntilterminated
