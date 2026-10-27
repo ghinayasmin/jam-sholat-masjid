@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# set_audio_output.sh — Pilih keluaran suara bawaan Raspberry Pi (REQ-F-030..033).
+# set_audio_output.sh: Pilih keluaran suara bawaan Raspberry Pi (REQ-F-030..033).
 #
 # Raspberry Pi OS Lite (Trixie) memakai jack 3,5 mm sebagai keluaran bawaan,
 # dan HDMI (kartu vc4hdmi) hanya menerima format IEC958 sehingga harus lewat

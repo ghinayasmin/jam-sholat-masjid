@@ -27,7 +27,7 @@ final class Database
             try {
                 $pdo = new PDO($dsn);
             } catch (PDOException $e) {
-                // REQ-NF-112: graceful error handling — jangan biarkan
+                // REQ-NF-112 (graceful error handling): jangan biarkan
                 // seluruh sistem berhenti tanpa pesan yang jelas.
                 throw new PDOException(
                     'Tidak dapat membuka database di ' . $dbPath . ': ' . $e->getMessage()

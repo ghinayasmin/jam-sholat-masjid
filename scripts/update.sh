@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# update.sh — Pasang versi kode terbaru ke Raspberry Pi yang SUDAH terinstal.
+# update.sh: Pasang versi kode terbaru ke Raspberry Pi yang SUDAH terinstal.
 # Jalankan dari folder project hasil clone/salinan terbaru:
 #
 #   sudo bash scripts/update.sh

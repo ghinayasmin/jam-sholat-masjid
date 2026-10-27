@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# test-deb.sh — uji asap paket .deb di container Debian/Ubuntu/Mint yang bersih.
+# test-deb.sh: uji asap paket .deb di container Debian/Ubuntu/Mint yang bersih.
 #
 #   bash packaging/debian/test-deb.sh /path/jamsholat_<versi>_all.deb
 #

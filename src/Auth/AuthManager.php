@@ -9,7 +9,7 @@ use App\Repository\AdminUserRepository;
 
 /**
  * REQ-F-070 (Admin Authentication), REQ-NF-121 (password harus di-hash).
- * Satu akun admin per instalasi — lihat asumsi #4 di analisis SRS.
+ * Satu akun admin per instalasi (lihat asumsi #4 di analisis SRS).
  */
 final class AuthManager
 {
@@ -48,7 +48,7 @@ final class AuthManager
         if ($user === null) {
             // Tetap panggil password_verify dengan hash dummy agar waktu respons
             // konsisten antara "user tidak ada" dan "password salah" (mitigasi
-            // user-enumeration timing attack — praktik keamanan standar).
+            // user-enumeration timing attack, praktik keamanan standar).
             password_verify($password, '$2y$10$abcdefghijklmnopqrstuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu');
             return false;
         }

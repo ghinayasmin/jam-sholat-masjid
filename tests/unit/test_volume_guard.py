@@ -1,5 +1,5 @@
 """
-Unit test untuk volume_guard (DECISIONS.md #40) — perintah sistem disimulasikan,
+Unit test untuk volume_guard (DECISIONS.md #40), perintah sistem disimulasikan,
 jadi tidak butuh speaker. Jalankan dengan:
     python3 -m unittest tests/unit/test_volume_guard.py -v
 """

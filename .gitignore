@@ -16,7 +16,7 @@ public/uploads/publications/*
 !storage/sessions/.gitkeep
 !public/uploads/publications/.gitkeep
 
-# Audio (lisensi pihak lain, tidak disertakan repo — lihat public/assets/audio/README.md)
+# Audio (lisensi pihak lain, tidak disertakan repo, lihat public/assets/audio/README.md)
 public/assets/audio/*.mp3
 public/assets/audio/*.wav
 public/assets/audio/murottal/*.mp3

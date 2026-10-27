@@ -1,5 +1,5 @@
 """
-session.pyw — dijalankan otomatis saat pengguna masuk ke Windows (pintasan di folder
+session.pyw: dijalankan otomatis saat pengguna masuk ke Windows (pintasan di folder
 Startup, dipasang installer). Padanan packaging/linux/jamsholat-session.
 
 Suara hanya bisa keluar dari sesi pengguna, jadi layanan alarm, kamera, dan layar

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# test-upgrade.sh — uji upgrade paket .deb di container Debian/Ubuntu bersih
+# test-upgrade.sh: uji upgrade paket .deb di container Debian/Ubuntu bersih
 # (DECISIONS.md #40): pasang versi lama, isi data lewat panel, pasang versi baru di
 # atasnya, lalu pastikan data tetap utuh dan fitur baru berjalan.
 #

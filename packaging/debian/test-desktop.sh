@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# test-desktop.sh — uji paket .deb dalam mode desktop di container Debian:
+# test-desktop.sh: uji paket .deb dalam mode desktop di container Debian:
 # izin tulis tanpa login ulang (ACL), lalu alur layar jamaah lewat menu
 # (buka, tutup dengan Alt+F4, buka lagi, bawa ke depan) tanpa suara dobel.
 #

@@ -24,7 +24,7 @@ const tomorrow = { date: '2026-10-02', fajr: '04:05', sunrise: '05:22', dhuhr: '
 const reminder = { enabled: true, minutes: 10, friday_minutes: 30, message: 'Mari bersiap' };
 const at = (date, hms) => new Date(date + 'T' + hms);
 
-console.log('computeView — kondisi normal');
+console.log('computeView: kondisi normal');
 let v = computeView(at('2026-10-01', '17:21:00'), today, tomorrow, reminder);
 check('berikutnya Maghrib', v.next.key === 'maghrib' && !v.next.tomorrow);
 check('sisa 12 menit', v.remaining === 12 * 60);
@@ -33,7 +33,7 @@ check('Ashar dan sebelumnya ditandai lewat', v.rows.asr === 'past' && v.rows.faj
 check('Maghrib ditandai berikutnya', v.rows.maghrib === 'next');
 check('Isya belum lewat', v.rows.isha === '');
 
-console.log('computeView — pengingat');
+console.log('computeView: pengingat');
 v = computeView(at('2026-10-01', '17:23:00'), today, tomorrow, reminder);
 check('tepat 10 menit sebelum adzan masuk pengingat', v.mode === 'reminder' && v.remaining === 600);
 v = computeView(at('2026-10-01', '17:22:59'), today, tomorrow, reminder);
@@ -43,7 +43,7 @@ check('hitung mundur 04:52', formatCountdown(v.remaining) === '04:52');
 v = computeView(at('2026-10-01', '17:25:00'), today, tomorrow, { ...reminder, enabled: false });
 check('pengingat mati = tetap normal', v.mode === 'normal');
 
-console.log('computeView — adzan');
+console.log('computeView: adzan');
 v = computeView(at('2026-10-01', '17:33:00'), today, tomorrow, reminder);
 check('tepat waktu Maghrib masuk layar adzan', v.mode === 'adzan' && v.adzan.key === 'maghrib');
 check('saat adzan, berikutnya sudah Isya', v.next.key === 'isha');
@@ -52,7 +52,7 @@ check('masih adzan di detik ke-179', v.mode === 'adzan');
 v = computeView(at('2026-10-01', '17:36:00'), today, tomorrow, reminder);
 check('kembali normal setelah 3 menit', v.mode === 'normal');
 
-console.log('computeView — hitung mundur iqomah');
+console.log('computeView: hitung mundur iqomah');
 const iq = { countdown: true, minutes: { fajr: 20, dhuhr: 10, asr: 10, maghrib: 10, isha: 10 } };
 v = computeView(at('2026-10-01', '17:36:00'), today, tomorrow, reminder, iq);
 check('setelah layar adzan: hitung mundur iqomah Maghrib 07:00', v.mode === 'iqomah' && v.iqomah.key === 'maghrib'
@@ -78,7 +78,7 @@ check('rekaman selesai: lanjut hitung mundur iqomah', v.mode === 'iqomah' && v.i
 v = computeView(at('2026-10-01', '17:43:30'), today, tomorrow, reminder, iq, 'maghrib');
 check('sinyal macet: layar adzan paling lama 10 menit', v.mode !== 'adzan');
 
-console.log('computeView — setelah Isya & dini hari');
+console.log('computeView: setelah Isya & dini hari');
 v = computeView(at('2026-10-01', '21:00:00'), today, tomorrow, reminder);
 check('berikutnya Subuh besok', v.next.key === 'fajr' && v.next.tomorrow);
 check('sisa dihitung melewati tengah malam', v.remaining === (24 * 3600 - 21 * 3600) + 4 * 3600 + 5 * 60);
@@ -86,7 +86,7 @@ check('daftar beralih ke jadwal besok tanpa tanda lewat', v.listDay === 'tomorro
 v = computeView(at('2026-10-02', '03:00:00'), tomorrow, null, reminder);
 check('jam 03:00 berikutnya Subuh hari itu', v.next.key === 'fajr' && !v.next.tomorrow && v.remaining === 65 * 60);
 
-console.log('computeView — Jumat');
+console.log('computeView: Jumat');
 const friday = { ...tomorrow };
 v = computeView(at('2026-10-02', '11:00:00'), friday, null, reminder);
 check('Jumat 28 menit sebelum Dzuhur sudah pengingat (bawaan 30)', v.mode === 'reminder' && v.fridayDhuhr && v.lead === 1800);
@@ -118,7 +118,7 @@ r = fastingRow([{ date: '2026-10-05', is_senin_kamis: true, is_ayyamul_bidh: tru
 check('gabungan Senin & Ayyamul Bidh', r.value === 'Puasa Senin & Ayyamul Bidh');
 check('daftar kosong (mis. Ramadhan) = baris disembunyikan', fastingRow([], '2027-02-10', '2027-02-11', false) === null);
 
-console.log('slideVisible — jam 15 detik, lalu slide 15 detik');
+console.log('slideVisible: jam 15 detik, lalu slide 15 detik');
 const shown = [];
 for (let t = 0; t < 30; t++) if (slideVisible(t, 15, 15)) shown.push(t);
 check('detik 0–14 jam, 15–29 slide', shown.length === 15 && shown[0] === 15 && shown[14] === 29);

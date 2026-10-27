@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# install.sh — Instalasi Sistem Jam Sholat Masjid di Raspberry Pi OS Lite.
+# install.sh: Instalasi Sistem Jam Sholat Masjid di Raspberry Pi OS Lite.
 # Jalankan sebagai root (atau lewat sudo) SEKALI SAJA saat provisioning awal,
 # selagi perangkat online (untuk apt/pip). Setelah itu sistem berjalan
 # sepenuhnya offline (Scope §1.2 SRS).
@@ -42,7 +42,7 @@ apt-get install -y --no-install-recommends python3-picamera2
 
 # fake-hwclock: solusi standar Debian/Raspbian utk device tanpa RTC (REQ-F-061).
 # Sudah aktif otomatis begitu paket terpasang (systemd service bawaan paket).
-echo "fake-hwclock terpasang — menjaga jam tetap masuk akal walau tanpa RTC fisik saat offline."
+echo "fake-hwclock terpasang: menjaga jam tetap masuk akal walau tanpa RTC fisik saat offline."
 
 echo "=== [2/10] Membuat user layanan ($SERVICE_USER) ==="
 if ! id "$SERVICE_USER" &>/dev/null; then
@@ -97,7 +97,7 @@ echo "Anda akan diminta membuat kata sandi baru saat pertama kali masuk."
 
 echo "=== [7/10] Instalasi dependency Python (butuh internet, sekali saja) ==="
 # python3-opencv dari apt (langkah 1) sudah membawa cv2 + numpy. pip hanya
-# dipakai bila import gagal — di Pi 2/3 (armhf) pip bisa mencoba compile OpenCV
+# dipakai bila import gagal: di Pi 2/3 (armhf) pip bisa mencoba compile OpenCV
 # dari source berjam-jam, jadi jangan dijalankan kalau tidak perlu.
 if python3 -c "import cv2, numpy" 2>/dev/null; then
     echo "OpenCV & numpy dari apt sudah tersedia, pip dilewati."
@@ -130,7 +130,7 @@ cat > /etc/apache2/sites-available/jamsholat.conf << EOF
 </VirtualHost>
 EOF
 # REQ-NF-122: panel admin (dan idealnya seluruh app) hanya boleh diakses dari
-# jaringan lokal masjid — baris "Require ip" di atas membatasi ke rentang
+# jaringan lokal masjid: baris "Require ip" di atas membatasi ke rentang
 # private (LAN/WiFi masjid), sesuaikan rentang IP dengan jaringan Anda.
 a2dissite 000-default.conf || true
 a2ensite jamsholat.conf

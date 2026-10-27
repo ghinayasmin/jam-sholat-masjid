@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# add_wifi.sh — Tambahkan jaringan WiFi (WPA2-Personal) yang diingat Raspberry Pi.
+# add_wifi.sh: Tambahkan jaringan WiFi (WPA2-Personal) yang diingat Raspberry Pi.
 #
 # Jaringan lama tidak dihapus: Pi otomatis memilih jaringan yang tersedia,
 # yang prioritasnya lebih tinggi didahulukan. Kalau password salah ketik,

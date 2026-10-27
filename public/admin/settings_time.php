@@ -13,13 +13,13 @@ AuthMiddleware::requireLogin($auth);
 
 /**
  * REQ-F-020: admin bisa mengatur jam/tanggal perangkat secara manual.
- * Ini pelengkap untuk NTP (REQ-F-060, otomatis lewat systemd-timesyncd) —
+ * Ini pelengkap untuk NTP (REQ-F-060, otomatis lewat systemd-timesyncd),
  * dipakai saat perangkat benar-benar offline dan jam meleset.
  *
  * Mengubah jam sistem OS dari PHP butuh privilege root. Solusi yang dipakai:
  * PHP memanggil `sudo /usr/bin/date` lewat exec(), dan sudoers dikonfigurasi
  * (lihat scripts/install.sh) agar user web server HANYA boleh menjalankan
- * perintah `date` tanpa password — tidak ada privilege lain yang diberikan.
+ * perintah `date` tanpa password, dan tidak ada privilege lain yang diberikan.
  */
 
 $errors = [];

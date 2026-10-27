@@ -1,5 +1,5 @@
 <#
-  uninstall.ps1 — dijalankan uninstaller sebelum file dihapus. Data di
+  uninstall.ps1: dijalankan uninstaller sebelum file dihapus. Data di
   C:\ProgramData\JamSholat (database, poster, foto, cadangan) tidak dihapus.
 #>
 param([Parameter(Mandatory = $true)][string]$Root)

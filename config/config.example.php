@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 // Salin file ini menjadi config.php lalu sesuaikan path untuk device kamu.
 // Nilai di sini TIDAK rahasia (path, opsi). Untuk kredensial/secret,
-// gunakan config/.env (lihat .env.example) — jangan taruh di sini.
+// gunakan config/.env (lihat .env.example): jangan taruh di sini.
 
 return [
     // Lokasi file database SQLite.

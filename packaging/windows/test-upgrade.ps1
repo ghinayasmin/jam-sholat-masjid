@@ -1,5 +1,5 @@
 <#
-  test-upgrade.ps1 — uji upgrade installer Windows (DECISIONS.md #40): pasang versi
+  test-upgrade.ps1: uji upgrade installer Windows (DECISIONS.md #40): pasang versi
   lama, isi data lewat panel, jalankan sesi alarm lama (file program sedang dipakai),
   pasang versi baru di atasnya, lalu pastikan data utuh dan fitur baru berjalan.
     pwsh packaging\windows\test-upgrade.ps1 -Old JamSholat-Setup-1.1.1.exe -New dist\JamSholat-Setup-1.1.2.exe

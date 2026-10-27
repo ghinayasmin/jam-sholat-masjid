@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Unit test untuk PrayerTimeCalculator & HijriConverter.
  * Tidak memakai PHPUnit (device offline, tidak ada Composer/internet saat
- * runtime) — memakai harness assert minimal sendiri, dijalankan lewat:
+ * runtime): memakai harness assert minimal sendiri, dijalankan lewat:
  *   php tests/unit/test_prayer_time_calculator.php
  *
  * Nilai referensi divalidasi manual terhadap AlAdhan API (lihat docs/DECISIONS.md).
@@ -53,7 +53,7 @@ $calc = new PrayerTimeCalculator();
 // method Gulf Region (Fajr 19.5°), 09-03-2015, timezone +4.
 // Expected (dari AlAdhan, difetch langsung saat pengembangan):
 //   Fajr 05:12, Sunrise 06:35, Dhuhr 12:29, Asr 15:51, Maghrib 18:25
-// Toleransi 1-2 menit — sama seperti kriteria lulus TC-JDW-001..004 di SRS.
+// Toleransi 1-2 menit: sama seperti kriteria lulus TC-JDW-001..004 di SRS.
 // Tanpa ihtiyat ([]), karena AlAdhan memberi waktu astronomis murni.
 $result = $calc->calculate(2015, 3, 9, 25.2048, 55.2708, 4.0, 'syafii', 0, 19.5, 18.0, []);
 
@@ -113,7 +113,7 @@ $prev = $hijri->fromGregorian(2026, 9, 19);
 for ($d = 20; $d <= 25; $d++) {
     $curr = $hijri->fromGregorian(2026, 9, $d);
     $expectedDay = $prev['day'] + 1;
-    // Kalau bulan berganti, hari mulai dari 1 lagi — cukup cek tidak error & label valid.
+    // Kalau bulan berganti, hari mulai dari 1 lagi, cukup cek tidak error & label valid.
     assertTrue(!empty($curr['label']), "Hijri: label valid untuk 2026-09-$d");
     $prev = $curr;
 }

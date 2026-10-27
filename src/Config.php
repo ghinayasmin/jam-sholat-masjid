@@ -7,7 +7,7 @@ namespace App;
 /**
  * Config loader sederhana tanpa dependency eksternal.
  * - config/config.php  : nilai non-secret (path, timezone default, dsb)
- * - config/.env         : nilai secret (tidak di-commit ke VCS) — REQ-NF-121/kode quality §8
+ * - config/.env         : nilai secret (tidak di-commit ke VCS), REQ-NF-121/kode quality §8
  *
  * Semua nilai bisa dioverride lewat environment variable asli (getenv),
  * berguna untuk testing dan untuk systemd EnvironmentFile.

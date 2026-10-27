@@ -1,4 +1,4 @@
-/* Layar jamaah — arah desain "Malam teduh" (docs/DECISIONS.md #15).
+/* Layar jamaah: arah desain "Malam teduh" (docs/DECISIONS.md #15).
    Semua ukuran memakai --u: 1/100 lebar layar 16:9 yang muat di viewport,
    sehingga tata letak tetap utuh di monitor 16:10 atau 4:3.
    Sengaja tanpa blur/bayangan besar: Chromium di Pi 3 merender lewat CPU. */
@@ -92,7 +92,7 @@ html, body {
 .countdown-value { font-size: calc(var(--u) * 4.4); font-weight: 700; line-height: 1.1; color: var(--brass); letter-spacing: -0.02em; white-space: nowrap; }
 .countdown-text { font-size: calc(var(--u) * 2.1); color: #B7BFB9; line-height: 1.35; white-space: nowrap; margin-top: calc(var(--u) * 1.2); }
 
-/* Poster pengumuman — tampil bergantian menutupi panel kiri. */
+/* Poster pengumuman: tampil bergantian menutupi panel kiri. */
 .poster {
     position: absolute;
     inset: calc(var(--u) * 2);

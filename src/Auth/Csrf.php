@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Auth;
 
 /**
- * Proteksi CSRF untuk semua form admin — bukan requirement eksplisit SRS,
+ * Proteksi CSRF untuk semua form admin, bukan requirement eksplisit SRS,
  * ditambahkan sebagai praktik keamanan standar (lihat Assumption Log di
  * analisis SRS). Butuh session aktif (panggil setelah AuthManager::startSession()).
  */

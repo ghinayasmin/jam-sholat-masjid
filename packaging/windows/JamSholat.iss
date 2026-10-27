@@ -1,4 +1,4 @@
-; JamSholat.iss — installer Windows (Inno Setup 6). Dibangun oleh build.ps1:
+; JamSholat.iss: installer Windows (Inno Setup 6). Dibangun oleh build.ps1:
 ;   iscc /DAppVersion=1.1.0 /DStage=<folder staging> /O<folder keluaran> JamSholat.iss
 ; Isi staging: app\ (kode + audio), apache\, php\, python\, mpg123\, redist\vc_redist.x64.exe
 ; Lihat DECISIONS.md #39.

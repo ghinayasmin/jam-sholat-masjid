@@ -32,7 +32,7 @@
     /**
      * Inti logika layar (tanpa DOM, diuji di tests/unit/test_display_logic.js).
      * now: Date lokal. today/tomorrow: jadwal dari /api/schedule.php. reminder: pengaturan pengingat.
-     * iqomah: { countdown: bool, minutes: { fajr: 20, ... } } — hitung mundur iqomah (DECISIONS.md #31).
+     * iqomah: { countdown: bool, minutes: { fajr: 20, ... } }, hitung mundur iqomah (DECISIONS.md #31).
      * adzanPlaying: waktu sholat yang rekaman adzannya masih diputar ('maghrib'), atau null (#32).
      */
     function computeView(now, today, tomorrow, reminder, iqomah, adzanPlaying) {

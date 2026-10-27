@@ -1,5 +1,5 @@
 """
-volume_guard.py — memastikan suara sistem tidak bisu sebelum adzan/iqomah diputar.
+volume_guard.py: memastikan suara sistem tidak bisu sebelum adzan/iqomah diputar.
 
 Temuan uji v1.1.1 (DECISIONS.md #40): di Ubuntu volume kembali ke 0 setelah
 restart, sehingga adzan "berbunyi" tanpa terdengar. Sebelum adzan dan iqomah, dan
@@ -120,5 +120,5 @@ def ensure_audible(platform: str | None = None, run: Runner = _run,
         if which("amixer"):
             return guard_amixer(run)
         return "tidak bisa dicek (tidak ada pengatur volume)"
-    except Exception as exc:  # noqa: BLE001 — volume tidak boleh menghentikan adzan
+    except Exception as exc:  # noqa: BLE001 (volume tidak boleh menghentikan adzan)
         return f"tidak bisa dicek ({exc})"[:160]

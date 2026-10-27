@@ -39,7 +39,7 @@ final class ScheduleEngine
 
     /**
      * Dipanggil ulang setiap kali admin mengubah lokasi/madzhab/offset
-     * (REQ-F-002, REQ-F-003) — cache lama untuk tanggal tsb dihapus supaya
+     * (REQ-F-002, REQ-F-003), cache lama untuk tanggal tsb dihapus supaya
      * dihitung ulang dengan pengaturan baru pada request berikutnya.
      */
     public function invalidateCache(?string $fromDate = null): void

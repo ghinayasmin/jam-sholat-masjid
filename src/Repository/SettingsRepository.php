@@ -19,7 +19,7 @@ final class SettingsRepository
         $row = $stmt->fetch();
         if ($row === false) {
             // Seharusnya tidak pernah terjadi (schema.sql sudah seed baris ini),
-            // tapi kita jaga-jaga agar sistem tidak crash — REQ-NF-112.
+            // tapi kita jaga-jaga agar sistem tidak crash, REQ-NF-112.
             Database::connection()->exec('INSERT OR IGNORE INTO mosque_settings (id) VALUES (1)');
             $row = Database::connection()->query('SELECT * FROM mosque_settings WHERE id = 1')->fetch();
         }
@@ -62,7 +62,7 @@ final class SettingsRepository
     }
 
     /**
-     * Update parsial — hanya kolom yang ada di $fields yang diubah. Nama kolom yang
+     * Update parsial: hanya kolom yang ada di $fields yang diubah. Nama kolom yang
      * tidak ada di tabel diabaikan (bukan dirangkai ke SQL).
      */
     public function update(array $fields): void
@@ -72,7 +72,7 @@ final class SettingsRepository
         $params = [];
         foreach ($fields as $key => $value) {
             if (!in_array($key, $allowed, true)) {
-                continue; // abaikan field tak dikenal — jangan biarkan mass-assignment sembarang
+                continue; // abaikan field tak dikenal, jangan biarkan mass-assignment sembarang
             }
             $set[] = "$key = :$key";
             $params[$key] = $value;

@@ -1,5 +1,5 @@
 <#
-  setup.ps1 — konfigurasi setelah installer menyalin file (DECISIONS.md #39).
+  setup.ps1: konfigurasi setelah installer menyalin file (DECISIONS.md #39).
   Dijalankan installer sebagai Administrator; aman dijalankan ulang (mis. saat update).
 
   -Root  folder program, mis. C:\Program Files\JamSholat (berisi app, apache, php, python, mpg123)

@@ -1,5 +1,5 @@
 <#
-  test-windows.ps1 — uji asap installer di Windows bersih (GitHub Actions).
+  test-windows.ps1: uji asap installer di Windows bersih (GitHub Actions).
     pwsh packaging\windows\test-windows.ps1 -Installer dist\JamSholat-Setup-1.1.0.exe
   Memasang tanpa jendela, lalu memeriksa Apache, PHP, database, halaman setup, perintah
   reset kata sandi, layanan alarm, dan uninstall. Keluar dengan kode ≠ 0 bila ada yang gagal.

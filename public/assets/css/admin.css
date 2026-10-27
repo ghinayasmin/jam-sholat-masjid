@@ -1,4 +1,4 @@
-/* Panel takmir — dirancang untuk HP dulu (docs/DECISIONS.md #16).
+/* Panel takmir: dirancang untuk HP dulu (docs/DECISIONS.md #16).
    Skala jarak: 4 · 8 · 12 · 16 · 20 · 24 · 32 px. Target sentuh minimal 44 px. */
 
 @font-face {

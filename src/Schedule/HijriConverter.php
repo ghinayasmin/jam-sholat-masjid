@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Schedule;
 
 /**
- * Konversi tanggal Masehi -> Hijriyah — REQ-F-005, REQ-F-013.
+ * Konversi tanggal Masehi -> Hijriyah (REQ-F-005, REQ-F-013).
  *
  * Memakai algoritma tabular Islamic calendar (civil epoch, basis 30-tahun
- * kabisat berulang) — formula matematis publik yang umum dipakai berbagai
+ * kabisat berulang), formula matematis publik yang umum dipakai berbagai
  * pustaka kalender open-source, dihitung murni dari tanggal (offline,
  * tanpa observasi rukyat).
  *

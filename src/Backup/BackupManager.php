@@ -14,7 +14,7 @@ use RuntimeException;
  * REQ-F-050 (Data Backup), REQ-F-051 (Data Restore).
  *
  * Scope backup mengikuti §5.6 SRS secara literal: "data pengaturan,
- * laporan keuangan, dan publikasi" — TIDAK termasuk motion_events
+ * laporan keuangan, dan publikasi", TIDAK termasuk motion_events
  * (rekaman kamera), karena SRS tidak menyebutnya dan volumenya besar
  * (lihat asumsi di analisis SRS, bagian E "Catatan desain").
  *
@@ -79,7 +79,7 @@ final class BackupManager
         return ['id' => $id, 'file_name' => $fileName, 'file_path' => $filePath, 'size_bytes' => strlen($json)];
     }
 
-    /** @throws RuntimeException jika file backup tidak valid — REQ-F-051 pass criteria: data pulih tanpa kehilangan. */
+    /** @throws RuntimeException jika file backup tidak valid, REQ-F-051 pass criteria: data pulih tanpa kehilangan. */
     public function restoreFromFile(string $filePath): void
     {
         if (!is_file($filePath)) {

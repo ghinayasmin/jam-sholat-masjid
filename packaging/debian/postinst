@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# postinst — paket jamsholat untuk Debian, Ubuntu, Linux Mint, Raspberry Pi OS
+# postinst: paket jamsholat untuk Debian, Ubuntu, Linux Mint, Raspberry Pi OS
 # (DECISIONS.md #39). Padanan langkah scripts/install.sh, tanpa bertanya apa pun:
 # akun takmir bawaan admin / 000 dibuat saat database pertama kali dibuka (#41).
 #

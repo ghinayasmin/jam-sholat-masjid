@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Alarm & Audio Service — REQ-F-030 (Adzan Alarm), REQ-F-032 (Murottal Playback),
+Alarm & Audio Service: REQ-F-030 (Adzan Alarm), REQ-F-032 (Murottal Playback),
 REQ-F-033 (Background Alarm Service). Suara adzan dan iqomah bisa dimatikan
 takmir; iqomah fitur tambahan di luar SRS v0.2, bawaan mati (DECISIONS.md #23).
 
@@ -8,12 +8,11 @@ PENTING: skrip ini membandingkan jam LOKAL sistem (datetime.now(), bukan
 UTC) terhadap jadwal sholat yang disimpan sebagai jam dinding lokal
 (HH:MM) oleh PrayerTimeCalculator. Ini mengasumsikan timezone OS Raspberry
 Pi sudah diset ke zona waktu masjid (mis. `timedatectl set-timezone
-Asia/Jakarta`) — langkah ini ada di scripts/install.sh dan README.
+Asia/Jakarta`): langkah ini ada di scripts/install.sh dan README.
 
 Desain dipecah jadi kelas-kelas kecil yang testable tanpa hardware audio
 sungguhan: AlarmScheduler (murni logika waktu, tidak menyentuh I/O) dan
-AudioPlayer (wrapper subprocess, bisa di-mock di unit test) —
-lihat tests/unit/test_alarm_service.py.
+AudioPlayer (wrapper subprocess, bisa di-mock di unit test). Lihat tests/unit/test_alarm_service.py.
 """
 
 from __future__ import annotations
@@ -39,11 +38,11 @@ AUDIO_DIR = os.environ.get("JAMSHOLAT_AUDIO_PATH", os.path.join(PROJECT_ROOT, "p
 PHP_BIN = os.environ.get("JAMSHOLAT_PHP_BIN", "php")
 COMPUTE_SCRIPT = os.path.join(PROJECT_ROOT, "scripts", "compute_schedule_cli.php")
 
-# Prayer yang punya adzan (sunrise sengaja TIDAK termasuk — bukan waktu sholat).
+# Prayer yang punya adzan (sunrise sengaja TIDAK termasuk, bukan waktu sholat).
 ADZAN_PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
 
 # REQ-F-032 pass criteria (TC-ALM-003): murottal tidak boleh tumpang tindih
-# dengan adzan/iqomah — beri jeda "diam" di sekitar tiap waktu sholat.
+# dengan adzan/iqomah: beri jeda "diam" di sekitar tiap waktu sholat.
 QUIET_WINDOW_BEFORE_MIN = 2
 QUIET_WINDOW_AFTER_MIN = 20  # cukup untuk adzan + iqomah + sholat singkat
 # Setelah iqomah masih ada sholat berjamaah: murottal baru boleh lagi sesudahnya.
@@ -69,7 +68,7 @@ logger = logging.getLogger("alarm_service")
 
 class AlarmScheduler:
     """Logika murni: kapan adzan/iqomah harus dibunyikan, berdasar jadwal
-    hari ini + jarak iqomah. Tidak menyentuh file/audio/DB — mudah diuji."""
+    hari ini + jarak iqomah. Tidak menyentuh file/audio/DB, mudah diuji."""
 
     def __init__(self, schedule: dict, iqomah_minutes: dict | int) -> None:
         self.schedule = schedule  # {'fajr': '04:11', 'dhuhr': '11:32', ...}
@@ -122,7 +121,7 @@ class AlarmScheduler:
 
     def in_quiet_window(self, now: datetime.datetime) -> bool:
         """True jika `now` berada dalam jendela 'diam' di sekitar waktu sholat manapun
-        (dipakai untuk menahan murottal — REQ-F-032)."""
+        (dipakai untuk menahan murottal, REQ-F-032)."""
         for prayer in ADZAN_PRAYERS:
             if prayer not in self.schedule:
                 continue
@@ -181,7 +180,7 @@ def mp3_frames_per_second(path: str) -> float | None:
 
 class AudioPlayer:
     """Wrapper pemutaran audio via player command-line. Player dipilih
-    otomatis (mpg123 untuk mp3, aplay untuk wav) — bisa di-mock di test
+    otomatis (mpg123 untuk mp3, aplay untuk wav), bisa di-mock di test
     dengan meng-inject `runner` custom."""
 
     def __init__(self, runner=None) -> None:
@@ -319,7 +318,7 @@ def ensure_schedule_computed() -> None:
         subprocess.run(
             [PHP_BIN, COMPUTE_SCRIPT], check=True, capture_output=True, timeout=30, text=True
         )
-    except Exception as exc:  # noqa: BLE001 — REQ-NF-112
+    except Exception as exc:  # noqa: BLE001 (REQ-NF-112)
         logger.error("Gagal memastikan jadwal hari ini terhitung: %s", exc)
 
 
@@ -645,7 +644,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
 
         except KeyboardInterrupt:
             break
-        except Exception as exc:  # noqa: BLE001 — REQ-NF-112
+        except Exception as exc:  # noqa: BLE001 (REQ-NF-112)
             logger.error("Error tak terduga di loop alarm: %s", exc)
             time.sleep(5)
 

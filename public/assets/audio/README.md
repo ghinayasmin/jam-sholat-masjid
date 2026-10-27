@@ -2,8 +2,8 @@
 
 Folder ini butuh file audio berikut sebelum `alarm_service.py` bisa memutar suara
 (REQ-F-030, REQ-F-032). File audio TIDAK disertakan dalam paket
-ini karena rekaman adzan/murottal biasanya berlisensi/hak cipta pihak lain —
-silakan sediakan sendiri file yang sudah dimiliki/berlisensi legal masjid Anda.
+ini karena rekaman adzan/murottal biasanya berlisensi/hak cipta pihak lain.
+Silakan sediakan sendiri file yang sudah dimiliki/berlisensi legal masjid Anda.
 
 Letakkan file berikut:
 
@@ -21,7 +21,7 @@ public/assets/audio/
 
 Format: MP3 (didukung lewat `mpg123`, yang di-install otomatis oleh
 `scripts/install.sh`). Kalau file belum ada, sistem tetap berjalan normal
-(REQ-NF-112 graceful error handling) — hanya akan mencatat peringatan di log
+(REQ-NF-112, graceful error handling). Sistem hanya mencatat peringatan di log
 ("File audio tidak ditemukan") dan melewati pemutaran suara, tanpa membuat
 layanan berhenti.
 

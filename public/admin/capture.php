@@ -8,7 +8,7 @@ use App\Auth\AuthManager;
 use App\Config;
 use App\Db\Database;
 
-// REQ-F-023: gambar hanya boleh diakses admin yang sudah login — file fisik
+// REQ-F-023: gambar hanya boleh diakses admin yang sudah login, file fisik
 // TIDAK diletakkan di public/ agar tidak bisa diakses langsung tanpa auth.
 $auth = new AuthManager();
 $auth->startSession();

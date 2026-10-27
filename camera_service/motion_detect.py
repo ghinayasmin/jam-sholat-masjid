@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Camera Surveillance Service — REQ-F-040 (Continuous Monitoring),
+Camera Surveillance Service: REQ-F-040 (Continuous Monitoring),
 REQ-F-041 (Motion Detection), REQ-F-042 (Auto Image Capture),
 REQ-F-043 (Background Camera Service).
 
 Berjalan sebagai layanan latar belakang independen (systemd), terpisah dari
 aplikasi web PHP, tapi menulis ke SQLite database yang sama (WAL mode agar
-aman diakses bersamaan — lihat src/Db/Database.php).
+aman diakses bersamaan, lihat src/Db/Database.php).
 
 Desain sengaja dipecah dua kelas kecil (MotionDetector, EventStore) supaya
-logika deteksi bisa diuji tanpa hardware kamera sungguhan — lihat
+logika deteksi bisa diuji tanpa hardware kamera sungguhan, lihat
 tests/unit/test_motion_detect.py.
 """
 
@@ -51,8 +51,8 @@ CAMERA_IGNORE = os.environ.get("JAMSHOLAT_CAMERA_IGNORE", "")
 # tanpa filter inframerah) agar warna tidak terlalu merah muda. Kosong = bawaan.
 CAMERA_TUNING = os.environ.get("JAMSHOLAT_CAMERA_TUNING", "")
 
-# REQ-NF-102: layanan latar belakang tidak boleh membebani resource berlebihan —
-# nilai-nilai ini sengaja konservatif untuk Raspberry Pi 2/3 (RAM 1GB).
+# REQ-NF-102: layanan latar belakang tidak boleh membebani resource berlebihan.
+# Nilai-nilai ini sengaja konservatif untuk Raspberry Pi 2/3 (RAM 1GB).
 MIN_CONTOUR_AREA = 1500          # abaikan noise kecil
 MIN_SECONDS_BETWEEN_CAPTURES = 5  # debounce, jangan banjiri DB/disk saat gerakan berkelanjutan
 FRAME_WIDTH = 640
@@ -102,7 +102,7 @@ def unrotate_zone(zone: tuple[float, float, float, float], rotation: int) -> tup
 
 
 class MotionDetector:
-    """Deteksi gerakan murni dari array frame — tidak menyentuh hardware,
+    """Deteksi gerakan murni dari array frame, tidak menyentuh hardware,
     supaya bisa diuji dengan frame sintetis (lihat unit test)."""
 
     def __init__(self, min_contour_area: int = MIN_CONTOUR_AREA, confirm_frames: int = CONFIRM_FRAMES,
@@ -173,7 +173,7 @@ class MotionDetector:
 
 
 class EventStore:
-    """Menulis event + gambar ke DB/disk — REQ-F-042."""
+    """Menulis event + gambar ke DB/disk (REQ-F-042)."""
 
     def __init__(self, db_path: str, captures_path: str) -> None:
         self.db_path = db_path
@@ -212,7 +212,7 @@ class EventStore:
 class PiCamera:
     """Raspberry Pi Camera Module (CSI). Node /dev/video0 miliknya (unicam)
     hanya memberi data sensor mentah, jadi cv2.VideoCapture tidak bisa
-    membacanya — harus lewat libcamera/Picamera2.
+    membacanya. Kamera ini harus dibaca lewat libcamera/Picamera2.
 
     Dua aliran: "lores" 320x240 untuk deteksi (ringan, dibaca tiap putaran) dan
     "main" 1280x960 yang hanya diambil saat ada gerakan. Sensor dipaksa ke mode
@@ -239,7 +239,7 @@ class PiCamera:
         ))
         self.cam.start()
 
-    def isOpened(self) -> bool:  # noqa: N802 — samakan dengan cv2.VideoCapture
+    def isOpened(self) -> bool:  # noqa: N802 (samakan dengan cv2.VideoCapture)
         return True
 
     def read(self):
@@ -285,7 +285,7 @@ def open_camera(camera_type: str, camera_index: int):
 
 
 def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: str = CAMERA_TYPE) -> None:
-    """Loop utama — REQ-F-040 (continuous), dengan graceful error handling (REQ-NF-112):
+    """Loop utama: REQ-F-040 (continuous), dengan graceful error handling (REQ-NF-112):
     kegagalan membuka webcam TIDAK menghentikan proses, hanya retry berkala."""
     detector = MotionDetector()
     ignore_zones = parse_zones(CAMERA_IGNORE)
@@ -327,7 +327,7 @@ def run_loop(camera_index: int, db_path: str, captures_path: str, camera_type: s
         except KeyboardInterrupt:
             logger.info("Dihentikan oleh pengguna.")
             break
-        except Exception as exc:  # noqa: BLE001 — REQ-NF-112: jangan biarkan service mati total
+        except Exception as exc:  # noqa: BLE001 (REQ-NF-112: jangan biarkan service mati total)
             logger.error("Error tak terduga: %s", exc)
             time.sleep(5)
 

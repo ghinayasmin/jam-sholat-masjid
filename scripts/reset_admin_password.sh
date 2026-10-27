@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# reset_admin_password.sh — nama lama, tetap ada agar panduan lama masih berlaku.
+# reset_admin_password.sh: nama lama, tetap ada agar panduan lama masih berlaku.
 # Sekarang cukup: sudo jamsholat-reset-password   (lihat DECISIONS.md #33)
 #
 set -euo pipefail

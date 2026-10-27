@@ -1,4 +1,4 @@
--- Sistem Jam Sholat Masjid — SQLite Schema
+-- Sistem Jam Sholat Masjid: SQLite Schema
 -- REQ traceability: lihat docs/REQUIREMENT_TRACEABILITY.md
 
 PRAGMA foreign_keys = ON;
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS publications (
 );
 CREATE INDEX IF NOT EXISTS idx_publications_active_order ON publications(is_active, display_order);
 
--- REQ-F-012, REQ-F-024 (struktur ledger — dikonfirmasi user)
+-- REQ-F-012, REQ-F-024 (struktur ledger, dikonfirmasi user)
 CREATE TABLE IF NOT EXISTS financial_entries (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     entry_date   TEXT NOT NULL,          -- format YYYY-MM-DD
@@ -156,6 +156,6 @@ CREATE TABLE IF NOT EXISTS backup_records (
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Seed baris tunggal default settings (password admin TIDAK di-seed di sini,
--- lihat scripts/install.sh — REQ-NF-121 melarang credential hardcoded)
+-- Seed baris tunggal default settings. Akun bawaan admin / 000 dibuat oleh
+-- App\Auth\DefaultAccount saat database pertama kali dibuka (DECISIONS.md #41).
 INSERT OR IGNORE INTO mosque_settings (id) VALUES (1);

@@ -1,5 +1,5 @@
 #!/bin/bash
-# postrm — "remove" membiarkan data (database, poster, foto kamera, cadangan) tetap
+# postrm: "remove" membiarkan data (database, poster, foto kamera, cadangan) tetap
 # di /opt/jamsholat/storage; "purge" menghapus semuanya.
 set -e
 case "$1" in

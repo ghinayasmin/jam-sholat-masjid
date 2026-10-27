@@ -28,7 +28,7 @@ use App\Config;
 date_default_timezone_set('UTC'); // Waktu sholat dihitung manual dengan offset lokasi;
                                     // UTC dipakai sebagai basis internal yang konsisten.
 
-// REQ-NF-112: Graceful error handling — jangan tampilkan stack trace mentah ke jamaah/takmir,
+// REQ-NF-112 (graceful error handling): jangan tampilkan stack trace mentah ke jamaah/takmir,
 // tapi tetap log ke error_log server untuk debugging developer.
 error_reporting(E_ALL);
 ini_set('display_errors', '0');

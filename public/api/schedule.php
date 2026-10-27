@@ -61,7 +61,7 @@ try {
         ],
         'iqomah_countdown' => (int) $settings['iqomah_countdown_enabled'] === 1,
         'show_finance' => (int) $settings['show_finance_on_display'] === 1,
-        // Rotasi slide (poster, kas, foto masjid) — DECISIONS.md #27, #28.
+        // Rotasi slide (poster, kas, foto masjid), DECISIONS.md #27, #28.
         'slides' => [
             'gap_seconds' => (int) $settings['poster_gap_seconds'],
             'show_seconds' => (int) $settings['poster_show_seconds'],

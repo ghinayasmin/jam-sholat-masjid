@@ -1,5 +1,5 @@
 <#
-  build.ps1 — membuat JamSholat-Setup-<versi>.exe (DECISIONS.md #39).
+  build.ps1: membuat JamSholat-Setup-<versi>.exe (DECISIONS.md #39).
 
     pwsh packaging\windows\build.ps1 -AudioDir <folder audio> -OutDir dist   (versi dari berkas VERSION)
 

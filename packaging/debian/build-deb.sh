@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# build-deb.sh — membuat paket jamsholat_<versi>_all.deb (DECISIONS.md #39).
+# build-deb.sh: membuat paket jamsholat_<versi>_all.deb (DECISIONS.md #39).
 #
 #   bash packaging/debian/build-deb.sh <versi> <folder-audio> <folder-keluaran>
 #   (<versi> kosong "" = isi berkas VERSION)

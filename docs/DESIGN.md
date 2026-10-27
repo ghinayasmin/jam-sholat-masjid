@@ -40,7 +40,7 @@ ubah di CSS lalu perbarui tabel di sini.
 
 **File:** `public/display.php`, `public/assets/css/display.css`, `public/assets/js/display.js`
 
-### Warna — "Malam teduh"
+### Warna: "Malam teduh"
 
 | Token | Nilai | Dipakai untuk |
 |---|---|---|

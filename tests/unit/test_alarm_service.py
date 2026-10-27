@@ -1,5 +1,5 @@
 """
-Unit test untuk AlarmScheduler & AudioPlayer — tidak butuh hardware audio
+Unit test untuk AlarmScheduler & AudioPlayer, tidak butuh hardware audio
 sungguhan (AudioPlayer di-inject runner palsu). Jalankan dengan:
     python3 -m unittest tests/unit/test_alarm_service.py -v
 """

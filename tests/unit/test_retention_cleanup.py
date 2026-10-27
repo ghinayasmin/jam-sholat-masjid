@@ -1,5 +1,5 @@
 """
-Unit test untuk retention_cleanup.py — REQ-F-044. Jalankan dengan:
+Unit test untuk retention_cleanup.py (REQ-F-044). Jalankan dengan:
     python3 -m unittest tests/unit/test_retention_cleanup.py -v
 """
 

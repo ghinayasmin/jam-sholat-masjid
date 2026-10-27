@@ -13,7 +13,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 try {
     // Endpoint ini publik (dipakai layar jamaah). Data kas internal masjid hanya
-    // dikeluarkan bila takmir menyalakan "Tampilkan saldo kas" — DECISIONS.md #14.
+    // dikeluarkan bila takmir menyalakan "Tampilkan saldo kas", DECISIONS.md #14.
     $settings = (new SettingsRepository())->get();
     if ((int) $settings['show_finance_on_display'] !== 1) {
         echo json_encode(['success' => true, 'enabled' => false]);

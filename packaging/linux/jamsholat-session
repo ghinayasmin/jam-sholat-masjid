@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# jamsholat-session — dijalankan saat pengguna masuk ke desktop (XDG autostart,
+# jamsholat-session: dijalankan saat pengguna masuk ke desktop (XDG autostart,
 # /etc/xdg/autostart/jamsholat-session.desktop) pada instalasi dari paket .deb.
 #
 # Di komputer berdesktop, suara hanya bisa keluar lewat sesi pengguna

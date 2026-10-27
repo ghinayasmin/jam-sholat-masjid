@@ -1,5 +1,5 @@
 """
-Unit test untuk MotionDetector & EventStore — tidak butuh webcam sungguhan,
+Unit test untuk MotionDetector & EventStore, tidak butuh webcam sungguhan,
 memakai frame sintetis (numpy array). Jalankan dengan:
     python3 -m unittest tests/unit/test_motion_detect.py -v
 """

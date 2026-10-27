@@ -1,5 +1,5 @@
 <#
-  ensure-volume.ps1 — dipanggil layanan alarm (alarm_service/volume_guard.py) sebelum
+  ensure-volume.ps1: dipanggil layanan alarm (alarm_service/volume_guard.py) sebelum
   adzan/iqomah: speaker bawaan Windows yang bisu dibunyikan lagi, dan volume di bawah
   -Min dinaikkan ke -RaiseTo. Mencetak satu baris status (DECISIONS.md #40).
 #>

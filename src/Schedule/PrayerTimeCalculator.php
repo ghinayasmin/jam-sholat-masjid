@@ -6,14 +6,14 @@ namespace App\Schedule;
 
 /**
  * Menghitung jadwal waktu sholat murni dari posisi matahari (deklinasi &
- * equation of time), tanpa dependency eksternal — REQ-F-001, berjalan
+ * equation of time), tanpa dependency eksternal, REQ-F-001, berjalan
  * sepenuhnya lokal/offline.
  *
  * Metode sudut: REQ-F-006 mengacu ke "metode Kemenag RI atau library
  * astronomis standar". Sudut default yang dipakai (Fajr 20°, Isha 18°)
  * sama persis dengan definisi method id=20 (KEMENAG) pada AlAdhan API,
  * supaya hasil kalkulasi lokal dan hasil online sync (REQ-F-004) konsisten
- * satu sama lain — lihat docs/DECISIONS.md.
+ * satu sama lain, lihat docs/DECISIONS.md.
  *
  * Formula yang dipakai adalah formula astronomi hour-angle standar
  * (deklinasi matahari + equation of time via posisi ekliptika matahari),
@@ -133,7 +133,7 @@ final class PrayerTimeCalculator
         $alt = deg2rad($altitudeDeg);
 
         $cosH = (sin($alt) - sin($lat) * sin($decl)) / (cos($lat) * cos($decl));
-        $cosH = max(-1.0, min(1.0, $cosH)); // clamp — hindari domain error di lintang ekstrem
+        $cosH = max(-1.0, min(1.0, $cosH)); // clamp, hindari domain error di lintang ekstrem
 
         return rad2deg(acos($cosH)) / 15.0;
     }

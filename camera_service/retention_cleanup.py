@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Retention Cleanup — REQ-F-044 (Image Retention Policy).
+Retention Cleanup: REQ-F-044 (Image Retention Policy).
 
 Dijalankan berkala lewat systemd timer (lihat systemd/jamsholat-retention.timer).
 Menghapus gambar motion_events yang:
   (a) lebih tua dari `image_retention_days` HARI (dibaca dari mosque_settings), ATAU
-  (b) storage terpakai sudah melewati `image_retention_storage_pct` persen —
+  (b) storage terpakai sudah melewati `image_retention_storage_pct` persen;
       dalam kasus ini hapus gambar TERLAMA dulu sampai di bawah ambang.
 Mana pun yang tercapai lebih dulu (sesuai deskripsi REQ-F-044: "N hari ATAU
 storage mendekati penuh").

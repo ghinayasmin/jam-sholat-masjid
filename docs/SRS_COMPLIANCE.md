@@ -7,10 +7,10 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 | Req ID | Judul | Status | Implementasi | Test |
 |---|---|---|---|---|
-| REQ-F-001 | Prayer Time Calculation | ✅ | `PrayerTimeCalculator.php` | `test_prayer_time_calculator.php` — divalidasi vs AlAdhan API |
+| REQ-F-001 | Prayer Time Calculation | ✅ | `PrayerTimeCalculator.php` | `test_prayer_time_calculator.php`, divalidasi vs AlAdhan API |
 | REQ-F-002 | Madzhab Selection | ✅ | `PrayerTimeCalculator.php` (shadow factor), `settings_location.php` | ✅ Asr Hanafi > Syafii terverifikasi |
 | REQ-F-003 | Location Offset | ✅ | `PrayerTimeCalculator.php`, `settings_location.php` | ✅ offset +5 menit terverifikasi di 6 waktu |
-| REQ-F-004 | Online Schedule Sync | ⚠️ | — | Tidak dipakai: jadwal selalu dari kalkulasi lokal yang sudah cocok dengan Kemenag (DECISIONS #19). Kelas `ScheduleSync` dan sakelarnya dihapus (DECISIONS #36, #38) |
+| REQ-F-004 | Online Schedule Sync | ⚠️ | - | Tidak dipakai: jadwal selalu dari kalkulasi lokal yang sudah cocok dengan Kemenag (DECISIONS #19). Kelas `ScheduleSync` dan sakelarnya dihapus (DECISIONS #36, #38) |
 | REQ-F-005 | Hijri Calendar Display | ✅ | `HijriConverter.php` | ✅ exact match vs referensi AlAdhan |
 | REQ-F-006 | Prayer Calculation Method | ✅ | Sudut Kemenag (Fajr 20°/Isha 18°), 100% lokal | ✅ |
 | REQ-F-007 | Hijri Date Rollover & Adjustment | ✅ | `display.js` (`hijriAfterMaghrib`), `ScheduleEngine::hijriFor()`, `admin/hijri.php` | ✅ **Diuji di Pi 3** (TC-JDW-005): tanggal berganti saat Maghrib, koreksi ±1 hari (DECISIONS #20) |
@@ -33,7 +33,7 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 | REQ-F-033 | Background Alarm Service | ⚠️ | `jamsholat-alarm.service` (bukan `.timer`, lihat `docs/DECISIONS.md` #7) | Deviasi terdokumentasi & beralasan |
 | REQ-F-034 | Subuh Adzan | ✅ | `alarm_service.py` (`alarm_audio_file`) | ✅ `test_alarm_service.py` (TC-ALM-004) |
 | REQ-F-040 | Continuous Monitoring | ✅ | `motion_detect.py` loop, Picamera2 (Camera V2 NoIR, CSI) | ✅ **Diuji di Pi 3:** layanan kamera membaca frame terus-menerus, gerakan tangan terdeteksi (DECISIONS #17) |
-| REQ-F-041 | Motion Detection | ✅ | `motion_detect.py` (`MotionDetector`, MOG2, zona abaikan, filter perubahan cahaya, konfirmasi 2 frame — DECISIONS #25) | ✅ 9 skenario frame sintetis teruji |
+| REQ-F-041 | Motion Detection | ✅ | `motion_detect.py` (`MotionDetector`, MOG2, zona abaikan, filter perubahan cahaya, konfirmasi 2 frame, DECISIONS #25) | ✅ 9 skenario frame sintetis teruji |
 | REQ-F-042 | Auto Image Capture | ✅ | `motion_detect.py` (`EventStore`) | ✅ file + DB row tersimpan, teruji |
 | REQ-F-043 | Background Camera Service | ✅ | `jamsholat-camera.service` | ✅ **Diuji di Pi 3:** berjalan sebagai layanan systemd, menyimpan foto 1280×960 saat ada gerakan |
 | REQ-F-044 | Image Retention Policy | ✅ | `retention_cleanup.py` | ✅ cleanup by age teruji; cleanup by storage% teruji logikanya (perlu disk sungguhan utk validasi penuh) |
@@ -68,6 +68,6 @@ Status per requirement, sesuai instruksi kerja STEP 9. Legenda:
 
 - **36 Functional Requirements (SRS v0.2)**: 34 ✅, 2 ⚠️, ditambah REQ-F-025/031 (iqomah) yang dikembalikan atas revisi dosen. REQ-F-004 sinkronisasi online belum dipanggil, REQ-F-033 deviasi arsitektur terdokumentasi.
 - **13/13 Non-Functional Requirements**: diimplementasikan. REQ-NF-100 terverifikasi di Raspberry Pi 3: 469 MB dari batas 700 MB.
-- **Tidak ada placeholder/dummy implementation** — setiap fitur yang diberi status ✅ punya kode kerja nyata dan sudah lolos test otomatis (58 assertion PHP+Python total, lihat `tests/`).
+- Setiap fitur berstatus ✅ sudah punya kode yang berjalan dan lolos uji otomatis di `tests/` (136 assertion PHP/JS dan 60 test Python), ditambah uji paket di CI untuk Windows dan Linux.
 - **Uji di perangkat asli (12 Okt 2026)**: Raspberry Pi 3 Model B v1.2, Raspberry Pi OS Lite 13 (Trixie) 32-bit, TV lewat HDMI (layar + speaker), Raspberry Pi Camera V2 NoIR (CSI). Login admin & 5 tab, ubah jam, speaker HDMI, adzan/murottal, kamera, dan RAM sudah diuji langsung. Belum diuji di perangkat: kotak masjid tanpa internet (sinkron jadwal offline) dan pemakaian berhari-hari.
 - Temuan yang hanya muncul di perangkat asli dan sudah diperbaiki: kamera CSI tidak terbaca lewat OpenCV (→ Picamera2), suara bawaan ke jack bukan HDMI (→ `set_audio_output.sh`), `mpg123` crash karena mencoba JACK (→ `-o alsa`), foto kamera tercatat UTC, cache CSS di kiosk, dan pemutar murottal yang meloncat surat saat HDMI masih dipakai proses lama.

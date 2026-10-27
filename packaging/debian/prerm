@@ -1,5 +1,5 @@
 #!/bin/bash
-# prerm — hentikan layanan sebelum paket dilepas atau diperbarui.
+# prerm: hentikan layanan sebelum paket dilepas atau diperbarui.
 set -e
 if [ -d /run/systemd/system ] && { [ "$1" = "remove" ] || [ "$1" = "upgrade" ]; }; then
     systemctl stop jamsholat-alarm.service jamsholat-camera.service jamsholat-retention.timer > /dev/null 2>&1 || true

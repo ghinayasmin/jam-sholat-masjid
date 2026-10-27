@@ -18,13 +18,13 @@ lihat `docs/DESIGN.md`.
 Sistem terdiri dari 3 komponen yang berjalan independen tapi berbagi satu
 database SQLite:
 
-1. **Aplikasi web (PHP)** — melayani tampilan jamaah (fullscreen, kiosk) dan
+1. **Aplikasi web (PHP)**: melayani tampilan jamaah (fullscreen, kiosk) dan
    panel admin (dilindungi login) untuk takmir mengelola pengaturan,
    publikasi, laporan keuangan, rekaman kamera, dan backup.
-2. **Layanan kamera (Python)** — mendeteksi gerakan lewat Raspberry Pi
+2. **Layanan kamera (Python)**: mendeteksi gerakan lewat Raspberry Pi
    Camera Module (Picamera2) atau webcam USB (OpenCV), lalu menyimpan
    gambar+metadata.
-3. **Layanan alarm (Python)** — memutar adzan (adzan Subuh terpisah) dan
+3. **Layanan alarm (Python)**: memutar adzan (adzan Subuh terpisah) dan
    iqomah tepat waktu (masing-masing bisa dimatikan dari panel), serta murottal yang diputar/dijeda takmir dari panel.
 
 ### Fitur utama
@@ -61,7 +61,7 @@ terpisah) dan komentar docblock di `src/Schedule/ScheduleEngine.php`,
 
 | Komponen | Teknologi |
 |---|---|
-| Backend web | PHP 8.x (tanpa framework/Composer — lihat `docs/DECISIONS.md`), PDO_SQLITE |
+| Backend web | PHP 8.x (tanpa framework/Composer, lihat `docs/DECISIONS.md`), PDO_SQLITE |
 | Web server | Apache 2 (`libapache2-mod-php`) |
 | Frontend | HTML/CSS/JavaScript vanilla (tanpa build step) |
 | Database | SQLite 3 (WAL mode) |
@@ -79,7 +79,7 @@ terpisah) dan komentar docblock di `src/Schedule/ScheduleEngine.php`,
   terminal.
 - Raspberry Pi Camera Module (CSI) atau webcam USB; speaker TV lewat HDMI
   atau speaker aktif lewat jack 3,5 mm; monitor/TV dengan HDMI.
-- Koneksi internet **hanya saat instalasi** (untuk `apt`/`pip`) — setelah
+- Koneksi internet **hanya saat instalasi** (untuk `apt`/`pip`), setelah
   itu opsional.
 
 ## 5. Installation
@@ -110,27 +110,27 @@ sudo reboot
 Salin dan sesuaikan dua file konfigurasi (dilakukan otomatis oleh
 `install.sh`, tapi bisa diedit manual):
 
-- `config/config.php` (dari `config/config.example.php`) — path
+- `config/config.php` (dari `config/config.example.php`): path
   penyimpanan, batas ukuran upload, base URL AlAdhan API, dsb. **Tidak
   berisi rahasia**, boleh dilihat siapa saja.
-- `config/.env` (dari `config/.env.example`) — untuk nilai rahasia bila
+- `config/.env` (dari `config/.env.example`): untuk nilai rahasia bila
   diperlukan di masa depan. Saat ini kosong: kredensial admin dibuat
   interaktif lewat `install.sh`, **tidak pernah** hardcoded di file.
 
 Pengaturan operasional sehari-hari (lokasi, madzhab, profil masjid, jarak
 adzan-iqomah, retensi gambar) diatur lewat **panel admin**, tersimpan di
-tabel `mosque_settings` — bukan file config.
+tabel `mosque_settings`, bukan file config.
 
 ## 7. Database Setup
 
-Skema: `database/schema.sql` (SQLite, 7 tabel — lihat komentar REQ di tiap
+Skema: `database/schema.sql` (SQLite, 7 tabel, lihat komentar REQ di tiap
 tabel). Dibuat otomatis oleh `install.sh`:
 
 ```bash
 sqlite3 storage/jamsholat.db < database/schema.sql
 ```
 
-Idempotent (`CREATE TABLE IF NOT EXISTS`) — aman dijalankan ulang.
+Idempotent (`CREATE TABLE IF NOT EXISTS`), aman dijalankan ulang.
 WAL mode diaktifkan otomatis oleh `src/Db/Database.php` saat runtime,
 supaya PHP dan Python (`motion_detect.py`) bisa mengakses file yang sama
 secara bersamaan.
@@ -200,7 +200,7 @@ python3 alarm_service/alarm_service.py
 ## 10. Running Tests
 
 ```bash
-# Unit test PHP (kalkulasi waktu sholat & Hijriyah — divalidasi vs AlAdhan API)
+# Unit test PHP (kalkulasi waktu sholat & Hijriyah, divalidasi vs AlAdhan API)
 php tests/unit/test_prayer_time_calculator.php
 
 # Integration test PHP (DB, repository, auth, backup/restore end-to-end)
@@ -217,8 +217,8 @@ Untuk melihat layar pengingat atau adzan tanpa menunggu waktu sholat, buka
 `display.php?jam=17:28` (jam disimulasikan; tanggal tetap hari ini).
 
 Semua test di atas **tidak butuh hardware fisik** (kamera/speaker/Raspberry
-Pi) — memakai frame sintetis dan mock audio player. Total 88 assertion PHP/JS
-dan 25 test Python, semua lulus. Test kamera Python butuh OpenCV
+Pi), memakai frame sintetis dan mock audio player. Total 136 assertion PHP/JS
+(55 integrasi, 32 jadwal, 49 layar) dan 60 test Python, semua lulus. Test kamera Python butuh OpenCV
 (`pip install opencv-python-headless "numpy<2"`).
 
 Hasil uji di Raspberry Pi 3 sungguhan (RAM 469/700 MB, jadwal cocok dengan
@@ -240,7 +240,7 @@ Kemenag, temuan dan perbaikannya) tercatat per requirement di
 7. Isi koordinat masjid di panel (Pengaturan → Lokasi). Jadwal dihitung dari
    titik ini.
 8. **Rekomendasi opsional** (di luar scope SRS): modul RTC (mis. DS3231)
-   untuk akurasi waktu offline jangka panjang — lihat `docs/DECISIONS.md` #9.
+   untuk akurasi waktu offline jangka panjang, lihat `docs/DECISIONS.md` #9.
 
 ## 12. Deployment
 
@@ -280,7 +280,7 @@ terima ke takmir) disusun terpisah sebagai dokumen tim.
 
 ## 14. Known Limitations
 
-Dikumpulkan dari `docs/DECISIONS.md` — ringkasan:
+Ringkasan dari `docs/DECISIONS.md`:
 
 1. **Hijri date** memakai algoritma tabular matematis, bisa berbeda ±1 hari
    dari keputusan sidang isbat. Takmir mengoreksinya di Pengaturan → Tanggal
@@ -289,13 +289,13 @@ Dikumpulkan dari `docs/DECISIONS.md` — ringkasan:
    pemadaman singkat (via `fake-hwclock`); pemadaman berkepanjangan tanpa
    internet bisa menyebabkan jam sedikit meleset sampai NTP sync berikutnya.
 3. **Deteksi kamera** hanya deteksi gerakan sederhana (background
-   subtraction) — bukan pengenalan wajah/penghitungan orang (memang di luar
+   subtraction), bukan pengenalan wajah/penghitungan orang (memang di luar
    scope SRS, lihat Appendix B).
 4. **Tanpa sinkron jadwal online** (REQ-F-004 tidak dipakai, DECISIONS #36).
    Jadwal dihitung lokal dengan ihtiyat Kemenag dan sudah tepat sama dengan
    jadwal resmi pada 79–95% hari (sisanya selisih 1 menit, DECISIONS #19).
    Selisih setempat bisa diatur di Koreksi jadwal.
-5. **Satu akun admin** per instalasi — tidak ada manajemen multi-user
+5. **Satu akun admin** per instalasi, tidak ada manajemen multi-user
    (lihat `docs/DECISIONS.md` #4).
 6. **File audio** (adzan/iqomah/murottal, ±1 GB) tidak masuk git. Sumber
    berlisensi bebas yang dipakai saat uji tercatat di
