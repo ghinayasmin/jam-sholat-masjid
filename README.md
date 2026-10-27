@@ -180,12 +180,11 @@ Detail rancangan: `docs/DECISIONS.md` #39, sumber paket: `packaging/`.
 ```bash
 cp config/config.example.php config/config.php
 sqlite3 storage/jamsholat.db < database/schema.sql
-php -r "require 'bootstrap.php'; (new App\Repository\AdminUserRepository())->create('admin', password_hash('test1234', PASSWORD_BCRYPT));"
 php -S localhost:8080 -t public
 ```
 
 Buka `http://localhost:8080/display.php` (tampilan jamaah) dan
-`http://localhost:8080/admin/login.php` (panel admin).
+`http://localhost:8080/admin/login.php` (panel admin, masuk dengan akun bawaan admin / 000).
 
 **Di Raspberry Pi (produksi):** otomatis berjalan via Apache + systemd
 setelah `install.sh` + reboot. Tidak perlu perintah manual.
