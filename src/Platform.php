@@ -42,6 +42,12 @@ final class Platform
         if ($httpHost !== null) {
             $candidates[] = (string) preg_replace('/:\d+$/', '', $httpHost);   // alamat di bilah browser
         }
+        // Alamat adapter yang dipakai ke jaringan luar didahulukan, supaya QR tidak
+        // menunjuk adapter virtual (VirtualBox 192.168.56.1, Hyper-V, WSL) di Windows.
+        $route = self::routeAddress();
+        if ($route !== null) {
+            $candidates[] = $route;
+        }
         if (PHP_OS_FAMILY === 'Windows') {
             $candidates = array_merge($candidates, gethostbynamel((string) gethostname()) ?: []);
         } else {
@@ -52,6 +58,22 @@ final class Platform
             return self::isPrivate($ip);
         });
         return array_values(array_unique($lan));
+    }
+
+    /**
+     * Alamat lokal yang dipilih sistem untuk rute default. Soket UDP yang di-"connect"
+     * tidak mengirim paket apa pun, jadi tetap aman tanpa internet; null bila tidak ada rute.
+     */
+    public static function routeAddress(): ?string
+    {
+        $sock = @stream_socket_client('udp://8.8.8.8:53', $errno, $errstr, 1);
+        if ($sock === false) {
+            return null;
+        }
+        $name = (string) stream_socket_get_name($sock, false);
+        fclose($sock);
+        $ip = (string) preg_replace('/:\d+$/', '', $name);
+        return self::isPrivate($ip) ? $ip : null;
     }
 
     /** 10.x.x.x, 172.16–31.x.x, atau 192.168.x.x (bukan 127.x atau 169.254.x). */
