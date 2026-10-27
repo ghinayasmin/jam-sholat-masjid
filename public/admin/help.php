@@ -31,9 +31,8 @@ require __DIR__ . '/_header.php';
 <details id="mulai" open>
     <summary>Langkah pertama</summary>
     <ol>
-        <li>Buka Pengaturan, lalu <a href="/admin/settings_location.php">Lokasi</a>. Isikan koordinat masjid. Koordinat dapat diperoleh dari Google Maps dengan menekan lama titik masjid, kemudian menyalin angka yang muncul. Tanpa langkah ini, jadwal sholat menggunakan lokasi Yogyakarta.</li>
-        <li>Buka Pengaturan, lalu <a href="/admin/mosque_profile.php">Profil &amp; foto masjid</a>. Isikan nama, alamat, dan foto masjid.</li>
-        <li>Buka <a href="/admin/account.php">Akun takmir</a>, lalu simpan kode pemulihan di tempat yang aman.</li>
+        <li>Ikuti <a href="/admin/welcome.php">Langkah awal</a>: isikan nama masjid, pilih kabupaten/kota masjid, lalu periksa suara adzan. Tanpa langkah ini, jadwal sholat menggunakan lokasi Yogyakarta.</li>
+        <li>Buka Pengaturan, lalu <a href="/admin/mosque_profile.php">Profil &amp; foto masjid</a> untuk menambahkan foto masjid.</li>
         <li>Pada Beranda, bagian Kondisi sistem, pastikan tertulis <b>Layanan adzan · Berjalan</b>.</li>
     </ol>
 </details>
@@ -56,6 +55,7 @@ require __DIR__ . '/_header.php';
     <ol>
         <li>Pada Beranda, lihat baris <b>Layanan adzan</b> di bagian Kondisi sistem. Apabila tertulis "Tidak berjalan", <?= $isPi ? 'nyalakan ulang Raspberry Pi dengan mencabut lalu memasang kembali kabel listriknya.' : 'pastikan komputer dalam keadaan menyala dan sudah masuk ke akun pengguna. Lihat juga bagian "Komputer menyala kembali setelah listrik padam".' ?></li>
         <li>Buka Pengaturan, lalu <a href="/admin/sound.php">Suara &amp; jeda iqomah</a>. Sakelar <b>Suara adzan</b> harus dalam keadaan menyala. Apabila sakelar dimatikan, adzan memang tidak diputar. Pengaturan ini disediakan bagi masjid yang adzannya dikumandangkan langsung oleh muadzin.</li>
+        <li>Pada halaman yang sama, tekan <b>Putar</b> pada baris Coba putar suara adzan. Awal suara adzan akan diputar selama 10 detik.</li>
         <li>Periksa speaker, meliputi kabel, tombol daya, dan pengatur volume pada speaker. Aplikasi menaikkan volume <?= $isPi ? 'perangkat' : 'komputer' ?> yang dimatikan atau terlalu kecil sebelum adzan, tetapi tidak dapat menyalakan speaker yang mati.</li>
         <?php if ($isPi): ?>
             <li>Suara dikeluarkan melalui HDMI (TV) atau lubang audio 3,5 mm. Teknisi dapat memindahkan keluaran suara dengan perintah <code>sudo bash scripts/set_audio_output.sh</code>.</li>

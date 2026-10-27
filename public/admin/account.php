@@ -56,6 +56,8 @@ require __DIR__ . '/_header.php';
 
 <div class="card"><div class="row ctl"><span class="k">Nama pengguna</span><span class="v"><?= Format::e($user['username'] ?? '-') ?></span></div></div>
 
+<div class="note" style="margin-top:12px">Bila lupa kata sandi, kata sandi dapat dikembalikan ke kata sandi bawaan dari perangkat tempat aplikasi ini terpasang. Caranya ada di halaman <a href="/admin/help.php#sandi">Panduan</a>.</div>
+
 <div class="label" style="margin-top:8px">Ganti kata sandi</div>
 <form method="post" class="stack">
     <?= Csrf::field() ?>
@@ -75,8 +77,6 @@ require __DIR__ . '/_header.php';
     </div>
     <div class="foot"><button type="submit" class="btn">Ganti kata sandi</button></div>
 </form>
-
-<div class="note" style="margin-top:16px">Bila lupa kata sandi, kata sandi dapat dikembalikan ke kata sandi bawaan dari perangkat tempat aplikasi ini terpasang. Caranya ada di halaman <a href="/admin/help.php#sandi">Panduan</a>.</div>
 
 
 <?php require __DIR__ . '/_footer.php'; ?>

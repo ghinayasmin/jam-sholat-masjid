@@ -58,6 +58,7 @@ require __DIR__ . '/_header.php';
         <div class="row solo"><span class="k">Adzan<small>Rekaman adzan Masjidil Haram dari Internet Archive, ditandai CC0 oleh pengunggahnya.</small></span></div>
         <div class="row solo"><span class="k">Iqomah<small>Syaikh Abdul Karim Al-Makki (gaya Madinah), dari Internet Archive, koleksi "IQOMAH" (archive.org/details/IQOMAH). Pengunggah tidak mencantumkan lisensi.</small></span></div>
         <div class="row solo"><span class="k">Murottal<small>Bacaan Aaqib Azeez dari Wikimedia Commons, lisensi CC0 dan CC BY-SA 4.0, dikompres ke MP3 64 kbps. Sumber dan lisensi tiap surat: <a href="/assets/audio/CREDITS.txt" target="_blank" rel="noopener">daftar sumber audio</a>.</small></span></div>
+        <div class="row solo"><span class="k">Daftar kabupaten/kota<small>Nama dan koordinat dari GeoNames (geonames.org), lisensi CC BY 4.0.</small></span></div>
         <div class="row solo"><span class="k">Huruf<small>Plus Jakarta Sans dan Reem Kufi, SIL Open Font License.</small></span></div>
     </div>
 </section>

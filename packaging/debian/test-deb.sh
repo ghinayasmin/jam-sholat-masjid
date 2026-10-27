@@ -52,6 +52,12 @@ T=$(csrf http://localhost/admin/change_password.php)
 curl -s -c $J -b $J -o /dev/null -d "csrf_token=$T&new_password=rahasia123&confirm_password=rahasia123" http://localhost/admin/change_password.php
 code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' http://localhost/admin/dashboard.php)
 [ "$code" = 200 ] && pass "kata sandi bawaan diganti, panel takmir terbuka" || fail "panel HTTP $code"
+out=$(curl -s http://localhost/assets/data/kabupaten_kota.json)
+grep -q '"Kabupaten Sleman"' <<< "$out" && pass "daftar kabupaten/kota untuk pilihan lokasi tersedia" || fail "kabupaten_kota.json"
+for page in welcome sound_test; do
+    code=$(curl -s -c $J -b $J -o /dev/null -w '%{http_code}' http://localhost/admin/$page.php)
+    case "$code" in 200|302) pass "halaman $page.php terbuka ($code)" ;; *) fail "$page.php HTTP $code" ;; esac
+done
 
 # Ikon & menu aplikasi (Layar Jamaah, Panel Takmir).
 for f in /usr/share/icons/hicolor/256x256/apps/jamsholat.png /usr/share/icons/hicolor/scalable/apps/jamsholat.svg \

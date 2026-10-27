@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     -- 0 sampai takmir menyimpan Pengaturan → Lokasi; selama itu jadwal memakai lokasi bawaan
     -- (Yogyakarta) dan panel serta layar mengingatkan (temuan uji v1.1.1).
     location_confirmed              INTEGER NOT NULL DEFAULT 0 CHECK (location_confirmed IN (0,1)),
+    setup_done                      INTEGER NOT NULL DEFAULT 0 CHECK (setup_done IN (0,1)),  -- Langkah awal selesai/dilewati (#42)
     -- Murottal: diputar/dijeda takmir dari panel; layanan alarm menulis surat yang sedang diputar.
     murottal_enabled                INTEGER NOT NULL DEFAULT 0 CHECK (murottal_enabled IN (0,1)),
     murottal_now_playing            TEXT NOT NULL DEFAULT '',
@@ -51,6 +52,7 @@ CREATE TABLE IF NOT EXISTS mosque_settings (
     -- terakhir, untuk "Layanan adzan" di Beranda (#40).
     alarm_heartbeat                 INTEGER NOT NULL DEFAULT 0,
     alarm_audio_status              TEXT NOT NULL DEFAULT '',
+    sound_test_request              INTEGER NOT NULL DEFAULT 0, -- "Coba putar suara" di panel (detik Unix, #43)
     -- Suara adzan/iqomah dari speaker. Bisa dimatikan bila dikumandangkan langsung oleh muadzin;
     -- Instalasi baru: iqomah bawaan nyala (revisi dosen, DECISIONS.md #30).
     adzan_sound_enabled             INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1)),

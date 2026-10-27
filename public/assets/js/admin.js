@@ -125,6 +125,84 @@
         });
     });
 
+    // Pilih kabupaten/kota masjid (#42): mengisi nama lokasi dan koordinat. Daftar baru
+    // dimuat saat kolom dipakai; Enter memilih hasil teratas, bukan mengirim formulir.
+    const city = document.querySelector('[data-city-search]');
+    if (city) {
+        const form = city.form;
+        const results = form.querySelector('[data-city-results]');
+        const empty = form.querySelector('[data-city-empty]');
+        const chosen = form.querySelector('[data-city-chosen]');
+        const bare = (n) => plain(n.replace(/^(Kabupaten|Kota)( Administrasi)? /, ''));
+        let cities = null;
+        const load = async () => {
+            if (cities === null) {
+                cities = [];
+                try {
+                    cities = await (await fetch(city.dataset.citySearch)).json();
+                } catch (err) {
+                    cities = null; // coba lagi saat mengetik berikutnya
+                }
+            }
+            return cities || [];
+        };
+        const pick = (c) => {
+            const name = `${c.n}, ${c.p}`.slice(0, 60);
+            form.elements.location_name.value = name;
+            form.elements.latitude.value = c.la;
+            form.elements.longitude.value = c.lo;
+            chosen.querySelector('[data-city-name]').textContent = name;
+            chosen.hidden = false;
+            city.value = '';
+            results.hidden = true;
+            empty.hidden = true;
+        };
+        let shown = [];
+        const search = async () => {
+            const q = plain(city.value);
+            const list = q.length < 2 ? [] : await load();
+            // Nama yang diawali kata yang diketik tampil lebih dulu ("bantul" sebelum "...bantul...").
+            shown = list.filter((c) => plain(`${c.n} ${c.p}`).includes(q))
+                .sort((a, b) => (bare(b.n).startsWith(q) ? 1 : 0) - (bare(a.n).startsWith(q) ? 1 : 0))
+                .slice(0, 8);
+            results.replaceChildren(...shown.map((c) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'row ctl';
+                const k = document.createElement('span');
+                k.className = 'k';
+                k.textContent = c.n;
+                const small = document.createElement('small');
+                small.textContent = c.p;
+                k.append(small);
+                const v = document.createElement('span');
+                v.className = 'v';
+                v.textContent = 'Pilih';
+                b.append(k, v);
+                b.addEventListener('click', () => pick(c));
+                return b;
+            }));
+            results.hidden = shown.length === 0;
+            empty.hidden = q.length < 2 || shown.length > 0;
+        };
+        city.addEventListener('input', search);
+        city.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            if (shown.length > 0) pick(shown[0]);
+        });
+        // "-7.68, 110.32" dari Google Maps ditempel sekaligus di kolom garis lintang.
+        const lat = form.elements.latitude;
+        lat.addEventListener('input', () => {
+            const m = lat.value.match(/^\s*(-?\d{1,3}\.\d+)\s*[,;]?\s+(-?\d{1,3}\.\d+)\s*$/) ||
+                lat.value.match(/^\s*(-?\d{1,3}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/);
+            if (m) {
+                lat.value = m[1];
+                form.elements.longitude.value = m[2];
+            }
+        });
+    }
+
     // Pemutar murottal (#40): progres berjalan tiap detik, dan keadaan dari layanan
     // alarm (pindah surat, jeda, jendela diam) dibaca ulang tiap 3 detik.
     const live = document.querySelector('[data-murottal-live]');

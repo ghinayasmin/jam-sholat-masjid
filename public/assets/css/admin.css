@@ -376,3 +376,21 @@ button.row { width: 100%; background: none; border: 0; font: inherit; text-align
 .aside { margin: 0; padding-left: 4px; font-size: 13px; color: var(--muted); }
 .aside.tight { margin-top: -8px; }
 .aside.spaced { margin-top: 8px; }
+
+/* Lokasi masjid (#42): hasil cari kabupaten/kota dan koordinat manual. */
+.city-results { margin-top: -6px; }
+.city-results .v { color: var(--primary); font-weight: 700; }
+details.manual { background: var(--surface); border-radius: var(--radius); box-shadow: inset 0 0 0 1px var(--line); padding: 0 16px; }
+details.manual summary { font-weight: 700; font-size: 15px; padding: 14px 0; cursor: pointer; }
+.manual-body { display: grid; gap: 14px; padding: 14px 0 16px; }
+details.manual[open] summary { border-bottom: 1px solid var(--line); }
+
+/* Langkah awal (#42) */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
+.steps span { height: 6px; border-radius: 3px; background: var(--line); }
+.steps span.done, .steps span.now { background: var(--primary); }
+.step-of { margin: 12px 0 2px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.step-title { margin: 0 0 6px; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+.step-lead { margin: 0 0 16px; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.skip { margin-top: 20px; text-align: center; }
+.skip .link { background: none; border: 0; padding: 10px; font: inherit; font-size: 14px; color: var(--muted); text-decoration: underline; cursor: pointer; }

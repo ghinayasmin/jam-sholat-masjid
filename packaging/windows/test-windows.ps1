@@ -69,6 +69,10 @@ $form = @{ csrf_token = $token; new_password = 'rahasia123'; confirm_password = 
 $null = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/change_password.php" -Method Post -Body $form
 $dash = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/dashboard.php"
 if ($dash.Content -match "Assalamu") { Pass 'kata sandi bawaan diganti, panel takmir terbuka' } else { Fail 'panel tidak terbuka' }
+$cities = Invoke-WebRequest -UseBasicParsing -Uri "$B/assets/data/kabupaten_kota.json"
+if ($cities.Content -match 'Kabupaten Sleman') { Pass 'daftar kabupaten/kota untuk pilihan lokasi tersedia' } else { Fail 'kabupaten_kota.json' }
+$w = Invoke-WebRequest -UseBasicParsing -WebSession $s -Uri "$B/admin/welcome.php"
+if ($w.Content -match 'Langkah 1 dari 3') { Pass 'halaman Langkah awal terbuka' } else { Fail 'Langkah awal' }
 
 # Unggah foto (GD + batas 20 MB) lewat profil masjid.
 Add-Type -AssemblyName System.Drawing

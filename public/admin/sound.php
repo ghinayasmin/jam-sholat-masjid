@@ -69,6 +69,13 @@ require __DIR__ . '/_header.php';
     <div class="flash flash-error" role="alert"><?= Format::e($error) ?></div>
 <?php endif; ?>
 
+<section class="group" aria-labelledby="test-label">
+    <div class="label" id="test-label">Periksa speaker</div>
+    <div class="card">
+        <form method="post" action="/admin/sound_test.php" class="row ctl wrap"><?= Csrf::field() ?><input type="hidden" name="back" value="sound"><span class="k">Coba putar suara adzan<small>Memutar awal suara adzan selama 10 detik untuk memeriksa speaker.</small></span><button type="submit" class="btn small">Putar</button></form>
+    </div>
+</section>
+
 <form method="post" class="stack">
     <?= Csrf::field() ?>
 

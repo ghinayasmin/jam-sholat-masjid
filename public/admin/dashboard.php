@@ -106,7 +106,13 @@ $activeTab = 'home';
 require __DIR__ . '/_header.php';
 ?>
 
-<?php if ((int) $settings['location_confirmed'] !== 1): ?>
+<?php if ((int) $settings['setup_done'] !== 1): ?>
+    <a class="setup-card" href="/admin/welcome.php">
+        <b>Langkah awal belum selesai</b>
+        <span>Atur nama masjid, lokasi, dan suara adzan agar layar jamaah siap digunakan.</span>
+        <span class="go">Lanjutkan</span>
+    </a>
+<?php elseif ((int) $settings['location_confirmed'] !== 1): ?>
     <a class="setup-card" href="/admin/settings_location.php">
         <b>Lokasi masjid belum diatur</b>
         <span>Jadwal sholat dan adzan masih menggunakan lokasi bawaan (Yogyakarta). Silakan atur lokasi masjid agar waktu sholat sesuai.</span>
@@ -175,6 +181,7 @@ require __DIR__ . '/_header.php';
         <?php else: ?>
             <div class="row wrap"><span class="dot"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v ok"><?= $alarmRow[3] ?></span></div>
         <?php endif; ?>
+        <form method="post" action="/admin/sound_test.php" class="row wrap"><?= Csrf::field() ?><input type="hidden" name="back" value="home"><span></span><span class="k">Coba putar suara adzan<small>Memutar awal suara adzan selama 10 detik untuk memeriksa speaker.</small></span><button type="submit" class="btn small">Putar</button></form>
         <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
         <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
     </div>

@@ -55,6 +55,10 @@ IQOMAH_LATE_TOLERANCE_MIN = 3
 DEFAULT_IQOMAH_MINUTES = {"fajr": 20, "dhuhr": 10, "asr": 10, "maghrib": 10, "isha": 10}
 # Jumat: khutbah + sholat Jumat jauh lebih lama; murottal jangan menyela khutbah.
 QUIET_WINDOW_AFTER_FRIDAY_DHUHR_MIN = 60
+# Tombol "Coba putar suara" di panel (DECISIONS.md #43): potongan awal adzan, dan
+# permintaan yang lebih tua dari ini diabaikan (mis. tertahan adzan sungguhan).
+SOUND_TEST_SECONDS = 10
+SOUND_TEST_MAX_AGE_SECONDS = 60
 
 logging.basicConfig(
     level=logging.INFO,
@@ -212,6 +216,24 @@ class AudioPlayer:
         proc.wait()
         return True
 
+    def play_for(self, path: str, seconds: float) -> bool:
+        """Putar paling lama `seconds` detik lalu hentikan (uji suara dari panel)."""
+        cmd = self._player_for(path)
+        if cmd is None:
+            logger.warning("Tidak ada player audio yang cocok untuk %s (file/hardware tidak ditemukan).", path)
+            return False
+        proc = self._runner(cmd)
+        try:
+            proc.wait(timeout=seconds)
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            try:
+                proc.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+        return True
+
     def start_background(self, path: str, offset_seconds: float = 0) -> None:
         """offset_seconds > 0: mulai dari detik itu (mpg123 -k), untuk murottal yang dijeda."""
         self.stop_background()
@@ -366,6 +388,18 @@ class MurottalState:
             return ""
         return (row[0] or "") if row else ""
 
+    def sound_test_request(self) -> int:
+        """Waktu (detik Unix) takmir menekan "Coba putar suara", 0 bila belum pernah."""
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=5)
+            try:
+                row = conn.execute("SELECT sound_test_request FROM mosque_settings WHERE id = 1").fetchone()
+            finally:
+                conn.close()
+        except sqlite3.Error:
+            return 0  # kolom belum dimigrasi
+        return int(row[0] or 0) if row else 0
+
     def set_alarm_playing(self, value: str) -> None:
         """Catat adzan/iqomah yang sedang diputar ("adzan|maghrib", '' = tidak ada), supaya
         layar adzan bertahan sampai rekaman selesai (DECISIONS.md #32)."""
@@ -474,6 +508,7 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
         murottal_index = names.index(chosen)
     murottal_started = 0.0
     murottal_offset = 0.0     # detik surat saat pemutar terakhir dimulai
+    last_sound_test = state.sound_test_request()  # permintaan lama tidak diputar setelah restart
     position_saved = 0.0
 
     def current_track() -> str:
@@ -543,6 +578,20 @@ def run_loop(db_path: str = DEFAULT_DB_PATH) -> None:
                         state.set_alarm_playing("")
                 else:
                     logger.warning("File audio tidak ditemukan: %s", audio_file)
+
+            # Coba putar suara dari panel (#43): murottal dijeda dulu, lalu berlanjut sendiri.
+            sound_test = state.sound_test_request()
+            if sound_test != last_sound_test:
+                last_sound_test = sound_test
+                if 0 <= time.time() - sound_test < SOUND_TEST_MAX_AGE_SECONDS:
+                    stop_murottal()
+                    check_volume("uji suara")
+                    audio_file = alarm_audio_file("adzan", "dhuhr")
+                    if os.path.isfile(audio_file):
+                        logger.info("Uji suara dari panel: %s selama %d detik", audio_file, SOUND_TEST_SECONDS)
+                        player.play_for(audio_file, SOUND_TEST_SECONDS)
+                    else:
+                        logger.warning("Uji suara: file audio tidak ditemukan: %s", audio_file)
 
             # Surat selesai dengan sendirinya: lanjut ke surat berikutnya. Kalau dihentikan
             # (Jeda, jendela diam, adzan), indeks tetap sehingga surat yang sama diulang.

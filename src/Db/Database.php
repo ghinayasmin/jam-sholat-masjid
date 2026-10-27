@@ -68,6 +68,7 @@ final class Database
             'alarm_now_playing' => "TEXT NOT NULL DEFAULT ''",
             'alarm_heartbeat' => 'INTEGER NOT NULL DEFAULT 0',
             'alarm_audio_status' => "TEXT NOT NULL DEFAULT ''",
+            'sound_test_request' => 'INTEGER NOT NULL DEFAULT 0',
             'adzan_sound_enabled' => 'INTEGER NOT NULL DEFAULT 1 CHECK (adzan_sound_enabled IN (0,1))',
             'iqomah_sound_enabled' => 'INTEGER NOT NULL DEFAULT 0 CHECK (iqomah_sound_enabled IN (0,1))',
             'hijri_offset_days' => 'INTEGER NOT NULL DEFAULT 0 CHECK (hijri_offset_days BETWEEN -2 AND 2)',
@@ -87,6 +88,8 @@ final class Database
             'adjust_isha_minutes' => 'INTEGER NOT NULL DEFAULT 0',
             // Database lama sudah dipakai, jadi lokasinya dianggap sudah diatur (instalasi baru: 0).
             'location_confirmed' => 'INTEGER NOT NULL DEFAULT 1 CHECK (location_confirmed IN (0,1))',
+            // Sama: instalasi lama tidak perlu Langkah awal (#42).
+            'setup_done' => 'INTEGER NOT NULL DEFAULT 1 CHECK (setup_done IN (0,1))',
         ],
         'publications' => [
             'starts_on' => 'TEXT',

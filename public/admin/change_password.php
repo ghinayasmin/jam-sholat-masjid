@@ -35,7 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         (new AdminUserRepository())->updatePasswordHash((int) $_SESSION['admin_id'], $hash);
         $auth->passwordChanged($hash);
         $_SESSION['flash_success'] = 'Kata sandi berhasil diganti.';
-        header('Location: /admin/dashboard.php');
+        // Instalasi baru: lanjut ke Langkah awal (#42).
+        $setupDone = (int) (new \App\Repository\SettingsRepository())->get()['setup_done'] === 1;
+        header('Location: ' . ($setupDone ? '/admin/dashboard.php' : '/admin/welcome.php'));
         exit;
     }
 }

@@ -7,6 +7,7 @@ sungguhan (AudioPlayer di-inject runner palsu). Jalankan dengan:
 import datetime
 import os
 import sys
+import subprocess
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'alarm_service'))
@@ -160,6 +161,50 @@ class TestAudioPlayer(unittest.TestCase):
         first_call_count = len(self.calls)
         self.player.start_background("/tmp/murottal2.mp3")
         self.assertEqual(len(self.calls), first_call_count + 1)
+
+
+class TestSoundTest(unittest.TestCase):
+    """Tombol "Coba putar suara" di panel (DECISIONS.md #43)."""
+
+    class SlowProcess:
+        def __init__(self):
+            self.terminated = False
+
+        def wait(self, timeout=None):
+            if not self.terminated and timeout is not None:
+                raise subprocess.TimeoutExpired("dummy-player", timeout)
+
+        def terminate(self):
+            self.terminated = True
+
+    def test_play_for_stops_after_the_given_seconds(self):
+        proc = self.SlowProcess()
+        player = AudioPlayer(runner=lambda cmd: proc)
+        player._player_for = lambda path: ["dummy-player", path]
+        self.assertTrue(player.play_for("/tmp/adzan.mp3", 10))
+        self.assertTrue(proc.terminated)
+
+    def test_play_for_without_player_reports_false(self):
+        player = AudioPlayer(runner=lambda cmd: self.fail("tidak boleh dijalankan"))
+        player._player_for = lambda path: None
+        self.assertFalse(player.play_for("/tmp/adzan.mp3", 10))
+
+    def test_state_reads_request_and_tolerates_old_database(self):
+        import sqlite3
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            db = os.path.join(d, "t.db")
+            conn = sqlite3.connect(db)
+            conn.execute("CREATE TABLE mosque_settings (id INTEGER PRIMARY KEY)")
+            conn.execute("INSERT INTO mosque_settings VALUES (1)")
+            conn.commit()
+            state = MurottalState(db)
+            self.assertEqual(state.sound_test_request(), 0)  # kolom belum ada
+            conn.execute("ALTER TABLE mosque_settings ADD COLUMN sound_test_request INTEGER NOT NULL DEFAULT 0")
+            conn.execute("UPDATE mosque_settings SET sound_test_request = 1761500000")
+            conn.commit()
+            self.assertEqual(state.sound_test_request(), 1761500000)
+            conn.close()
 
 
 class TestMurottalResume(unittest.TestCase):
