@@ -63,7 +63,7 @@ require __DIR__ . '/_header.php';
         </select>
     </div>
 
-    <p class="aside">Untuk menggeser jam adzan beberapa menit, pakai Pengaturan → Koreksi jadwal.</p>
+    <p class="aside">Untuk menggeser jam adzan beberapa menit, gunakan Pengaturan → Geser waktu adzan.</p>
 
     <div class="foot"><button type="submit" class="btn">Simpan lokasi</button></div>
 </form>

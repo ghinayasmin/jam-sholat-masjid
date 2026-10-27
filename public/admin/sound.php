@@ -100,14 +100,14 @@ require __DIR__ . '/_header.php';
         <div class="card" style="margin-top:8px">
             <?php foreach ($prayers as $key => $name): ?>
             <div class="row ctl">
-                <label class="k" for="iqomah_<?= $key ?>_minutes"><?= $name ?><small><?= $key === 'dhuhr' ? 'Menit setelah adzan · Jumat: setelah khutbah' : 'Menit setelah adzan · bawaan ' . $defaults[$key] ?></small></label>
+                <label class="k" for="iqomah_<?= $key ?>_minutes"><?= $name ?><small>Menit setelah adzan</small></label>
                 <span class="stepper"><button type="button" data-step="-1" aria-label="Kurangi">−</button><input type="number" id="iqomah_<?= $key ?>_minutes" name="iqomah_<?= $key ?>_minutes" min="5" max="60" inputmode="numeric" value="<?= $minutes[$key] ?>"><button type="button" data-step="1" aria-label="Tambah">+</button></span>
             </div>
             <?php endforeach; ?>
         </div>
     </section>
 
-    <div class="note">Matikan bila adzan atau iqomah dikumandangkan langsung oleh muadzin. Layar jamaah tetap menampilkan waktu adzan, dan murottal tetap berhenti sampai sholat selesai. Hari Jumat, iqomah Dzuhur tidak dibunyikan otomatis karena dikumandangkan setelah khutbah.</div>
+    <div class="note">Matikan bila adzan atau iqomah dikumandangkan langsung oleh muadzin. Layar jamaah tetap menampilkan waktu adzan, dan murottal tetap berhenti sampai sholat selesai. Hari Jumat, iqomah Dzuhur tidak dibunyikan otomatis karena dikumandangkan setelah khutbah. Jeda bawaan adalah 20 menit untuk Subuh dan 10 menit untuk waktu sholat lainnya.</div>
     <div class="foot"><button type="submit" class="btn">Simpan</button></div>
 </form>
 

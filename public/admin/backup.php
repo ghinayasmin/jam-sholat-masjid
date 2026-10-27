@@ -106,7 +106,7 @@ require __DIR__ . '/_header.php';
         <input type="hidden" name="action" value="restore">
         <div class="note warn">Memulihkan akan <b>menimpa</b> pengaturan, catatan kas, dan pengumuman yang ada sekarang.</div>
         <div class="field">
-            <label class="field-label" for="backup_file">File cadangan (.json)</label>
+            <label class="field-label" for="backup_file">File cadangan</label>
             <input type="file" id="backup_file" name="backup_file" accept="application/json,.json" required class="input">
         </div>
         <button type="submit" class="btn danger">Pulihkan data</button>

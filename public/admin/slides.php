@@ -24,15 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $show = filter_input(INPUT_POST, 'poster_show_seconds', FILTER_VALIDATE_INT);
 
     if ($gap === false || $gap === null || $gap < 5 || $gap > 600) {
-        $errors[] = 'Jeda antar slide harus antara 5 dan 600 detik.';
+        $errors[] = 'Lama layar jadwal harus antara 5 dan 600 detik.';
     }
     if ($show === false || $show === null || $show < 5 || $show > 120) {
-        $errors[] = 'Lama slide tampil harus antara 5 dan 120 detik.';
+        $errors[] = 'Lama poster tampil harus antara 5 dan 120 detik.';
     }
 
     if ($errors === []) {
         $settingsRepo->update(['poster_gap_seconds' => $gap, 'poster_show_seconds' => $show]);
-        $_SESSION['flash_success'] = "Tersimpan: slide tampil $show detik, lalu jam tampil $gap detik.";
+        $_SESSION['flash_success'] = "Tersimpan. Setiap poster tampil $show detik, lalu layar jadwal tampil $gap detik sebelum poster berikutnya.";
         header('Location: /admin/settings.php');
         exit;
     }
@@ -51,7 +51,7 @@ if ($s['mosque_photo'] !== '') {
     $inRotation[] = 'foto masjid';
 }
 
-$pageTitle = 'Pergantian slide';
+$pageTitle = 'Pergantian poster';
 $backHref = '/admin/settings.php';
 $backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';
@@ -66,18 +66,18 @@ require __DIR__ . '/_header.php';
 
     <div class="card">
         <div class="row ctl">
-            <label class="k" for="poster_show_seconds">Lama slide tampil<small>Detik, bawaan 15</small></label>
+            <label class="k" for="poster_show_seconds">Lama poster tampil<small>Dalam detik. Bawaan 15.</small></label>
             <span class="stepper"><button type="button" data-step="-5" aria-label="Kurangi 5">−</button><input type="number" id="poster_show_seconds" name="poster_show_seconds" min="5" max="120" inputmode="numeric" value="<?= (int) $v['show'] ?>"><button type="button" data-step="5" aria-label="Tambah 5">+</button></span>
         </div>
         <div class="row ctl">
-            <label class="k" for="poster_gap_seconds">Jeda antar slide<small>Detik jam tampil di antara slide, bawaan 15</small></label>
+            <label class="k" for="poster_gap_seconds">Lama layar jadwal tampil di antara poster<small>Dalam detik. Bawaan 15.</small></label>
             <span class="stepper"><button type="button" data-step="-5" aria-label="Kurangi 5">−</button><input type="number" id="poster_gap_seconds" name="poster_gap_seconds" min="5" max="600" inputmode="numeric" value="<?= (int) $v['gap'] ?>"><button type="button" data-step="5" aria-label="Tambah 5">+</button></span>
         </div>
     </div>
 
     <p class="aside">
         Yang bergantian sekarang: <?= Format::e(implode(', ', $inRotation)) ?>.
-        Slide tidak muncul saat pengingat adzan dan layar adzan tampil.
+        Poster tidak muncul saat pengingat adzan dan layar adzan tampil.
     </p>
 
     <div class="foot"><button type="submit" class="btn">Simpan</button></div>

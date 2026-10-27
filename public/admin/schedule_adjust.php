@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $engine->invalidateCache();
         $changed = array_filter($fields, static fn (int $v): bool => $v !== 0);
         $_SESSION['flash_success'] = $changed === []
-            ? 'Jadwal sholat kembali sesuai hitungan, tanpa koreksi.'
-            : 'Koreksi jadwal tersimpan. Layar jamaah dan adzan memakai jadwal baru dalam 1 menit.';
+            ? 'Jadwal sholat kembali sesuai hitungan, tanpa pergeseran.'
+            : 'Pergeseran waktu adzan tersimpan. Layar jamaah dan adzan memakai jadwal baru dalam 1 menit.';
         header('Location: /admin/settings.php');
         exit;
     }
@@ -61,7 +61,7 @@ foreach ($prayers as $key => $name) {
     $adjust[$key] = (int) ($_POST["adjust_{$key}_minutes"] ?? $s["adjust_{$key}_minutes"] ?? 0);
 }
 
-$pageTitle = 'Koreksi jadwal';
+$pageTitle = 'Geser waktu adzan';
 $backHref = '/admin/settings.php';
 $backLabel = 'Pengaturan';
 require __DIR__ . '/_header.php';

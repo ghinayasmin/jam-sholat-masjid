@@ -67,7 +67,7 @@ $murottalStatus = \App\Murottal::status($settings, $schedule, $nowMinutes, $isFr
 
 // Kondisi sistem (DECISIONS.md #36): jam perangkat.
 $clockOk = \App\SystemClock::isTrusted();
-// Layanan adzan (DECISIONS.md #40): tanda hidup ditulis tiap menit; adzan Subuh yang
+// Pemutar adzan (DECISIONS.md #40, dulu "Layanan adzan"): tanda hidup ditulis tiap menit; adzan Subuh yang
 // panjang menahan loop beberapa menit, jadi batasnya 10 menit.
 $beat = (int) $settings['alarm_heartbeat'];
 $beatAge = time() - $beat;
@@ -88,12 +88,12 @@ if (preg_match('/^normal \((\d+)%\)/', $audioStatus, $m)) {
     $volumeNote = ' Volume tidak dapat diperiksa.';
 }
 if ($beat === 0) {
-    $alarmRow = ['warn', 'Belum berjalan', 'Pada komputer Windows atau Linux, layanan ini berjalan setelah komputer masuk ke akun pengguna.', 'Cek'];
+    $alarmRow = ['warn', 'Belum aktif', 'Pada komputer Windows atau Linux, pemutar adzan aktif setelah komputer masuk ke akun pengguna.', 'Cek'];
 } elseif ($beatAge > 600) {
-    $alarmRow = ['warn', 'Tidak berjalan sejak ' . gmdate('H.i', $beat + LocalTime::offsetSeconds()),
+    $alarmRow = ['warn', 'Tidak aktif sejak pukul ' . gmdate('H.i', $beat + LocalTime::offsetSeconds()),
         'Adzan tidak akan terdengar. Pastikan komputer dalam keadaan menyala dan sudah masuk ke akun pengguna.', 'Cek'];
 } else {
-    $alarmRow = ['', 'Berjalan', 'Adzan dan iqomah siap diputar.' . $volumeNote, 'Aktif'];
+    $alarmRow = ['', 'Siap', 'Adzan dan iqomah siap diputar.' . $volumeNote, 'Aktif'];
 }
 $shifts = (int) $settings['location_offset_minutes'] !== 0;
 foreach (ScheduleEngine::ADJUSTABLE as $key) {
@@ -167,7 +167,7 @@ require __DIR__ . '/_header.php';
     <div class="tiles">
         <a class="tile" href="/admin/publications_add.php"><?= Icon::svg('announce') ?><div><b>Pasang pengumuman</b><small><?= $showingCount ?> sedang tampil</small></div></a>
         <a class="tile" href="/admin/financial_add.php?type=masuk"><?= Icon::svg('cash') ?><div><b>Catat kas</b><small>Saldo <?= Format::e(Format::rupiahShort($balance)) ?></small></div></a>
-        <a class="tile" href="/admin/schedule_adjust.php"><?= Icon::svg('bell') ?><div><b>Koreksi jadwal</b><small><?= $shifts ? 'Ada koreksi menit' : 'Sesuai hitungan' ?></small></div></a>
+        <a class="tile" href="/admin/schedule_adjust.php"><?= Icon::svg('bell') ?><div><b>Geser waktu adzan</b><small><?= $shifts ? 'Ada pergeseran menit' : 'Sesuai hitungan' ?></small></div></a>
         <a class="tile" href="/admin/camera.php?date=<?= $today ?>"><?= Icon::svg('camera') ?><div><b>Rekaman kamera</b><small><?= $motionToday ?> gerakan hari ini</small></div></a>
     </div>
 </section>
@@ -177,13 +177,13 @@ require __DIR__ . '/_header.php';
     <div class="card">
         <a class="row" href="/display.php" target="_blank" rel="noopener"><span class="dot"></span><span class="k">Layar jamaah<small>Ketuk untuk melihat tampilannya</small></span><span class="v ok">Buka</span></a>
         <?php if ($alarmRow[0] !== ''): // bermasalah: menaut ke Panduan "Adzan tidak berbunyi" ?>
-            <a class="row wrap" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot warn"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v"><?= $alarmRow[3] ?></span></a>
+            <a class="row wrap" href="/admin/help.php#adzan-tidak-bunyi"><span class="dot warn"></span><span class="k">Pemutar adzan: <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v"><?= $alarmRow[3] ?></span></a>
         <?php else: ?>
-            <div class="row wrap"><span class="dot"></span><span class="k">Layanan adzan · <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v ok"><?= $alarmRow[3] ?></span></div>
+            <div class="row wrap"><span class="dot"></span><span class="k">Pemutar adzan: <?= Format::e($alarmRow[1]) ?><small><?= Format::e($alarmRow[2]) ?></small></span><span class="v ok"><?= $alarmRow[3] ?></span></div>
         <?php endif; ?>
         <form method="post" action="/admin/sound_test.php" class="row wrap"><?= Csrf::field() ?><input type="hidden" name="back" value="home"><span></span><span class="k">Coba putar suara adzan<small>Memutar awal suara adzan selama 10 detik untuk memeriksa speaker.</small></span><button type="submit" class="btn small">Putar</button></form>
-        <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Dihitung di perangkat, kriteria Kemenag<?= $shifts ? ', dengan koreksi menit' : '' ?></small></span><span class="v ok">Normal</span></div>
-        <a class="row" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
+        <div class="row"><span class="dot"></span><span class="k">Jadwal sholat<small>Mengikuti ketentuan Kemenag RI<?= $shifts ? ', dengan pergeseran menit' : '' ?></small></span><span class="v ok">Sesuai</span></div>
+        <a class="row wrap" href="/admin/settings_time.php"><span class="dot<?= $clockOk ? '' : ' warn' ?>"></span><span class="k">Jam perangkat<small><?= $clockOk ? 'Sudah dicocokkan, sesuai jam sebenarnya' : 'Sedang dicocokkan dengan jam HP ini' ?></small></span><span class="v<?= $clockOk ? ' ok' : '' ?>"><?= $clockOk ? 'Tepat' : 'Cek' ?></span></a>
     </div>
 </section>
 

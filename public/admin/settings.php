@@ -66,7 +66,7 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-masjid">
     <div class="label" id="g-masjid">Masjid</div>
     <div class="card">
-        <a class="row" href="/admin/mosque_profile.php"><span></span><span class="k">Profil &amp; foto masjid<small><?= Format::e($s['mosque_name']) ?><?= $s['mosque_photo'] !== '' ? ' · ada foto' : ' · belum ada foto' ?></small></span><?= $chev ?></a>
+        <a class="row" href="/admin/mosque_profile.php"><span></span><span class="k">Profil &amp; foto masjid<small><?= Format::e($s['mosque_name']) ?><?= $s['mosque_photo'] !== '' ? ', ada foto' : ', belum ada foto' ?></small></span><?= $chev ?></a>
     </div>
 </section>
 
@@ -74,7 +74,7 @@ require __DIR__ . '/_header.php';
     <div class="label" id="g-waktu">Waktu sholat</div>
     <div class="card">
         <a class="row" href="/admin/settings_location.php"><span></span><span class="k">Lokasi</span><span class="v"><?= Format::e($s['location_name'] !== '' ? $s['location_name'] : 'Atur lokasi') ?> <?= $chev ?></span></a>
-        <a class="row" href="/admin/schedule_adjust.php"><span></span><span class="k">Koreksi jadwal</span><span class="v"><?= Format::e($adjustSummary) ?> <?= $chev ?></span></a>
+        <a class="row" href="/admin/schedule_adjust.php"><span></span><span class="k">Geser waktu adzan</span><span class="v"><?= Format::e($adjustSummary) ?> <?= $chev ?></span></a>
         <a class="row" href="/admin/hijri.php"><span></span><span class="k">Tanggal Hijriah</span><span class="v"><?= Format::e($hijriToday) ?> <?= $chev ?></span></a>
     </div>
 </section>
@@ -82,9 +82,9 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-adzan">
     <div class="label" id="g-adzan">Adzan &amp; iqomah</div>
     <div class="card">
-        <a class="row" href="/admin/sound.php"><span></span><span class="k">Suara &amp; jeda iqomah<small>Adzan <?= (int) $s['adzan_sound_enabled'] === 1 ? 'nyala' : 'mati' ?> · iqomah <?= (int) $s['iqomah_sound_enabled'] === 1 ? 'nyala' : 'mati' ?></small></span><span class="v">Subuh <?= (int) $s['iqomah_fajr_minutes'] ?> mnt <?= $chev ?></span></a>
+        <a class="row wrap" href="/admin/sound.php"><span></span><span class="k">Suara &amp; jeda iqomah<small>Adzan <?= (int) $s['adzan_sound_enabled'] === 1 ? 'menyala' : 'mati' ?>, iqomah <?= (int) $s['iqomah_sound_enabled'] === 1 ? 'menyala' : 'mati' ?></small></span><span class="v">Subuh <?= (int) $s['iqomah_fajr_minutes'] ?> menit <?= $chev ?></span></a>
         <a class="row" href="/admin/reminder.php"><span></span><span class="k">Pengingat sebelum adzan</span><span class="v"><?= (int) $s['reminder_enabled'] === 1 ? (int) $s['reminder_minutes'] . ' menit' : 'Mati' ?> <?= $chev ?></span></a>
-        <form method="post" class="row">
+        <form method="post" class="row wrap">
             <?= Csrf::field() ?>
             <input type="hidden" name="action" value="iqomah_countdown_toggle">
             <span></span>
@@ -98,7 +98,7 @@ require __DIR__ . '/_header.php';
 <section class="group" aria-labelledby="g-layar">
     <div class="label" id="g-layar">Layar jamaah</div>
     <div class="card">
-        <form method="post" class="row">
+        <form method="post" class="row wrap">
             <?= Csrf::field() ?>
             <input type="hidden" name="action" value="finance_toggle">
             <span></span>
@@ -106,7 +106,7 @@ require __DIR__ . '/_header.php';
             <span class="switch"><input type="checkbox" id="show_finance_on_display" name="show_finance_on_display" data-autosubmit<?= (int) $s['show_finance_on_display'] === 1 ? ' checked' : '' ?>><span></span></span>
             <noscript><button type="submit" class="btn small">Simpan</button></noscript>
         </form>
-        <a class="row" href="/admin/slides.php"><span></span><span class="k">Pergantian slide<small>Poster, saldo kas, foto masjid</small></span><span class="v">Tampil <?= (int) $s['poster_show_seconds'] ?> dtk · jeda <?= (int) $s['poster_gap_seconds'] ?> dtk <?= $chev ?></span></a>
+        <a class="row wrap" href="/admin/slides.php"><span></span><span class="k">Pergantian poster<small>Poster <?= (int) $s['poster_show_seconds'] ?> detik, jadwal <?= (int) $s['poster_gap_seconds'] ?> detik</small></span><span class="v"><?= $chev ?></span></a>
     </div>
 </section>
 
@@ -114,7 +114,7 @@ require __DIR__ . '/_header.php';
     <div class="label" id="g-sistem">Akun &amp; data</div>
     <div class="card">
         <a class="row" href="/admin/account.php"><span></span><span class="k">Akun takmir</span><span class="v">Kata sandi <?= $chev ?></span></a>
-        <a class="row" href="/admin/settings_time.php"><span></span><span class="k">Jam &amp; tanggal</span><span class="v">Koreksi manual <?= $chev ?></span></a>
+        <a class="row" href="/admin/settings_time.php"><span></span><span class="k">Jam &amp; tanggal</span><span class="v">Atur jam <?= $chev ?></span></a>
         <a class="row" href="/admin/backup.php"><span></span><span class="k">Cadangan data</span><span class="v"><?= Format::e($lastBackup) ?> <?= $chev ?></span></a>
     </div>
 </section>

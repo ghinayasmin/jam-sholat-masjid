@@ -23,10 +23,10 @@ $back = [
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Csrf::requireValid($_POST['csrf_token'] ?? null);
     $repo = new SettingsRepository();
-    // Sama dengan "Layanan adzan" di Beranda: tanda hidup ditulis tiap menit.
+    // Sama dengan "Pemutar adzan" di Beranda: tanda hidup ditulis tiap menit.
     $beat = (int) $repo->get()['alarm_heartbeat'];
     if ($beat === 0 || time() - $beat > 600) {
-        $_SESSION['flash_error'] = 'Suara tidak dapat diputar karena layanan adzan sedang tidak berjalan. Pastikan perangkat menyala dan sudah masuk ke akun pengguna.';
+        $_SESSION['flash_error'] = 'Suara tidak dapat diputar karena pemutar adzan sedang tidak aktif. Pastikan perangkat menyala dan sudah masuk ke akun pengguna.';
     } else {
         $repo->update(['sound_test_request' => time()]);
         $_SESSION['flash_success'] = 'Awal suara adzan akan diputar selama 10 detik. Bila tidak terdengar, periksa sambungan speaker dan volumenya.';

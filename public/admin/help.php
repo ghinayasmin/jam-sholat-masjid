@@ -33,7 +33,7 @@ require __DIR__ . '/_header.php';
     <ol>
         <li>Ikuti <a href="/admin/welcome.php">Langkah awal</a>: isikan nama masjid, pilih kabupaten/kota masjid, lalu periksa suara adzan. Tanpa langkah ini, jadwal sholat menggunakan lokasi Yogyakarta.</li>
         <li>Buka Pengaturan, lalu <a href="/admin/mosque_profile.php">Profil &amp; foto masjid</a> untuk menambahkan foto masjid.</li>
-        <li>Pada Beranda, bagian Kondisi sistem, pastikan tertulis <b>Layanan adzan · Berjalan</b>.</li>
+        <li>Pada Beranda, bagian Kondisi sistem, pastikan tertulis <b>Pemutar adzan: Siap</b>.</li>
     </ol>
 </details>
 
@@ -53,7 +53,7 @@ require __DIR__ . '/_header.php';
 <details id="adzan-tidak-bunyi">
     <summary>Adzan tidak terdengar</summary>
     <ol>
-        <li>Pada Beranda, lihat baris <b>Layanan adzan</b> di bagian Kondisi sistem. Apabila tertulis "Tidak berjalan", <?= $isPi ? 'nyalakan ulang Raspberry Pi dengan mencabut lalu memasang kembali kabel listriknya.' : 'pastikan komputer dalam keadaan menyala dan sudah masuk ke akun pengguna. Lihat juga bagian "Komputer menyala kembali setelah listrik padam".' ?></li>
+        <li>Pada Beranda, lihat baris <b>Pemutar adzan</b> di bagian Kondisi sistem. Apabila tertulis "Tidak aktif", <?= $isPi ? 'nyalakan ulang Raspberry Pi dengan mencabut lalu memasang kembali kabel listriknya.' : 'pastikan komputer dalam keadaan menyala dan sudah masuk ke akun pengguna. Lihat juga bagian "Komputer menyala kembali setelah listrik padam".' ?></li>
         <li>Buka Pengaturan, lalu <a href="/admin/sound.php">Suara &amp; jeda iqomah</a>. Sakelar <b>Suara adzan</b> harus dalam keadaan menyala. Apabila sakelar dimatikan, adzan memang tidak diputar. Pengaturan ini disediakan bagi masjid yang adzannya dikumandangkan langsung oleh muadzin.</li>
         <li>Pada halaman yang sama, tekan <b>Putar</b> pada baris Coba putar suara adzan. Awal suara adzan akan diputar selama 10 detik.</li>
         <li>Periksa speaker, meliputi kabel, tombol daya, dan pengatur volume pada speaker. Aplikasi menaikkan volume <?= $isPi ? 'perangkat' : 'komputer' ?> yang dimatikan atau terlalu kecil sebelum adzan, tetapi tidak dapat menyalakan speaker yang mati.</li>
